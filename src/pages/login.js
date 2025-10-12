@@ -12,10 +12,13 @@ export default function Login() {
   const [caps, setCaps] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
+  const [requesting, setRequesting] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    setInfo('')
     setLoading(true)
 
     try {
@@ -34,6 +37,35 @@ export default function Login() {
     } catch (e) {
       setLoading(false)
       setError('No se pudo conectar con el servidor.')
+    }
+  }
+
+  async function handleRequestUnlock() {
+    setError('')
+    setInfo('')
+    const correo = email.trim()
+    if (!correo) {
+      setError('Ingresa tu correo para solicitar el desbloqueo.')
+      return
+    }
+    try {
+      setRequesting(true)
+      const base = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000'
+      const basePath = process.env.REACT_APP_API_BASE_PATH || '/api'
+      const res = await fetch(`${base}${basePath}/usuarios/unlock/request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correo }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(data?.detail || data?.message || 'No se pudo procesar la solicitud')
+      }
+      setInfo(data?.message || 'Si la cuenta existe y está bloqueada, enviaremos un enlace a tu correo.')
+    } catch (err) {
+      setError(err?.message || 'No se pudo procesar la solicitud')
+    } finally {
+      setRequesting(false)
     }
   }
 
@@ -78,7 +110,14 @@ export default function Login() {
             {loading ? 'Verificando…' : 'Entrar'}
           </button>
 
+          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <button type="button" className="button" onClick={handleRequestUnlock} disabled={requesting}>
+              {requesting ? 'Enviando…' : 'Solicitar desbloqueo'}
+            </button>
+          </div>
+
           {error && <div className="toast toast--err" style={{ marginTop: 12 }}>{error}</div>}
+          {info && <div className="toast toast--ok" style={{ marginTop: 12 }}>{info}</div>}
 
           <div className="help" style={{ marginTop: 8 }}>
             ¿No tienes cuenta? Regístrate.

@@ -31,6 +31,7 @@ def send_unlock_email(to_address: str, unlock_url: str) -> bool:
     plain_text = (
         "Has solicitado desbloquear tu cuenta. "
         f"Haz clic en el siguiente enlace para continuar: {unlock_url}\n\n"
+        
         "Si no realizaste esta solicitud, puedes ignorar este mensaje."
     )
     html = f"""
@@ -43,6 +44,7 @@ def send_unlock_email(to_address: str, unlock_url: str) -> bool:
             Desbloquear cuenta
           </a>
         </p>
+        <p>Este link es válido por los próximos 5 minutos. \n"
         <p>Si no realizaste esta solicitud, puedes ignorar este mensaje.</p>
       </body>
     </html>

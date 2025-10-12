@@ -19,6 +19,7 @@ from services.email_service import send_unlock_email
 import uuid
 from jose import jwt, JWTError
 import os
+import re
 from services.auth_service import SECRET_KEY, ALGORITHM
 
 router = APIRouter()
@@ -139,6 +140,10 @@ class UnlockRequest(BaseModel):
 class UnlockConfirm(BaseModel):
     token: str
 
+class UnlockSetPassword(BaseModel):
+    token: str
+    new_password: str
+
 @router.post("/unlock/request")
 async def solicitar_desbloqueo(payload: UnlockRequest, db: Session = Depends(get_db)):
     usuario = db.query(UsuarioDB).filter(UsuarioDB.correo == payload.correo).first()
@@ -152,11 +157,12 @@ async def solicitar_desbloqueo(payload: UnlockRequest, db: Session = Depends(get
         return {"ok": True, "message": "Si la cuenta está bloqueada, recibirás instrucciones por correo."}
 
     # Generar token firmado (JWT) con propósito específico y expiración
+    expire_minutes = int(os.getenv("UNLOCK_TOKEN_EXPIRE_MINUTES", "60"))
     claims = {
         "sub": str(usuario.id),
         "purpose": "unlock",
         "iat": datetime.utcnow(),
-        "exp": datetime.utcnow() + timedelta(hours=1),
+        "exp": datetime.utcnow() + timedelta(minutes=expire_minutes),
     }
     token = jwt.encode(claims, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -177,7 +183,16 @@ async def solicitar_desbloqueo(payload: UnlockRequest, db: Session = Depends(get
 async def confirmar_desbloqueo(token: str, db: Session = Depends(get_db)):
     # Validar y decodificar token JWT
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM],
+            options={
+                "require_exp": True,
+                "require_iat": True,
+                "verify_exp": True,
+            },
+        )
         if payload.get("purpose") != "unlock":
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido para esta operación")
         user_id = payload.get("sub")
@@ -198,3 +213,65 @@ async def confirmar_desbloqueo(token: str, db: Session = Depends(get_db)):
     db.refresh(usuario)
 
     return {"ok": True, "message": "Tu cuenta ha sido desbloqueada. Ya puedes iniciar sesión."}
+
+
+def _is_strong_password(pwd: str) -> bool:
+    """Policy: 8–12 chars, alphanumeric only, at least one lowercase and one uppercase."""
+    if not isinstance(pwd, str):
+        return False
+    # Length and allowed chars only
+    if not re.fullmatch(r"[A-Za-z0-9]{8,12}", pwd or ""):
+        return False
+    # Must include at least one lowercase and one uppercase
+    if not re.search(r"[a-z]", pwd):
+        return False
+    if not re.search(r"[A-Z]", pwd):
+        return False
+    return True
+
+
+@router.post("/unlock/set-password")
+async def establecer_contrasena(payload: UnlockSetPassword, db: Session = Depends(get_db)):
+    """Permitir establecer una nueva contraseña usando el token de desbloqueo."""
+    # Validar contraseña mínimamente
+    if not _is_strong_password(payload.new_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "Contraseña inválida. Debe ser alfanumérica de 8–12 caracteres, con al menos una minúscula y una mayúscula."
+            ),
+        )
+
+    # Validar y decodificar token JWT
+    try:
+        data = jwt.decode(
+            payload.token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM],
+            options={
+                "require_exp": True,
+                "require_iat": True,
+                "verify_exp": True,
+            },
+        )
+        if data.get("purpose") != "unlock":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido para esta operación")
+        user_id = data.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido")
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token de desbloqueo inválido o expirado")
+
+    # Actualizar contraseña y asegurar estado activo
+    usuario = db.query(UsuarioDB).filter(UsuarioDB.id == user_id).first()
+    if not usuario:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+
+    hashed = auth_service.hash_password(payload.new_password)
+    usuario.contrasena_hash = hashed
+    usuario.estado = EstadoUsuarioEnum.activa
+    usuario.failed_attempts = 0
+    db.commit()
+    db.refresh(usuario)
+
+    return {"ok": True, "message": "Contraseña actualizada correctamente. Ya puedes iniciar sesión."}
