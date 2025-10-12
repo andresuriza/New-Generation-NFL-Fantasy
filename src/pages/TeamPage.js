@@ -29,16 +29,16 @@ export default function TeamPage() {
         </div>
 
         <div className="card">
-          <h2 className="section-title">Team Roster</h2>
+          <h2 className="section-title">Roster de equipo</h2>
           {filteredPlayers.length > 0 ? (
             <PlayerList players={filteredPlayers} />
           ) : (
-            <EmptyState message="No players assigned to this team." />
+            <EmptyState message="No hay jugadores asignados a este equipo." />
           )}
         </div>
 
         <div className="card">
-          <h2 className="section-title">Acquisition Distribution</h2>
+          <h2 className="section-title">Distribución de adquisición</h2>
           <AcquisitionChart players={teamData.players} />
         </div>
       </div>

@@ -25,9 +25,6 @@ export default function Navbar() {
           <NavLink className={linkClass} to="/players">
             Jugadores
           </NavLink>
-          <NavLink className={linkClass} to="/Equipo">
-            Equipo
-          </NavLink>
           {!isAuthenticated ? (
             <>
               <NavLink className={linkClass} to="/register">
@@ -41,9 +38,6 @@ export default function Navbar() {
             <>
               <NavLink className={linkClass} to="/player/profile">
                 Perfil
-              </NavLink>
-              <NavLink className={linkClass} to="/league/create">
-                Crear liga
               </NavLink>
               <LogoutButton className="button button--ghost">
                 Cerrar sesión

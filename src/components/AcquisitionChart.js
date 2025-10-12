@@ -23,7 +23,9 @@ export default function AcquisitionChart({ players }) {
     .map(([name, value]) => ({ name, value }));
 
   if (data.length === 0) {
-    return <p className="empty-message">No acquisition data available.</p>;
+    return (
+      <p className="empty-message">No hay datos de adquisición disponibles.</p>
+    );
   }
 
   return (

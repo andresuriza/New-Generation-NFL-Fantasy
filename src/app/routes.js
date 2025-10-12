@@ -10,8 +10,9 @@ import PlayerProfileEdit from "../pages/playerProfileEdit";
 import LeagueCreate from "../pages/leagueCreate";
 import LeagueAdminStatus from "../pages/leagueAdminStatus";
 import LeagueConfigEdit from "../pages/leagueConfigEdit";
-import Equipo from "../pages/equipo";
 import TeamPage from "../pages/TeamPage";
+import CreateTeamPage from "../pages/CreateTeamPage";
+import EditarEquipo from "../pages/EditarEquipo";
 
 const router = createBrowserRouter([
   {
@@ -70,8 +71,16 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/equipo",
+        path: "/equipo/:id",
         element: <TeamPage />,
+      },
+      {
+        path: "/equipo/:id/edit",
+        element: <EditarEquipo />,
+      },
+      {
+        path: "/crear-equipo",
+        element: <CreateTeamPage />,
       },
     ],
   },
