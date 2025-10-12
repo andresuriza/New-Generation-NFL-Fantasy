@@ -105,8 +105,8 @@ export default function PlayerProfile() {
 
         {/* Datos del perfil */}
         <div className="grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0,1fr))' }}>
-          <Field label="ID">{profile.id}</Field>
-          <Field label="Alias">{profile.alias}</Field>
+          <Field label="ID">{(session?.user && session.user.id) || profile.id}</Field>
+          <Field label="Alias">{(session?.user && session.user.alias) || profile.alias}</Field>
           <Field label="Idioma">{(profile.language || 'en').toUpperCase()}</Field>
           <Field label="Rol">{profile.role}</Field>
           <Field label="Estado">{profile.status}</Field>

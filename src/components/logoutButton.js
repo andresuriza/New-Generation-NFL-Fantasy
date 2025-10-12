@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/authContext'
-import { fakeLogoutRequest } from '../utils/network'
+import { LOGOUT_REDIRECT } from '../app/config'
 
 export default function LogoutButton({ className = 'button', children = 'Cerrar sesión' }) {
-  const { logout } = useAuth()
+  const { logoutAsync } = useAuth()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -13,18 +13,17 @@ export default function LogoutButton({ className = 'button', children = 'Cerrar 
     setError('')
     setLoading(true)
     try {
-      await fakeLogoutRequest()
-    } catch {
+      const res = await logoutAsync()
+  // 1) Desmonta vistas protegidas
+  navigate(LOGOUT_REDIRECT, { replace: true })
       setLoading(false)
-      setError('La sesión podría no haberse cerrado correctamente. Intenta de nuevo.')
-      return
+      if (!res?.ok) {
+        setError(res?.message || 'La sesión podría no haberse cerrado correctamente. Intenta de nuevo.')
+      }
+    } catch (e) {
+      setLoading(false)
+      setError('No se pudo cerrar la sesión. Intenta de nuevo.')
     }
-
-    // 1) Desmonta vistas protegidas
-    navigate('/', { replace: true })
-    // 2) Limpia la sesión en el siguiente tick
-    setTimeout(() => logout(), 0)
-    setLoading(false)
   }
 
   return (

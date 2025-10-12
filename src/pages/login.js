@@ -1,18 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/authContext'
-import { getAuthMeta, setAuthMeta, resetAuthMeta } from '../utils/session'
-
-// Credenciales DEMO — cambia aquí si quieres
-const DEMO_EMAIL = 'demo@nfl.com'
-const DEMO_PASSWORD = 'DemoPass1'
-
-function isValidCredentials(email, password) {
-  return email.toLowerCase() === DEMO_EMAIL && password === DEMO_PASSWORD
-}
+import { LOGIN_REDIRECT } from '../app/config'
 
 export default function Login() {
-  const { login } = useAuth()
+  const { loginAsync } = useAuth()
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
@@ -26,39 +18,30 @@ export default function Login() {
     setError('')
     setLoading(true)
 
-    const meta = getAuthMeta(email)
-
-    if (meta.locked) {
+    try {
+      const result = await loginAsync({ correo: email.trim(), contrasena: password })
       setLoading(false)
-      setError('Tu cuenta está bloqueada. Contacta al administrador.')
-      return
-    }
-
-    // Validación visual (genérica)
-    const ok = isValidCredentials(email.trim(), password)
-    if (!ok) {
-      const failed = (meta.failedCount || 0) + 1
-      const locked = failed >= 5
-      setAuthMeta(email, { failedCount: failed, locked })
+      if (!result.ok) {
+        const status = result.status
+        // Backend messages already localized; surface them
+        setError(result.message || (status === 423 ? 'Cuenta bloqueada o inactiva.' : 'Credenciales inválidas.'))
+        return
+      }
+  let redirect = result.data?.redirect_to || LOGIN_REDIRECT
+  // Normalize known legacy path
+  if (redirect === '/profile') redirect = '/player/profile'
+  navigate(redirect)
+    } catch (e) {
       setLoading(false)
-      setError('Usuario o contraseña inválidos.') // genérico
-      return
+      setError('No se pudo conectar con el servidor.')
     }
-
-    // éxito: reset intentos, crea sesión y redirige
-    resetAuthMeta(email)
-    login({ email })
-    setLoading(false)
-    navigate('/player/profile') // redirección al perfil del jugador
   }
 
   return (
     <div className="container" style={{ paddingTop: 24, paddingBottom: 48 }}>
       <div className="card" style={{ maxWidth: 480, margin: '0 auto' }}>
         <h2 style={{ marginTop: 0 }}>Iniciar sesión</h2>
-        <p style={{ color: 'var(--muted)' }}>
-          Demo visual (sin backend). Se bloquea la cuenta tras 5 intentos fallidos.
-        </p>
+        <p style={{ color: 'var(--muted)' }}>Introduce tu correo y contraseña para acceder.</p>
 
         <form className="form" onSubmit={handleSubmit} noValidate>
           <div className="form__group">
@@ -98,7 +81,7 @@ export default function Login() {
           {error && <div className="toast toast--err" style={{ marginTop: 12 }}>{error}</div>}
 
           <div className="help" style={{ marginTop: 8 }}>
-            Tip demo: <code>{DEMO_EMAIL}</code> / <code>{DEMO_PASSWORD}</code>
+            ¿No tienes cuenta? Regístrate.
           </div>
         </form>
       </div>

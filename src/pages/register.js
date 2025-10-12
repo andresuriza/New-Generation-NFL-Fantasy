@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import {
-  validateName, validateEmail, validatePassword, validateConfirm, validateAlias
-} from '../utils/validators'
+import { validateName, validateEmail, validatePassword, validateConfirm, validateAlias } from '../utils/validators'
+import { apiRegisterUser } from '../utils/api'
 
 const MAX50 = 50
 const MAX12 = 12
@@ -82,7 +81,7 @@ export default function Register() {
     return { ...checks, score, percent, label }
   }, [form.password])
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     setSubmitting(true)
 
@@ -96,17 +95,23 @@ export default function Register() {
       return
     }
 
-    // Solo visual: no guardamos, no llamamos API.
-    setTimeout(() => {
+    try {
+      const payload = {
+        nombre: form.name.trim(),
+        alias: form.alias?.trim() || 'Usuario',
+        correo: form.email.trim(),
+        contrasena: form.password,
+        confirmar_contrasena: form.confirm,
+        rol: 'manager',
+      }
+      await apiRegisterUser(payload)
       setSubmitting(false)
-      setToast({
-        type: 'ok',
-        message:
-          'Formulario válido. La cuenta quedaría activa inmediatamente. ' +
-          'En el backend se generará: ID único, fecha de creación, rol "manager", ' +
-          'estado "active", imagen e idioma "en".'
-      })
-    }, 400)
+      setToast({ type: 'ok', message: 'Cuenta creada con éxito. Ya puedes iniciar sesión.' })
+    } catch (err) {
+      setSubmitting(false)
+      const msg = err?.data?.detail || err?.message || 'No se pudo crear la cuenta'
+      setToast({ type: 'err', message: msg })
+    }
   }
 
   return (
@@ -114,7 +119,7 @@ export default function Register() {
       <div className="card" style={{ maxWidth: 600, margin: '0 auto' }}>
         <h2 style={{ marginTop: 0 }}>Crear cuenta</h2>
         <p style={{ color: 'var(--muted)' }}>
-          Vista previa <strong>sin backend</strong>. Regla de contraseña: 8–12, alfanumérica, con al menos una minúscula y una mayúscula.
+          Reglas para la creación de contraseña: 8–12, alfanumérica, con al menos una minúscula y una mayúscula.
         </p>
 
         <form className="form" noValidate onSubmit={handleSubmit}>
@@ -161,7 +166,7 @@ export default function Register() {
               aria-describedby={showError('email') ? 'err-email help-email' : 'help-email'}
             />
             {showError('email') && <div id="err-email" className="error">{errors.email}</div>}
-            <div id="help-email" className="help">El correo debe ser único (se validará en el backend).</div>
+            <div id="help-email" className="help">El correo debe ser único.</div>
           </div>
 
           {/* Contraseña */}
