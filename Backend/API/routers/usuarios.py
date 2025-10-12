@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from models.usuario import (
     UsuarioCreate, 
@@ -15,6 +15,11 @@ from models.usuario import (
 from models.database_models import UsuarioDB, RolUsuarioEnum, EstadoUsuarioEnum
 from database import get_db
 from services.auth_service import auth_service
+from services.email_service import send_unlock_email
+import uuid
+from jose import jwt, JWTError
+import os
+from services.auth_service import SECRET_KEY, ALGORITHM
 
 router = APIRouter()
 
@@ -123,3 +128,73 @@ async def login_usuario(credenciales: UsuarioLogin, request: Request, db: Sessio
         expires_in=43200,  # 12 horas en segundos
         redirect_to="/player/profile"  # URL de redirección alineada con el frontend
     )
+
+
+# ====== Desbloqueo de cuenta ======
+from pydantic import BaseModel, EmailStr
+
+class UnlockRequest(BaseModel):
+    correo: EmailStr
+
+class UnlockConfirm(BaseModel):
+    token: str
+
+@router.post("/unlock/request")
+async def solicitar_desbloqueo(payload: UnlockRequest, db: Session = Depends(get_db)):
+    usuario = db.query(UsuarioDB).filter(UsuarioDB.correo == payload.correo).first()
+    if not usuario:
+        # Respuesta genérica por seguridad
+        return {"ok": True, "message": "Si la cuenta existe, se enviará un correo con instrucciones."}
+
+    # Solo enviar enlace si está bloqueado
+    estado_val = getattr(usuario.estado, "value", usuario.estado)
+    if estado_val != 'bloqueado':
+        return {"ok": True, "message": "Si la cuenta está bloqueada, recibirás instrucciones por correo."}
+
+    # Generar token firmado (JWT) con propósito específico y expiración
+    claims = {
+        "sub": str(usuario.id),
+        "purpose": "unlock",
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(hours=1),
+    }
+    token = jwt.encode(claims, SECRET_KEY, algorithm=ALGORITHM)
+
+    # Construir URL de desbloqueo que apunte al frontend (pantalla de confirmación)
+    frontend_url = os.getenv("FRONTEND_PUBLIC_URL", "http://localhost:3000")
+    unlock_url = f"{frontend_url}/account/unlock/confirm?token={token}"
+
+    # Enviar correo (si está configurado)
+    try:
+        send_unlock_email(usuario.correo, unlock_url)
+    except Exception:
+        pass
+
+    return {"ok": True, "message": "Si la cuenta existe y está bloqueada, enviaremos instrucciones a tu correo."}
+
+
+@router.get("/unlock/confirm")
+async def confirmar_desbloqueo(token: str, db: Session = Depends(get_db)):
+    # Validar y decodificar token JWT
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("purpose") != "unlock":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido para esta operación")
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido")
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token de desbloqueo inválido o expirado")
+
+    # Cambiar estado a activa y resetear intentos fallidos
+    usuario = db.query(UsuarioDB).filter(UsuarioDB.id == user_id).first()
+    if not usuario:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+
+    from models.database_models import EstadoUsuarioEnum
+    usuario.estado = EstadoUsuarioEnum.activa
+    usuario.failed_attempts = 0
+    db.commit()
+    db.refresh(usuario)
+
+    return {"ok": True, "message": "Tu cuenta ha sido desbloqueada. Ya puedes iniciar sesión."}
