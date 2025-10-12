@@ -22,14 +22,14 @@ export default function CreateTeamPage() {
     // Validate format
     const validTypes = ["image/jpeg", "image/png"];
     if (!validTypes.includes(file.type)) {
-      setError("❌ Image must be JPEG or PNG format.");
+      setError("Formato invalido, utilizar JPEG o PNG.");
       setImage(null);
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError("❌ Image exceeds maximum size of 5MB.");
+      setError("Imagen muy grande (max 5MB).");
       setImage(null);
       return;
     }
@@ -44,7 +44,7 @@ export default function CreateTeamPage() {
         img.height > 1024
       ) {
         setError(
-          "❌ Image dimensions must be between 300x300 and 1024x1024 px."
+          "Las dimensiones de la imagen deben estar entre 300x300 y 1024x1024 px."
         );
         setImage(null);
       } else {
@@ -81,25 +81,25 @@ export default function CreateTeamPage() {
 
     // Validations
     if (teamName.length < 1 || teamName.length > 100) {
-      setError("❌ Team name must be between 1 and 100 characters.");
+      setError("El nombre del equipo debe estar entre 1 y 100 caracteres.");
       return;
     }
 
     if (nameTaken) {
-      setError(`❌ The name "${teamName}" is already taken in this league.`);
+      setError(`El nombre "${teamName}" ya existe en esta liga.`);
       return;
     }
 
     if (!managerName.trim()) {
-      setError("❌ Manager name is required.");
+      setError("El nombre del manager es requerido.");
       return;
     }
     if (!leagueName.trim()) {
-      setError("❌ League name is required.");
+      setError("El nombre de la liga es requerido.");
       return;
     }
     if (!image) {
-      setError("❌ A valid image must be uploaded.");
+      setError("Una imagen valida debe ser subida.");
       return;
     }
 

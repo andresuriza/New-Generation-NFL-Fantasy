@@ -66,6 +66,7 @@ export default function EditarEquipo() {
 
     const teams = JSON.parse(localStorage.getItem("fantasy_teams") || "[]");
     // Validate duplicate name (excluding current team)
+    // Check for duplicates inside the same league (case-insensitive)
     const duplicate = teams.some(
       (t) =>
         t.id !== id &&
@@ -74,6 +75,21 @@ export default function EditarEquipo() {
     );
     if (duplicate) {
       setError(`El nombre "${teamName}" ya existe en esta liga.`);
+      return;
+    }
+
+    // Validations
+    if (teamName.length < 1 || teamName.length > 100) {
+      setError("El nombre del equipo debe estar entre 1 y 100 caracteres.");
+      return;
+    }
+
+    if (!managerName.trim()) {
+      setError("El nombre del manager es requerido.");
+      return;
+    }
+    if (!leagueName.trim()) {
+      setError("El nombre de la liga es requerido.");
       return;
     }
 
