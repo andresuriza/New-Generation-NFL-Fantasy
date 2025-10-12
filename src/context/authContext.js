@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { getSession, createSession, clearSession, updateActivity, isExpired } from '../utils/session'
-import { fakeLogoutRequest } from '../utils/network'
+import { apiLogin } from '../utils/api'
 
 const AuthCtx = createContext(null)
 
@@ -41,15 +41,29 @@ export function AuthProvider({ children }) {
     }
   }, [session])
 
-  async function logoutAsync() {
-    // 1) intenta “cerrar sesión” en servidor
+  async function loginAsync({ correo, contrasena }) {
     try {
-      await fakeLogoutRequest()
+      const res = await apiLogin({ correo, contrasena })
+      // Backend returns: { access_token, refresh_token, token_type, usuario, expires_in, redirect_to }
+      const { access_token, refresh_token, usuario } = res
+      const s = createSession({
+        email: usuario?.correo,
+        userId: usuario?.id,
+        accessToken: access_token,
+        refreshToken: refresh_token,
+        user: usuario,
+      })
+      setSession(s)
+      return { ok: true, data: res }
     } catch (err) {
-      // NO limpiamos sesión: informará el botón/llamador
-      return { ok: false, message: 'Fallo de red. Intenta de nuevo.' }
+      const status = err?.status
+      const message = err?.message || 'No se pudo iniciar sesión'
+      return { ok: false, status, message }
     }
-    // 2) éxito: limpiar sesión local (todas las pestañas)
+  }
+
+  async function logoutAsync() {
+    // For now we only clear local session; backend session invalidation can be added later
     clearSession()
     setSession(null)
     return { ok: true }
@@ -57,10 +71,14 @@ export function AuthProvider({ children }) {
 
   const value = useMemo(() => ({
     session,
+    // old demo login remains available but prefer loginAsync
     login: ({ email }) => { const s = createSession({ email }); setSession(s) },
-    logout: () => { clearSession(); setSession(null) },   // sin red (por si lo quieres usar)
-    logoutAsync,                                          // ⬅️ con red simulada
-    isAuthenticated: !!session
+    loginAsync,
+    logout: () => { clearSession(); setSession(null) },
+    logoutAsync,
+    isAuthenticated: !!session,
+    user: session?.user || null,
+    accessToken: session?.accessToken || null,
   }), [session])
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>

@@ -35,12 +35,12 @@ export function resetAuthMeta(email) {
 
 // ====== Sesión ======
 export function getSession() {
-  return read(SESSION_KEY, null); // { email, userId, createdAt, lastActivity }
+  return read(SESSION_KEY, null); // { email, userId, accessToken, refreshToken, user, createdAt, lastActivity }
 }
 
-export function createSession({ email, userId = 'demo-user' }) {
+export function createSession({ email, userId = null, accessToken = null, refreshToken = null, user = null }) {
   const now = Date.now();
-  const session = { email, userId, createdAt: now, lastActivity: now };
+  const session = { email, userId: userId || user?.id || null, accessToken, refreshToken, user, createdAt: now, lastActivity: now };
   write(SESSION_KEY, session);
   // dispara evento manual para otras pestañas
   window.dispatchEvent(new StorageEvent('storage', { key: SESSION_KEY }));
