@@ -10,6 +10,7 @@ import PlayerProfileEdit from '../pages/playerProfileEdit'
 import LeagueCreate from '../pages/leagueCreate'
 import LeagueAdminStatus from '../pages/leagueAdminStatus'
 import LeagueConfigEdit from '../pages/leagueConfigEdit'
+import UnlockConfirm from '../pages/unlockConfirm'
 
 
 const router = createBrowserRouter([
@@ -25,6 +26,7 @@ const router = createBrowserRouter([
     </RequireAuth>
 ) },
       { path: '/players', element: <div className="container" style={{ paddingTop: 24 }}>Próximamente: Explorador de jugadores</div> },
+  { path: '/account/unlock/confirm', element: <UnlockConfirm /> },
       { path: '*', element: <NotFound /> },
       { path: '/player/profile/edit', element: (
   <RequireAuth>
