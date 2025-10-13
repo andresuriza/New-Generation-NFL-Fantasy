@@ -346,8 +346,8 @@ fieldset legend {
 }
 
 .team-logo {
-  width: 100px;
-  height: 100px;
+  width: 72px;
+  height: 72px;
   border-radius: 12px;
   object-fit: cover;
   border: 2px solid var(--border);
@@ -481,6 +481,17 @@ fieldset legend {
 .create-team-page {
   display: grid;
   gap: 24px;
+}
+
+/* Improve hover stability on edit page */
+.create-team-page .card,
+.create-team-page .form,
+.create-team-page .thumbnail-preview img,
+.create-team-page .button,
+.create-team-page .input {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: transform, box-shadow, border-color, background-color;
 }
 
 .thumbnail-preview {

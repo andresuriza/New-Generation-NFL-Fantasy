@@ -12,16 +12,19 @@ async function request(path, options = {}) {
   const session = getSession();
   const token = session?.accessToken;
 
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+
   const finalHeaders = {
-    'Content-Type': 'application/json',
     ...(headers || {}),
+    // Only set JSON content-type when not sending FormData
+    ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
   };
   if (token) finalHeaders['Authorization'] = `Bearer ${token}`;
 
   const res = await fetch(`${BASE_URL}${BASE_API_PATH}${path}`, {
     method,
     headers: finalHeaders,
-    body: body ? JSON.stringify(body) : undefined,
+    body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
     credentials: 'omit',
   });
 
@@ -58,4 +61,85 @@ export async function apiRegisterUser({ nombre, alias, correo, contrasena, confi
   });
 }
 
+export async function apiRegisterEquipo({ liga_id, usuario_id, nombre, thumbnail }) {
+  return request('/equipos/', {
+    method: 'POST',
+    body: { liga_id, usuario_id, nombre, thumbnail },
+  });
+}
+
 export { BASE_URL };
+
+export async function apiGetEquipo(equipoId) {
+  return request(`/equipos/${equipoId}`);
+}
+
+export async function apiUpdateEquipo(equipoId, payload) {
+  return request(`/equipos/${equipoId}`, {
+    method: 'PUT',
+    body: payload,
+  });
+}
+
+export async function apiListEquipos() {
+  return request(`/equipos/`);
+}
+
+export async function apiListUsuarios() {
+  return request(`/usuarios/`);
+}
+
+export async function apiGetUsuario(usuarioId) {
+  return request(`/usuarios/${usuarioId}`);
+}
+
+export async function apiUpdateUsuario(usuarioId, payload) {
+  return request(`/usuarios/${usuarioId}`, {
+    method: 'PUT',
+    body: payload,
+  });
+}
+
+export async function apiListLigas() {
+  return request(`/ligas/`);
+}
+
+export async function apiGetLiga(ligaId) {
+  return request(`/ligas/${ligaId}`);
+}
+
+export async function apiGetEquipoMedia(equipoId) {
+  return request(`/media/${equipoId}`);
+}
+
+export async function apiUploadEquipoImage(equipoId, file) {
+  const session = getSession();
+  const token = session?.accessToken;
+  const form = new FormData();
+  form.append('file', file);
+
+  const res = await fetch(`${BASE_URL}${BASE_API_PATH}/media/upload/${equipoId}`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: form,
+    credentials: 'omit',
+  });
+
+  const ct = res.headers.get('Content-Type') || '';
+  let data = null;
+  if (ct.includes('application/json')) {
+    try { data = await res.json(); } catch { /* noop */ }
+  } else {
+    try { data = await res.text(); } catch { /* noop */ }
+  }
+
+  if (!res.ok) {
+    const message = (data && (data.detail || data.message)) || res.statusText;
+    const err = new Error(message || 'Upload failed');
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+
+  return data;
+}

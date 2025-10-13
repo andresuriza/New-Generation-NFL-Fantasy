@@ -1,9 +1,8 @@
 import { useMemo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/authContext"; // ajusta la ruta si tu archivo se llama AuthContext
-import LogoutButton from "../components/logoutButton";
+import { useAuth } from "../context/authContext"; 
 import { getProfile, getHistory, DEFAULTS } from "../utils/profileData";
-import { teamData } from "../mock/teamData";
+import { apiListEquipos, apiListUsuarios, apiListLigas } from "../utils/api";
 
 const DEFAULT_AVATAR = DEFAULTS.DEFAULT_AVATAR;
 
@@ -52,7 +51,7 @@ function EmptyState({ title, subtitle, action }) {
 
 export default function PlayerProfile() {
   const { session, isAuthenticated } = useAuth();
-  const [teamsByLeague, setTeamsByLeague] = useState({});
+  const [teams, setTeams] = useState([]);
   const navigate = useNavigate();
 
   // Perfil y datos persistidos en localStorage (visual)
@@ -72,19 +71,39 @@ export default function PlayerProfile() {
   );
 
   useEffect(() => {
-    // Load from localStorage
-    const stored = JSON.parse(localStorage.getItem("fantasy_teams") || "[]");
+    let active = true;
+    async function fetchTeams() {
+      try {
+        const [equiposApi, usuariosApi, ligasApi] = await Promise.all([
+          apiListEquipos(),
+          apiListUsuarios(),
+          apiListLigas(),
+        ]);
+        if (!active) return;
+        const usuariosMap = (Array.isArray(usuariosApi) ? usuariosApi : []).reduce((m, u) => {
+          m[String(u.id)] = u.alias || u.nombre || u.correo;
+          return m;
+        }, {});
+        const ligasMap = (Array.isArray(ligasApi) ? ligasApi : []).reduce((m, l) => {
+          m[String(l.id)] = l.nombre;
+          return m;
+        }, {});
 
-    // Group by league name or ID
-    const grouped = stored.reduce((acc, team) => {
-      const leagueKey = team.league || "Sin Liga";
-      if (!acc[leagueKey]) acc[leagueKey] = [];
-      acc[leagueKey].push(team);
-      return acc;
-    }, {});
-
-    setTeamsByLeague(grouped);
-  }, []);
+        const apiList = Array.isArray(equiposApi) ? equiposApi : [];
+        const flat = apiList.map((team) => ({
+          id: team.id,
+          name: team.nombre,
+          manager: usuariosMap[String(team.usuario_id)] || (team.usuario_id || "").toString().slice(0, 8),
+          leagueName: ligasMap[String(team.liga_id)] || String(team.liga_id) || "Sin Liga",
+        }));
+        setTeams(flat);
+      } catch (_) {
+        setTeams([]);
+      }
+    }
+    fetchTeams();
+    return () => { active = false };
+  }, [session]);
 
   if (!isAuthenticated || !profile) return null;
 
@@ -220,51 +239,39 @@ export default function PlayerProfile() {
             Crear equipo
           </button>
         </div>
-        {Object.keys(teamsByLeague).length === 0 ? (
+        {teams.length === 0 ? (
           <EmptyState
             title="No tienes equipos aún"
             subtitle="Crea tu primer equipo utilizando el botón de arriba."
           />
         ) : (
-          Object.entries(teamsByLeague).map(([leagueId, teams]) => (
-            <div key={leagueId} style={{ marginBottom: 16 }}>
-              <div style={{ marginBottom: 8, color: "var(--muted)" }}>
-                Liga: {leagueId}
-              </div>
-
-              {teams.length === 0 ? (
-                <EmptyState
-                  title="Sin equipos en esta liga"
-                  subtitle="Crea o únete a un equipo para comenzar."
-                />
-              ) : (
-                <div className="grid grid-3">
-                  {teams.map((tm) => (
-                    <div key={tm.id} className="card">
-                      <h4 style={{ margin: 0 }}>{tm.name}</h4>
-                      <div style={{ marginTop: 6, color: "var(--muted)" }}>
-                        Manager: <strong>{tm.manager}</strong>
-                      </div>
-                      <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-                        <button
-                          className="button"
-                          onClick={() => navigate(`/equipo/${tm.id}`)}
-                        >
-                          Ver equipo
-                        </button>
-                        <button
-                          className="button button--ghost"
-                          onClick={() => navigate(`/equipo/${tm.id}/edit`)}
-                        >
-                          Gestionar
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+          <div className="grid grid-3">
+            {teams.map((tm) => (
+              <div key={tm.id} className="card">
+                <div style={{ marginBottom: 6, color: "var(--muted)" }}>
+                  Liga: <strong>{tm.leagueName}</strong>
                 </div>
-              )}
-            </div>
-          ))
+                <h4 style={{ margin: 0 }}>{tm.name}</h4>
+                <div style={{ marginTop: 6, color: "var(--muted)" }}>
+                  Manager: <strong>{tm.manager}</strong>
+                </div>
+                <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                  <button
+                    className="button"
+                    onClick={() => navigate(`/equipo/${tm.id}`)}
+                  >
+                    Ver equipo
+                  </button>
+                  <button
+                    className="button button--ghost"
+                    onClick={() => navigate(`/equipo/${tm.id}/edit`)}
+                  >
+                    Gestionar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </section>
 

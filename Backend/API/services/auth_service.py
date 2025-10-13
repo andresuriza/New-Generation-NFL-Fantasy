@@ -95,16 +95,8 @@ class AuthService:
             
             # Verificar si la sesión está activa
             session_id = payload.get("session_id")
-            if session_id:
-                # La sesión debe existir y estar activa; si no, el token es inválido
-                if session_id not in self.active_sessions:
-                    raise HTTPException(
-                        status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Sesión inválida o cerrada"
-                    )
-
+            if session_id and session_id in self.active_sessions:
                 session = self.active_sessions[session_id]
-
                 # Verificar inactividad ANTES de actualizar la última actividad
                 now = datetime.utcnow()
                 last_activity = session.get("last_activity") or session.get("created_at")
@@ -115,9 +107,9 @@ class AuthService:
                         status_code=status.HTTP_401_UNAUTHORIZED,
                         detail="Sesión expirada por inactividad"
                     )
-
                 # Todo bien: actualizar última actividad
                 session["last_activity"] = now
+            # Si no hay session en memoria, aceptar token válido (modo stateless)
             
             return payload
             
