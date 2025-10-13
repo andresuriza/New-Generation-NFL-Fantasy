@@ -42,8 +42,6 @@ export function createSession({ email, userId = null, accessToken = null, refres
   const now = Date.now();
   const session = { email, userId: userId || user?.id || null, accessToken, refreshToken, user, createdAt: now, lastActivity: now };
   write(SESSION_KEY, session);
-  // dispara evento manual para otras pestañas
-  window.dispatchEvent(new StorageEvent('storage', { key: SESSION_KEY }));
   return session;
 }
 
@@ -52,12 +50,10 @@ export function updateActivity() {
   if (!s) return;
   s.lastActivity = Date.now();
   write(SESSION_KEY, s);
-  window.dispatchEvent(new StorageEvent('storage', { key: SESSION_KEY }));
 }
 
 export function clearSession() {
   localStorage.removeItem(SESSION_KEY);
-  window.dispatchEvent(new StorageEvent('storage', { key: SESSION_KEY }));
 }
 
 export function isExpired(sess) {

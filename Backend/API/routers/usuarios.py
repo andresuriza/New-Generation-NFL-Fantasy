@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from uuid import UUID
 from datetime import datetime, timedelta
 
 from models.usuario import (
@@ -15,6 +16,7 @@ from models.usuario import (
 from models.database_models import UsuarioDB, RolUsuarioEnum, EstadoUsuarioEnum
 from database import get_db
 from services.auth_service import auth_service
+from services.auth_service import get_current_user
 from services.email_service import send_unlock_email
 import uuid
 from jose import jwt, JWTError
@@ -83,7 +85,7 @@ async def listar_usuarios(db: Session = Depends(get_db)):
     return [convert_usuario_to_response(usuario) for usuario in usuarios]
 
 @router.get("/{usuario_id}", response_model=UsuarioResponse)
-async def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
+async def obtener_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
     """Obtener un usuario específico por ID"""
     usuario = db.query(UsuarioDB).filter(
         UsuarioDB.id == usuario_id,
@@ -97,6 +99,68 @@ async def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
         )
     
     return convert_usuario_to_response(usuario)
+
+@router.put("/{usuario_id}", response_model=UsuarioResponse)
+async def actualizar_usuario(
+    usuario_id: UUID,
+    updates: UsuarioUpdate,
+    db: Session = Depends(get_db),
+    current=Depends(get_current_user),
+):
+    """Actualizar datos de perfil del usuario.
+    Reglas:
+    - Requiere autenticación.
+    - Un usuario solo puede actualizar su propio perfil, excepto administradores.
+    - Campos permitidos: nombre, alias, idioma, imagen_perfil_url, (correo opcional con verificación de unicidad).
+    """
+    usuario_db = db.query(UsuarioDB).filter(
+        UsuarioDB.id == usuario_id,
+        UsuarioDB.estado != EstadoUsuarioEnum.eliminada,
+    ).first()
+    if not usuario_db:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+
+    # Autorización: mismo usuario o admin
+    try:
+        requester_id = UUID(str(current.get("user_id")))
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")
+
+    es_mismo_usuario = requester_id == usuario_db.id
+    rol_val = getattr(usuario_db.rol, "value", usuario_db.rol)
+    # Si no es el mismo usuario, permitir solo si el solicitante es admin
+    if not es_mismo_usuario:
+        # Cargar usuario solicitante para verificar rol
+        requester_db = db.query(UsuarioDB).filter(UsuarioDB.id == requester_id).first()
+        if not requester_db:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario no autorizado")
+        requester_rol = getattr(requester_db.rol, "value", requester_db.rol)
+        if str(requester_rol) != "administrador":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No tienes permiso para actualizar este usuario")
+
+    data = updates.model_dump(exclude_unset=True)
+
+    # Si se intenta cambiar el correo, verificar unicidad
+    if "correo" in data and data["correo"] and data["correo"] != usuario_db.correo:
+        exists = db.query(UsuarioDB).filter(UsuarioDB.correo == data["correo"]).first()
+        if exists:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El correo electrónico ya está registrado")
+        usuario_db.correo = data["correo"]
+
+    # Actualizar campos básicos
+    if "nombre" in data and data["nombre"] is not None:
+        usuario_db.nombre = data["nombre"]
+    if "alias" in data:
+        usuario_db.alias = data["alias"] or ""
+    if "idioma" in data and data["idioma"] is not None:
+        usuario_db.idioma = data["idioma"]
+    if "imagen_perfil_url" in data and data["imagen_perfil_url"] is not None:
+        usuario_db.imagen_perfil_url = data["imagen_perfil_url"]
+
+    db.commit()
+    db.refresh(usuario_db)
+
+    return convert_usuario_to_response(usuario_db)
 
 @router.post("/login", response_model=LoginResponse)
 async def login_usuario(credenciales: UsuarioLogin, request: Request, db: Session = Depends(get_db)):
@@ -202,7 +266,13 @@ async def confirmar_desbloqueo(token: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token de desbloqueo inválido o expirado")
 
     # Cambiar estado a activa y resetear intentos fallidos
-    usuario = db.query(UsuarioDB).filter(UsuarioDB.id == user_id).first()
+    # Convert user_id to UUID if it's a string
+    try:
+        user_uuid = UUID(str(user_id))
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido: ID de usuario no es UUID")
+
+    usuario = db.query(UsuarioDB).filter(UsuarioDB.id == user_uuid).first()
     if not usuario:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
 
@@ -263,7 +333,13 @@ async def establecer_contrasena(payload: UnlockSetPassword, db: Session = Depend
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token de desbloqueo inválido o expirado")
 
     # Actualizar contraseña y asegurar estado activo
-    usuario = db.query(UsuarioDB).filter(UsuarioDB.id == user_id).first()
+    # Convert user_id to UUID if it's a string
+    try:
+        user_uuid = UUID(str(user_id))
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido: ID de usuario no es UUID")
+
+    usuario = db.query(UsuarioDB).filter(UsuarioDB.id == user_uuid).first()
     if not usuario:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
 

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import usuarios, equipos, media
+from routers import usuarios, equipos, media, ligas
 
 app = FastAPI(
     title="XNFL Fantasy API",
@@ -27,6 +27,7 @@ app.add_middleware(
 app.include_router(usuarios.router, prefix="/api/usuarios", tags=["usuarios"])
 app.include_router(equipos.router, prefix="/api/equipos", tags=["equipos"])
 app.include_router(media.router, prefix="/api/media", tags=["media"])
+app.include_router(ligas.router, prefix="/api/ligas", tags=["ligas"])
 
 @app.get("/")
 async def root():

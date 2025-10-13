@@ -52,6 +52,7 @@ class EquipoDB(Base):
     liga_id = Column(PG_UUID(as_uuid=True), ForeignKey("ligas.id", ondelete="CASCADE"), nullable=False)
     usuario_id = Column(PG_UUID(as_uuid=True), ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
     nombre = Column(String(100), nullable=False)
+    thumbnail = Column(Text, nullable=True)
     creado_en = Column(DateTime(timezone=True), server_default=func.now())
     actualizado_en = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     

@@ -1,19 +1,4 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-
-export default function TeamHeader({ teamId: propTeamId }) {
-  const { id: routeId } = useParams();
-  const [team, setTeam] = useState(null);
-
-  useEffect(() => {
-    const teams = JSON.parse(localStorage.getItem("fantasy_teams") || "[]");
-    const targetId = propTeamId || routeId;
-    if (targetId) {
-      const found = teams.find((t) => t.id === targetId);
-      setTeam(found || null);
-    }
-  }, [propTeamId, routeId]);
-
+export default function TeamHeader({ team }) {
   if (!team) {
     return (
       <div className="card">
@@ -25,14 +10,12 @@ export default function TeamHeader({ teamId: propTeamId }) {
 
   return (
     <div className="card team-header">
-      <div className="team-header__info">
-        <img src={team.image} alt={team.name} className="team-header__img" />
-        <div>
-          <h2 className="team-header__name">{team.name}</h2>
-          <p className="muted">Manager: {team.manager}</p>
-          <p>Liga: {team.league}</p>
-          <p>Estado: {team.state}</p>
-        </div>
+      <img src={team.image} alt={team.name} className="team-logo" />
+      <div className="team-info">
+        <h1>{team.name}</h1>
+        <p className="muted">Manager: {team.manager}</p>
+        <p>Liga: {team.league}</p>
+        <p>Estado: {team.state}</p>
       </div>
     </div>
   );

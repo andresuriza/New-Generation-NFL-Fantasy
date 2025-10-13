@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { getSession, createSession, clearSession, updateActivity, isExpired } from '../utils/session'
 import { apiLogin } from '../utils/api'
 
@@ -9,10 +9,14 @@ export function AuthProvider({ children }) {
     const s = getSession()
     return s && !isExpired(s) ? s : null
   })
+  // Track last activity update timestamp (throttled)
+  const lastActivityTsRef = useRef(0)
 
   useEffect(() => {
     function onStorage(e) {
+      // React only to real session changes
       if (e && e.key && e.key !== 'nfl_session') return
+      // Some browsers may fire storage with null event in this setup; still check session state
       const s = getSession()
       if (!s || isExpired(s)) { setSession(null); return }
       setSession(s)
@@ -30,14 +34,27 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!session) return
-    const bump = () => updateActivity()
+    // Throttle activity updates to avoid frequent re-renders/storage writes
+    const THROTTLE_MS = 15000; // 15s
+    // keep lastActivityTsRef across activations; do not force reset to avoid immediate bumps
+    const bump = () => {
+      const now = Date.now()
+      if (now - lastActivityTsRef.current < THROTTLE_MS) return
+      lastActivityTsRef.current = now
+      updateActivity()
+    }
     window.addEventListener('click', bump)
     window.addEventListener('keydown', bump)
-    window.addEventListener('mousemove', bump)
+    // mousemove event can be very noisy; rely on click/keydown to reduce churn
+    // window.addEventListener('mousemove', bump)
+    // Also track when the tab becomes visible again
+    const onVisibility = () => { if (!document.hidden) bump() }
+    document.addEventListener('visibilitychange', onVisibility)
     return () => {
       window.removeEventListener('click', bump)
       window.removeEventListener('keydown', bump)
-      window.removeEventListener('mousemove', bump)
+      // window.removeEventListener('mousemove', bump)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [session])
 
@@ -69,6 +86,15 @@ export function AuthProvider({ children }) {
     return { ok: true }
   }
 
+  function updateUser(partial) {
+    // Update user info in session object and persist
+    const s = getSession()
+    if (!s) return
+    const next = { ...s, user: { ...(s.user || {}), ...partial } }
+    localStorage.setItem('nfl_session', JSON.stringify(next))
+    setSession(next)
+  }
+
   const value = useMemo(() => ({
     session,
     // old demo login remains available but prefer loginAsync
@@ -79,6 +105,7 @@ export function AuthProvider({ children }) {
     isAuthenticated: !!session,
     user: session?.user || null,
     accessToken: session?.accessToken || null,
+    updateUser,
   }), [session])
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>

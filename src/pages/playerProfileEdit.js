@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/authContext'
 import { getProfile, saveProfile, addHistory, DEFAULTS} from '../utils/profileData'
+import { apiGetUsuario, apiUpdateUsuario } from '../utils/api'
 import { validateProfileName, validateProfileAlias, validateLanguage } from '../utils/profileValidators'
 
 const MAX_IMG_MB = 5
@@ -10,11 +11,12 @@ const MAX_DIM = 1024
 const ACCEPT_TYPES = ['image/jpeg', 'image/png']
 
 export default function PlayerProfileEdit() {
-  const { session, isAuthenticated } = useAuth()
+  const { session, isAuthenticated, updateUser } = useAuth()
   const navigate = useNavigate()
   const email = session?.email
 
   const initialProfile = useMemo(() => (email ? getProfile(email) : null), [email])
+  const userId = session?.user?.id || session?.userId || null
 
   const [form, setForm] = useState(() => ({
     name: initialProfile?.name || '',
@@ -33,11 +35,52 @@ export default function PlayerProfileEdit() {
   const [errors, setErrors] = useState({})
   const [imgError, setImgError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(false)
   const fileInputRef = useRef(null)
 
   useEffect(() => {
     if (!isAuthenticated) navigate('/login')
   }, [isAuthenticated, navigate])
+
+  // Fetch latest profile from backend if available
+  useEffect(() => {
+    let active = true
+    const toLangCode = (val) => {
+      if (!val) return 'en'
+      const s = String(val).toLowerCase()
+      if (['en', 'english', 'inglés', 'ingles'].includes(s)) return 'en'
+      if (['es', 'español', 'espanol', 'spanish'].includes(s)) return 'es'
+      if (['pt', 'portugués', 'portugues', 'portuguese'].includes(s)) return 'pt'
+      return 'en'
+    }
+    async function load() {
+      if (!userId) return
+      setLoading(true)
+      try {
+        const u = await apiGetUsuario(userId)
+        if (!active) return
+        // Map backend fields to UI form
+        setForm(f => ({
+          ...f,
+          name: u?.nombre || '',
+          alias: u?.alias || '',
+          language: toLangCode(u?.idioma),
+          id: u?.id || f.id,
+          email: u?.correo || f.email,
+          role: u?.rol || f.role,
+          status: u?.estado || f.status,
+          createdAt: u?.creado_en || f.createdAt,
+        }))
+        setPhotoPreview(u?.imagen_perfil_url || DEFAULTS.DEFAULT_AVATAR)
+      } catch {
+        // ignore; will use local profile
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+    load()
+    return () => { active = false }
+  }, [userId])
 
   function handleChange(e) {
     const { name, value } = e.target
@@ -99,38 +142,53 @@ export default function PlayerProfileEdit() {
 
     setSaving(true)
     try {
-      // Preparar cambios: compara contra perfil actual
+      // 1) Subir imagen si corresponde (pendiente: endpoint dedicado). Por ahora, si hay imagen, mantén preview local.
+      let imagen_perfil_url = photoPreview || null
+      // TODO: integrar con /api/media/upload para usuario si se agrega
+      // 2) Llamar API para actualizar usuario
+      if (!userId) throw new Error('Usuario no identificado')
+      const payload = {
+        nombre: form.name,
+        alias: form.alias || '',
+        idioma: form.language,
+        ...(imagen_perfil_url ? { imagen_perfil_url } : {}),
+      }
+      const updated = await apiUpdateUsuario(userId, payload)
+
+      // 3) Sincronizar storage visual y auth context
       const current = getProfile(email)
       const changes = []
+      if (current.name !== payload.nombre) changes.push({ field: 'name', oldValue: current.name, newValue: payload.nombre })
+      if ((current.alias || '') !== (payload.alias || '')) changes.push({ field: 'alias', oldValue: current.alias || '', newValue: payload.alias || '' })
+      if (current.language !== payload.idioma) changes.push({ field: 'language', oldValue: current.language, newValue: payload.idioma })
+      if (photoFile) changes.push({ field: 'profileImage', oldValue: current.profileImage ? '[set]' : '[none]', newValue: '[set]' })
 
-      if (current.name !== form.name) changes.push({ field: 'name', oldValue: current.name, newValue: form.name })
-      if ((current.alias || '') !== (form.alias || '')) changes.push({ field: 'alias', oldValue: current.alias || '', newValue: form.alias || '' })
-      if (current.language !== form.language) changes.push({ field: 'language', oldValue: current.language, newValue: form.language })
-
-      // Foto: si hay file, convertir a dataURL para “guardar” visualmente
       let newProfileImage = current.profileImage || null
       if (photoFile) {
         const dataUrl = await fileToDataURL(photoFile)
         newProfileImage = dataUrl
-        changes.push({ field: 'profileImage', oldValue: current.profileImage ? '[set]' : '[none]', newValue: '[set]' })
       }
-
-      if (changes.length === 0) {
-        setSaving(false)
-        return // nada que guardar
-      }
-
-      // Guardar perfil y registrar historial (visual/local)
-      saveProfile(email, { name: form.name, alias: form.alias || null, language: form.language, profileImage: newProfileImage })
+      saveProfile(email, { name: payload.nombre, alias: payload.alias || null, language: payload.idioma, profileImage: newProfileImage })
       addHistory(email, changes)
 
+      // Update auth session user fields if provided
+      try { updateUser && updateUser({
+        nombre: updated?.nombre,
+        alias: updated?.alias,
+        idioma: updated?.idioma,
+        imagen_perfil_url: updated?.imagen_perfil_url,
+      }) } catch {}
+
       setSaving(false)
-      // volver a la vista de perfil
       navigate('/player/profile')
     } catch (err) {
       setSaving(false)
-      // Como es visual, solo mostramos un mensaje genérico de validación/foto
-      alert('No se pudieron guardar los cambios. Revisa los campos e intenta de nuevo.')
+      if (err?.status === 401) {
+        alert('Tu sesión expiró. Por favor, inicia sesión nuevamente.')
+        navigate('/login')
+        return
+      }
+      alert(err?.message || 'No se pudieron guardar los cambios. Revisa los campos e intenta de nuevo.')
     }
   }
 
@@ -143,6 +201,7 @@ export default function PlayerProfileEdit() {
         <p style={{ color: 'var(--muted)' }}>Solo puedes editar <strong>nombre</strong>, <strong>alias</strong>, <strong>idioma</strong> y <strong>foto</strong>. El resto es de solo lectura.</p>
 
         <form className="form" noValidate onSubmit={handleSave}>
+          {loading && <div className="help">Cargando perfil…</div>}
           {/* Foto */}
           <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
             <img
