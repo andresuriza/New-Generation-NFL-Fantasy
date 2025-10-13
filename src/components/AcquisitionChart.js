@@ -15,7 +15,7 @@ export default function AcquisitionChart({ players }) {
       acc[p.acquisition] = (acc[p.acquisition] || 0) + 1;
       return acc;
     },
-    { draft: 0, trade: 0, "free agent": 0 }
+    { draft: 0, cambio: 0, "agente libre": 0 }
   );
 
   const data = Object.entries(counts)

@@ -13,7 +13,7 @@ export const teamData = {
       position: "QB",
       team: "PE",
       image: "https://img.sofascore.com/api/v1/player/1027054/image",
-      injury: null,
+      injury: "ACL",
       acquisition: "draft",
     },
     {
@@ -32,7 +32,7 @@ export const teamData = {
       team: "PE",
       image: "https://img.sofascore.com/api/v1/player/933292/image",
       injury: null,
-      acquisition: "trade",
+      acquisition: "cambio",
     },
     {
       id: 4,
@@ -41,7 +41,7 @@ export const teamData = {
       team: null,
       image: "https://img.sofascore.com/api/v1/player/981886/image",
       injury: null,
-      acquisition: "free agent",
+      acquisition: "agente libre",
     },
     {
       id: 5,
@@ -50,7 +50,7 @@ export const teamData = {
       team: "PE",
       image: "https://img.sofascore.com/api/v1/player/1389530/image",
       injury: null,
-      acquisition: "free agent",
+      acquisition: "agente libre",
     },
     {
       id: 6,
@@ -59,7 +59,7 @@ export const teamData = {
       team: "PE",
       image: "https://img.sofascore.com/api/v1/player/1451348/image",
       injury: null,
-      acquisition: "free agent",
+      acquisition: "agente libre",
     },
     {
       id: 7,
@@ -68,7 +68,7 @@ export const teamData = {
       team: "PE",
       image: "https://img.sofascore.com/api/v1/player/1855912/image",
       injury: null,
-      acquisition: "free agent",
+      acquisition: "agente libre",
     },
     {
       id: 8,
@@ -77,7 +77,7 @@ export const teamData = {
       team: "PE",
       image: "https://img.sofascore.com/api/v1/player/1855912/image",
       injury: null,
-      acquisition: "free agent",
+      acquisition: "agente libre",
     },
   ],
 };

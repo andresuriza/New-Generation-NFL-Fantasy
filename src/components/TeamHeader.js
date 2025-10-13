@@ -30,7 +30,7 @@ export default function TeamHeader({ teamId: propTeamId }) {
         <div>
           <h2 className="team-header__name">{team.name}</h2>
           <p className="muted">Manager: {team.manager}</p>
-          <p>League: {team.league}</p>
+          <p>Liga: {team.league}</p>
           <p>Estado: {team.state}</p>
         </div>
       </div>
