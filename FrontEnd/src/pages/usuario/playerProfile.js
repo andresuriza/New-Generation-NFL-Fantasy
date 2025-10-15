@@ -1,8 +1,8 @@
 import { useMemo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/authContext"; 
-import { getProfile, getHistory, DEFAULTS } from "../utils/profileData";
-import { apiListEquipos, apiListUsuarios, apiListLigas } from "../utils/api";
+import { useAuth } from "../../context/authContext"; 
+import { getProfile, getHistory, DEFAULTS } from "../../utils/profileData";
+import { apiListEquipos, apiListUsuarios, apiListLigas } from "../../utils/api";
 
 const DEFAULT_AVATAR = DEFAULTS.DEFAULT_AVATAR;
 

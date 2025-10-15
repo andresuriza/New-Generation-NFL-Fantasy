@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { apiGetEquipo, apiUpdateEquipo, apiGetEquipoMedia, apiUploadEquipoImage, apiListLigas } from "../utils/api";
-import { useAuth } from "../context/authContext";
+import { apiGetEquipo, apiUpdateEquipo, apiGetEquipoMedia, apiUploadEquipoImage, apiListLigas } from "../../utils/api";
+import { useAuth } from "../../context/authContext";
 
 export default function EditarEquipo() {
   const { id } = useParams();

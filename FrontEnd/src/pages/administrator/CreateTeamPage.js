@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { apiRegisterEquipo, apiListLigas, apiUploadEquipoImage, apiUpdateEquipo } from "../utils/api";
-import { useAuth } from "../context/authContext";
+import { apiRegisterEquipo, apiListLigas, apiUploadEquipoImage, apiUpdateEquipo } from "../../utils/api";
+import { useAuth } from "../../context/authContext";
 
 export default function CreateTeamPage() {
   const { user, isAuthenticated } = useAuth() || {};

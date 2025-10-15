@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/authContext'
-import { LOGIN_REDIRECT } from '../app/config'
+import { useAuth } from '../../context/authContext'
+import { LOGIN_REDIRECT } from '../../app/config'
 
 export default function Login() {
   const { loginAsync } = useAuth()

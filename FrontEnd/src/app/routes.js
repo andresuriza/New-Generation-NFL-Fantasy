@@ -1,19 +1,19 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./layout";
 import Home from "../pages/home";
-import Register from "../pages/register";
-import Login from "../pages/login";
-import PlayerProfile from "../pages/playerProfile";
+import Register from "../pages/usuario/register";
+import Login from "../pages/shared/login";
+import PlayerProfile from "../pages/usuario/playerProfile";
 import NotFound from "../pages/notFound"; // si ya la creaste
 import RequireAuth from "./requireAuth";
-import PlayerProfileEdit from "../pages/playerProfileEdit";
-import LeagueCreate from "../pages/leagueCreate";
-import LeagueAdminStatus from "../pages/leagueAdminStatus";
-import LeagueConfigEdit from "../pages/leagueConfigEdit";
-import UnlockConfirm from "../pages/unlockConfirm";
-import TeamPage from "../pages/TeamPage";
-import CreateTeamPage from "../pages/CreateTeamPage";
-import EditarEquipo from "../pages/EditarEquipo";
+import PlayerProfileEdit from "../pages/administrator/playerProfileEdit";
+import LeagueCreate from "../pages/usuario/leagueCreate";
+import LeagueAdminStatus from "../pages/usuario/leagueAdminStatus";
+import LeagueConfigEdit from "../pages/usuario/leagueConfigEdit";
+import UnlockConfirm from "../pages/shared/unlockConfirm";
+import TeamPage from "../pages/usuario/TeamPage";
+import CreateTeamPage from "../pages/administrator/CreateTeamPage";
+import EditarEquipo from "../pages/administrator/EditarEquipo";
 
 const router = createBrowserRouter([
   {

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/authContext'
-import { getProfile, saveProfile, addHistory, DEFAULTS} from '../utils/profileData'
-import { apiGetUsuario, apiUpdateUsuario } from '../utils/api'
-import { validateProfileName, validateProfileAlias, validateLanguage } from '../utils/profileValidators'
+import { useAuth } from '../../context/authContext'
+import { getProfile, saveProfile, addHistory, DEFAULTS} from '../../utils/profileData'
+import { apiGetUsuario, apiUpdateUsuario } from '../../utils/api'
+import { validateProfileName, validateProfileAlias, validateLanguage } from '../../utils/profileValidators'
 
 const MAX_IMG_MB = 5
 const MIN_DIM = 300

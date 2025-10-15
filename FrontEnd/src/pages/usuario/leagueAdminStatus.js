@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useAuth } from '../context/authContext' // ajusta si tu archivo es authContext
-import { getLeague, saveLeague, addAudit, isCommissioner } from '../utils/leagueStore'
-import { fakeToggleLeagueStateRequest } from '../utils/network'
+import { useAuth } from '../../context/authContext' // ajusta si tu archivo es authContext
+import { getLeague, saveLeague, addAudit, isCommissioner } from '../../utils/leagueStore'
+import { fakeToggleLeagueStateRequest } from '../../utils/network'
 
 export default function LeagueAdminStatus() {
   const { id } = useParams()
