@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/authContext"; // ajusta la ruta si tu archivo se llama AuthContext
-import LogoutButton from "../components/logoutButton";
-import { getProfile, getHistory, DEFAULTS } from "../utils/profileData";
+import { useAuth } from "../../context/authContext"; // ajusta la ruta si tu archivo se llama AuthContext
+import LogoutButton from "../../components/logoutButton";
+import { getProfile, getHistory, DEFAULTS } from "../../utils/profileData";
 
 export default function Equipo() {
   return (

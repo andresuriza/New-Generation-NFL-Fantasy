@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/authContext' // ajusta la ruta si tu archivo es authContext
+import { useAuth } from '../../context/authContext' // ajusta la ruta si tu archivo es authContext
 import {
   validateLeagueName,
   validateLeaguePasswordWrapper,
   validateTeamSize,
   validateCommissionerTeamName,
   LEAGUE_TEAM_SIZES
-} from '../utils/leagueValidators'
-import { fakeCreateLeagueRequest } from '../utils/network'
+} from '../../utils/leagueValidators'
+import { fakeCreateLeagueRequest } from '../../utils/network'
 
 const CURRENT_SEASON = 2025 // temporada “actual” (solo informativa, control admin)
 const DEFAULTS = {

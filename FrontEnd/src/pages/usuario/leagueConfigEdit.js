@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useAuth } from '../context/authContext' // ajusta si tu archivo es authContext
-import { getLeague, saveLeague, addAudit, isCommissioner } from '../utils/leagueStore'
+import { useAuth } from '../../context/authContext' // ajusta si tu archivo es authContext
+import { getLeague, saveLeague, addAudit, isCommissioner } from '../../utils/leagueStore'
 import {
   GAME_SCHEMES, SCORING,
   validateLeagueName,
@@ -13,9 +13,9 @@ import {
   validateDecimalsFlag,
   validateTradeDeadline,
   validatePositiveLimitOrNull
-} from '../utils/leagueEditValidators'
-import { LEAGUE_TEAM_SIZES } from '../utils/leagueValidators'
-import { fakeUpdateLeagueConfigRequest } from '../utils/network'
+} from '../../utils/leagueEditValidators'
+import { LEAGUE_TEAM_SIZES } from '../../utils/leagueValidators'
+import { fakeUpdateLeagueConfigRequest } from '../../utils/network'
 
 const WEEKS_BY_PLAYOFFS = { 4: 'Semanas 16–17', 6: 'Semanas 16–18' }
 

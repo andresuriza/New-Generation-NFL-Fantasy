@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import TeamHeader from "../components/TeamHeader";
-import PlayerFilter from "../components/PlayerFilter";
-import PlayerList from "../components/PlayerList";
-import AcquisitionChart from "../components/AcquisitionChart";
-import EmptyState from "../components/EmptyState";
-import { apiGetEquipo, apiGetEquipoMedia, apiGetLiga, apiGetUsuario } from "../utils/api";
-import { teamData } from "../mock/teamData";
-import "../styles/global.css";
+import TeamHeader from "../../components/TeamHeader";
+import PlayerFilter from "../../components/PlayerFilter";
+import PlayerList from "../../components/PlayerList";
+import AcquisitionChart from "../../components/AcquisitionChart";
+import EmptyState from "../../components/EmptyState";
+import { apiGetEquipo, apiGetEquipoMedia, apiGetLiga, apiGetUsuario } from "../../utils/api";
+import { teamData } from "../../mock/teamData";
+import "../../styles/global.css";
 
 export default function TeamPage() {
   const { id } = useParams();
