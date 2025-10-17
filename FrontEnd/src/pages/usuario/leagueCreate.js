@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/authContext' // ajusta la ruta si tu archivo es authContext
 import {
   validateLeagueName,
   validateLeaguePasswordWrapper,
@@ -26,7 +25,7 @@ const WEEKS_BY_PLAYOFFS = {
 }
 
 export default function LeagueCreate() {
-  const { isAuthenticated } = useAuth()
+  // const { isAuthenticated } = useAuth() // not used currently
   const navigate = useNavigate()
 
   // Estado del formulario

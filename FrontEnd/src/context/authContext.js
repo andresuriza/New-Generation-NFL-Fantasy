@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { getSession, createSession, clearSession, updateActivity, isExpired } from '../utils/session'
-import { apiLogin } from '../utils/api'
+import { login as apiLogin } from '../utils/communicationModule/resources/usuarios'
 
 const AuthCtx = createContext(null)
 

@@ -5,7 +5,10 @@ import PlayerFilter from "../../components/PlayerFilter";
 import PlayerList from "../../components/PlayerList";
 import AcquisitionChart from "../../components/AcquisitionChart";
 import EmptyState from "../../components/EmptyState";
-import { apiGetEquipo, apiGetEquipoMedia, apiGetLiga, apiGetUsuario } from "../../utils/api";
+import { getById as apiGetEquipo } from "../../utils/communicationModule/resources/equipos";
+import { getEquipoMedia as apiGetEquipoMedia } from "../../utils/communicationModule/resources/media";
+import { getById as apiGetLiga } from "../../utils/communicationModule/resources/ligas";
+import { getById as apiGetUsuario } from "../../utils/communicationModule/resources/usuarios";
 import { teamData } from "../../mock/teamData";
 import "../../styles/global.css";
 
