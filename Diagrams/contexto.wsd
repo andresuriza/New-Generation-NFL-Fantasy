@@ -1,0 +1,44 @@
+@startuml contexto
+title New Generation NFL Fantasy para X-NFL — Diagrama de Contexto (C1)
+
+skinparam dpi 140
+skinparam rectangle {
+  RoundCorner 12
+}
+skinparam packageStyle rectangle
+left to right direction
+
+' Actores principales
+actor "Visitante" as Visitante
+actor "Usuario (Jugador / Manager / Comisionado)" as Usuario
+actor "Operaciones X-NFL\n(Admin / Soporte)" as Ops
+
+' Sistema en alcance
+rectangle "NG NFL Fantasy\n(Sistema en desarrollo)" as Sistema #LightBlue;line:Black;line.dashed
+
+' Sistemas externos (fuera de alcance)
+rectangle "API Oficial NFL\n(Datos en tiempo real,\nestadísticas y calendario)" as NFL #HoneyDew
+rectangle "ChatGPT API\n(OpenAI)\n(Recomendaciones y análisis)" as ChatGPT #HoneyDew
+rectangle "Servicio de Correo\n(Azure Communication Email)" as Correo #HoneyDew
+rectangle "Almacenamiento de Imágenes / CDN" as CDN #HoneyDew
+
+' Relaciones actor <-> sistema
+Visitante -[#Black]> Sistema : Explora reglas, ranking,\ntemporadas y análisis público
+Usuario   -[#Black]> Sistema : Registro, inicio/cierre de sesión,\nGestión de perfil, ligas, equipos,\nrecomendaciones AI y analytics
+Ops       -[#Black]> Sistema : Administración, control de temporadas,\nusuarios y métricas de engagement
+
+' Relaciones sistema <-> externos
+Sistema    -[#DarkGreen]> NFL : Provee estadísticas en tiempo real,\nresultados, calendario, datos de jugadores\ny proyecciones de puntos
+Sistema -[#DarkGreen]> ChatGPT : Solicita recomendaciones de alineación,\nanálisis de picks, sugerencias de draft\ny insights de rendimiento
+Sistema -[#DarkGreen]> Correo : Envío de correos de recuperación,\navisos y notificaciones
+Sistema -[#DarkGreen]> CDN : Subida y lectura de imágenes\n(perfiles, escudos de liga)
+
+
+
+legend right
+  |<back:LightBlue>   | **En alcance** - NG NFL Fantasy (FastAPI + Service Layer) |
+  |<back:HoneyDew>   | **Fuera de alcance** - Servicios externos y proveedores |
+  |<back:White>   | **Actores** - Usuarios y administradores del sistema |
+  | | **→** Flujo principal de información / acción |
+endlegend
+@enduml

@@ -1,0 +1,92 @@
+@startuml C2
+title New Generation NFL Fantasy — Arquitectura Lógica/Física (C2)
+
+skinparam dpi 140
+skinparam rectangle {
+  RoundCorner 12
+}
+skinparam packageStyle rectangle
+left to right direction
+
+actor "Usuario / Visitante" as Usuario
+actor "Operaciones X-NFL\n(Admin / Soporte)" as Admin
+
+rectangle "NG NFL Fantasy\n(Sistema en la nube)" as Sistema #LightBlue {
+  node "Frontend Web\n(React / Next.js)" as FRONT
+  node "Backend API\n(Python / FastAPI)" as BACK {
+    frame "Routers (Thin Controllers)" as Routers {
+      component UsuariosRouter
+      component EquiposRouter
+      component LigasRouter
+      component MediaRouter
+    }
+    frame "Services (Business Logic)" as Services {
+      component AuthService
+      component UsuarioService
+      component EquipoService
+      component LigaService
+      component MediaService
+      component NFLService
+      component ChatGPTService
+      component EmailService
+      component AnalyticsService
+    }
+    frame "Models & DB" as ModelsDB {
+      component SQLAlchemyModels
+    }
+  }
+  database "PostgreSQL" as DB
+
+  FRONT -[#DarkGreen]-> UsuariosRouter : REST / HTTPS
+  FRONT -[#DarkGreen]-> EquiposRouter
+  FRONT -[#DarkGreen]-> LigasRouter
+  FRONT -[#DarkGreen]-> MediaRouter
+
+  UsuariosRouter -[#DarkGreen]-> UsuarioService
+  EquiposRouter  -[#DarkGreen]-> EquipoService
+  LigasRouter    -[#DarkGreen]-> LigaService
+  MediaRouter    -[#DarkGreen]-> MediaService
+  UsuariosRouter -[#DarkGreen]-> AuthService
+
+  AuthService -[#DarkGreen]-> SQLAlchemyModels
+  UsuarioService -[#DarkGreen]-> SQLAlchemyModels
+  EquipoService -[#DarkGreen]-> SQLAlchemyModels
+  LigaService -[#DarkGreen]-> SQLAlchemyModels
+  MediaService -[#DarkGreen]-> SQLAlchemyModels
+  SQLAlchemyModels -[#DarkGreen]-> DB : Lectura/Escritura
+}
+
+' Sistemas externos
+rectangle "<<Actor>>\nAPI Oficial NFL\n(Datos en tiempo real,\nestadísticas y calendario)" as NFL #HoneyDew
+rectangle "<<Actor>>\nChatGPT API (OpenAI)\n(Recomendaciones y análisis IA)" as CHATGPT #HoneyDew
+rectangle "<<Actor>>\nServicio de Correo\n(Recuperación / Avisos)" as MAIL #HoneyDew
+rectangle "<<Actor>>\nCDN / Almacenamiento\n(Imágenes de perfil / escudos)" as CDN #HoneyDew
+
+UsuarioService -[#DarkGreen]-> MAIL : Envío desbloqueo / notificaciones
+MediaService -[#DarkGreen]-> CDN : Subida / Lectura de imágenes
+EquipoService -[#DarkGreen]-> NFLService : Consulta datos equipos / jugadores
+EquipoService -[#DarkGreen]-> ChatGPTService : Recomendaciones alineación
+LigaService -[#DarkGreen]-> NFLService : Consulta calendario / standings
+LigaService -[#DarkGreen]-> AnalyticsService : Métricas y reportes
+EquipoService -[#DarkGreen]-> AnalyticsService : Análisis rendimiento
+NFLService -[#DarkGreen]-> NFL : Consumo de API externa (lectura tiempo real)
+ChatGPTService -[#DarkGreen]-> CHATGPT : Solicitudes de análisis IA
+AnalyticsService -[#DarkGreen]-> ChatGPTService : Insights avanzados
+
+' Actores externos
+Usuario -[#Black]> FRONT : Interacción web\n(Registro, ligas, equipos)
+Admin -[#Black]> FRONT : Panel de administración\n(Temporadas, usuarios, soporte)
+
+note right of Sistema
+  Ambientes recomendados:
+  • Desarrollo
+  • Pruebas / Staging
+  • Producción
+end note
+
+legend right
+  |Fondo Azul| **En alcance** – Sistema principal |
+  |Fondo Verde Claro| **Fuera de alcance** – Servicios externos |
+  | | **→** Flujo principal de información |
+endlegend
+@enduml
