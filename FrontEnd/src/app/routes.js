@@ -14,6 +14,8 @@ import UnlockConfirm from "../pages/shared/unlockConfirm";
 import TeamPage from "../pages/usuario/TeamPage";
 import CreateTeamPage from "../pages/administrator/CreateTeamPage";
 import EditarEquipo from "../pages/administrator/EditarEquipo";
+import SeasonCreate from "../pages/administrator/seasonCreate";
+import LeagueJoin from "../pages/usuario/leagueJoin";
 
 const router = createBrowserRouter([
   {
@@ -22,6 +24,8 @@ const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "/register", element: <Register /> },
       { path: "/login", element: <Login /> },
+      { path: "/season/create", element: <SeasonCreate /> },           // libre (dev)
+      { path: "/league/join", element: <LeagueJoin /> }, // libre 
       {
         path: "/player/profile",
         element: (

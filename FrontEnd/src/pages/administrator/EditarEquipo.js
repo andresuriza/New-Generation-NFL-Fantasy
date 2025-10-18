@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { apiGetEquipo, apiUpdateEquipo, apiGetEquipoMedia, apiUploadEquipoImage, apiListLigas } from "../../utils/api";
+import { getById as apiGetEquipo, update as apiUpdateEquipo } from "../../utils/communicationModule/resources/equipos";
+import { getEquipoMedia as apiGetEquipoMedia, uploadEquipoImage as apiUploadEquipoImage } from "../../utils/communicationModule/resources/media";
+import { list as apiListLigas } from "../../utils/communicationModule/resources/ligas";
 import { useAuth } from "../../context/authContext";
 
 export default function EditarEquipo() {
@@ -13,7 +15,7 @@ export default function EditarEquipo() {
   const [leagueName, setLeagueName] = useState("");
   const [initialLigaId, setInitialLigaId] = useState("");
   const [ligas, setLigas] = useState([]);
-  const [image, setImage] = useState(null);
+  // removed unused 'image' state to avoid eslint warning
   const [thumbnail, setThumbnail] = useState(null);
   const [error, setError] = useState("");
   const [logs, setLogs] = useState([]);
@@ -82,7 +84,7 @@ export default function EditarEquipo() {
       return;
     }
 
-    setImage(file);
+  // image state removed; uploading directly without staging in state
 
     try {
       // Upload to backend and use returned URL
@@ -118,7 +120,7 @@ export default function EditarEquipo() {
       if (initialLigaId && leagueName && leagueName !== initialLigaId) {
         payload.liga_id = leagueName;
       }
-      const updated = await apiUpdateEquipo(id, payload);
+  await apiUpdateEquipo(id, payload);
       // If an image was selected, it was already uploaded in handleImageChange
 
       // Log the change (local UX)
