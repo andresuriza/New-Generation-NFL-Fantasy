@@ -2,7 +2,9 @@ import { useMemo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext"; 
 import { getProfile, getHistory, DEFAULTS } from "../../utils/profileData";
-import { apiListEquipos, apiListUsuarios, apiListLigas } from "../../utils/api";
+import { list as apiListEquipos } from "../../utils/communicationModule/resources/equipos";
+import { list as apiListUsuarios } from "../../utils/communicationModule/resources/usuarios";
+import { list as apiListLigas } from "../../utils/communicationModule/resources/ligas";
 
 const DEFAULT_AVATAR = DEFAULTS.DEFAULT_AVATAR;
 

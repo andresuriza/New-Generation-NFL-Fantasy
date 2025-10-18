@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/authContext' // ajusta la ruta si tu archivo es authContext
 import {
   validateLeagueName,
   validateLeaguePasswordWrapper,
@@ -8,7 +7,7 @@ import {
   validateCommissionerTeamName,
   LEAGUE_TEAM_SIZES
 } from '../../utils/leagueValidators'
-import { fakeCreateLeagueRequest } from '../../utils/network'
+import { fakeLeagueCreateVisual } from '../../utils/leagueNetwork' // <-- cambio 1
 
 const CURRENT_SEASON = 2025 // temporada “actual” (solo informativa, control admin)
 const DEFAULTS = {
@@ -26,7 +25,7 @@ const WEEKS_BY_PLAYOFFS = {
 }
 
 export default function LeagueCreate() {
-  const { isAuthenticated } = useAuth()
+  // const { isAuthenticated } = useAuth() // not used currently
   const navigate = useNavigate()
 
   // Estado del formulario
@@ -86,7 +85,7 @@ export default function LeagueCreate() {
 
     // “Crear” en servidor (simulado). Si falla, no se crea parcialmente.
     try {
-      await fakeCreateLeagueRequest({
+      const res = await fakeLeagueCreateVisual({        // <-- cambio 2 (nombre)
         ...generated,
         name: form.name.trim(),
         description: form.description.trim(),
@@ -94,23 +93,27 @@ export default function LeagueCreate() {
         commishTeamName: commishTeamName.trim(),
         // password NUNCA debería enviarse en claro; aquí es visual.
       })
+
+      setSubmitting(false)
+
+      // Éxito (visual): mostramos un resumen con datos devueltos por la “API”
+      setToast({
+        type: 'ok',
+        message:
+          `Liga creada: ${form.name} • ID: ${generated.id} • ` +
+          `Cupos disponibles: ${res.data.remainingSlots}. ` +
+          `Estado: ${generated.status} • Temporada: ${generated.season} • ` +
+          `Playoffs: ${generated.playoffs} (${WEEKS_BY_PLAYOFFS[generated.playoffs]}).`
+      })
+
+      // Redirigir a lo que indique la “API” visual
+      setTimeout(() => navigate(res.data.redirect_to), 900)  // <-- cambio 2 (redirect_to)
+      return
     } catch (err) {
       setSubmitting(false)
       setToast({ type: 'err', message: err.message || 'No se pudo crear la liga. Intenta de nuevo.' })
       return
     }
-
-    setSubmitting(false)
-    // Éxito (visual): mostramos un resumen y redirigimos a algún lugar (home o “detalle visual”)
-    setToast({
-      type: 'ok',
-      message:
-        `Liga creada: ${form.name} • ID: ${generated.id} • Cupos disponibles: ${availableSlots}. ` +
-        `Estado: ${generated.status} • Temporada: ${generated.season} • Playoffs: ${generated.playoffs} (${WEEKS_BY_PLAYOFFS[generated.playoffs]}).`
-    })
-
-    // Redirigir tras un pequeño delay para que se vea el mensaje
-    setTimeout(() => navigate('/'), 900)
   }
 
   return (
