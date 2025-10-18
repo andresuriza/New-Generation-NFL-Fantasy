@@ -51,6 +51,7 @@ CREATE TABLE equipos (
   nombre     VARCHAR(100) NOT NULL,
   creado_en  TIMESTAMPTZ NOT NULL DEFAULT now(),
   actualizado_en TIMESTAMPTZ NOT NULL DEFAULT now(),
+  thumbnail text,
   CONSTRAINT uq_equipo_nombre_por_liga UNIQUE (liga_id, nombre),
   CONSTRAINT uq_usuario_por_liga       UNIQUE (liga_id, usuario_id),
   CONSTRAINT ck_nombre_len             CHECK (length(nombre) BETWEEN 1 AND 100)
