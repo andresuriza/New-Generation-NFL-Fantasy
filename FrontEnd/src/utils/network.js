@@ -30,3 +30,4 @@ export function fakeUpdateLeagueConfigRequest(payload, { failRate = 0.15, latenc
     }, wait);
   });
 }
+

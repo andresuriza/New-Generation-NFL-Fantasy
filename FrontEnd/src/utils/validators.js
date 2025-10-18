@@ -33,3 +33,4 @@ export function validateConfirm(pass, confirm) {
   if (pass !== confirm) return 'La confirmación no coincide.';
   return null;
 }
+
