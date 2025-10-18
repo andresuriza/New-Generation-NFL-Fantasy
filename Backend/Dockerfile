@@ -21,10 +21,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy the API source code and startup scripts
+# Copy the API source code
 COPY API/ ./API/
-COPY start.sh start.bat ./
-RUN chmod +x start.sh
 
 # Change to API directory
 WORKDIR /app/API
@@ -36,5 +34,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/docs || exit 1
 
-# Run the application with startup script
-CMD ["../start.sh"]
+# Run the application directly (or use startup script for database checks)
+# Run the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
