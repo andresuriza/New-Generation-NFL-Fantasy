@@ -1,0 +1,62 @@
+// ====== Configuración ======
+export const INACTIVITY_MS = 12 * 60 * 60 * 1000; // 12 horas
+const SESSION_KEY = 'nfl_session';
+const AUTH_META_KEY = 'nfl_auth_meta'; // por email: { failedCount, locked }
+
+// ====== Helpers de storage ======
+function read(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback } catch { return fallback }
+}
+function write(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+// ====== Auth meta (intentos / lock) ======
+export function getAuthMeta(email) {
+  const meta = read(AUTH_META_KEY, {});
+  return meta[email?.toLowerCase?.()] || { failedCount: 0, locked: false };
+}
+
+export function setAuthMeta(email, partial) {
+  const key = email?.toLowerCase?.();
+  const meta = read(AUTH_META_KEY, {});
+  meta[key] = { ...(meta[key] || { failedCount: 0, locked: false }), ...partial };
+  write(AUTH_META_KEY, meta);
+}
+
+export function resetAuthMeta(email) {
+  const key = email?.toLowerCase?.();
+  const meta = read(AUTH_META_KEY, {});
+  if (meta[key]) {
+    meta[key] = { failedCount: 0, locked: false };
+    write(AUTH_META_KEY, meta);
+  }
+}
+
+// ====== Sesión ======
+export function getSession() {
+  return read(SESSION_KEY, null); // { email, userId, accessToken, refreshToken, user, createdAt, lastActivity }
+}
+
+export function createSession({ email, userId = null, accessToken = null, refreshToken = null, user = null }) {
+  const now = Date.now();
+  const session = { email, userId: userId || user?.id || null, accessToken, refreshToken, user, createdAt: now, lastActivity: now };
+  write(SESSION_KEY, session);
+  return session;
+}
+
+export function updateActivity() {
+  const s = getSession();
+  if (!s) return;
+  s.lastActivity = Date.now();
+  write(SESSION_KEY, s);
+}
+
+export function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+export function isExpired(sess) {
+  if (!sess) return true;
+  return Date.now() - (sess.lastActivity || sess.createdAt) > INACTIVITY_MS;
+}
