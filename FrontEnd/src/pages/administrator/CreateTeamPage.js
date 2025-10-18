@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { apiRegisterEquipo, apiListLigas, apiUploadEquipoImage, apiUpdateEquipo } from "../../utils/api";
+import { register as apiRegisterEquipo, update as apiUpdateEquipo } from "../../utils/communicationModule/resources/equipos";
+import { list as apiListLigas } from "../../utils/communicationModule/resources/ligas";
+import { uploadEquipoImage as apiUploadEquipoImage } from "../../utils/communicationModule/resources/media";
 import { useAuth } from "../../context/authContext";
 
 export default function CreateTeamPage() {
@@ -14,8 +15,6 @@ export default function CreateTeamPage() {
   const [thumbnail, setThumbnail] = useState(null);
   const [error, setError] = useState("");
   const [log, setLog] = useState([]);
-
-  const teamId = uuidv4();
 
   // Usar para borrar equipos
   //localStorage.clear();

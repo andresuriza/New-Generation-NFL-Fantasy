@@ -1,6 +1,5 @@
 // Legacy demo network helpers kept for reference; not used for auth anymore.
 // You can remove this file if no longer used elsewhere.
-const FAIL_RATE = 0.2; // 20% de probabilidad de fallo
 export function fakeCreateLeagueRequest(payload, { failRate = 0.15, latency = [500, 1200] } = {}) {
   return new Promise((resolve, reject) => {
     const [min, max] = latency

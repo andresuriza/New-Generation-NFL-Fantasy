@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/authContext'
 import { getProfile, saveProfile, addHistory, DEFAULTS} from '../../utils/profileData'
-import { apiGetUsuario, apiUpdateUsuario } from '../../utils/api'
+import { getById as apiGetUsuario, update as apiUpdateUsuario } from '../../utils/communicationModule/resources/usuarios'
 import { validateProfileName, validateProfileAlias, validateLanguage } from '../../utils/profileValidators'
 
 const MAX_IMG_MB = 5

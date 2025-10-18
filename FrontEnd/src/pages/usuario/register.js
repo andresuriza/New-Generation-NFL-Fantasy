@@ -6,7 +6,7 @@ import {
   validateConfirm,
   validateAlias,
 } from "../../utils/validators";
-import { apiRegisterUser } from "../../utils/api";
+import { register as apiRegisterUser } from "../../utils/communicationModule/resources/usuarios";
 
 const MAX50 = 50;
 const MAX12 = 12;

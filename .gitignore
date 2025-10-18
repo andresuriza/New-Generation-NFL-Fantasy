@@ -10,6 +10,7 @@
 
 # production
 /build
+FrontEnd/build
 
 # misc
 .DS_Store
@@ -171,3 +172,5 @@ node_modules
 psd
 thumb
 sketch
+
+/Diagrams
