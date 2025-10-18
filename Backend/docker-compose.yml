@@ -6,20 +6,13 @@ services:
       dockerfile: Dockerfile
     container_name: xnfl_api
     environment:
-      # Connect to host PostgreSQL database
-      - DATABASE_URL=postgresql://postgres:password@host.docker.internal:5432/XNFL-Fantasy
+      # Connect to host PostgreSQL database using host networking
+      - DATABASE_URL=postgresql://postgres:P3ts0c1t0@localhost:5432/XNFL-Fantasy
       - PYTHONPATH=/app
     ports:
       - "8000:8000"
-    networks:
-      - xnfl_network
+    # Use host networking to access local services
+    network_mode: "host"
     restart: unless-stopped
     volumes:
-      - ./API:/app/API  # Mount for development (optional, remove for production)
-    # Use host networking to access local PostgreSQL
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
-networks:
-  xnfl_network:
-    driver: bridge
+      - ./API:/app/API  # Mount for development
