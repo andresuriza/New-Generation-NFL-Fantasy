@@ -1,5 +1,3 @@
-// TODO: Revisar orden
-
 import http, { request } from "../httpClient";
 
 // POST Equipo

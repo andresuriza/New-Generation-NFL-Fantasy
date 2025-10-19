@@ -1,4 +1,4 @@
-import http from "../httpClient";
+import http, { request } from "../httpClient";
 
 // Ligas endpoints
 export const list = () => http.get("/ligas/");

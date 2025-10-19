@@ -1,4 +1,4 @@
-// TODO: Conectar con API
+// TODO: Revisar turnos disponibles
 
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import {
   validateCommissionerTeamName,
   LEAGUE_TEAM_SIZES,
 } from "../../utils/leagueValidators";
+import { CrearLiga } from "../../utils/communicationModule/resources/ligas";
 import { fakeLeagueCreateVisual } from "../../utils/leagueNetwork";
 
 const CURRENT_SEASON = 2025;
@@ -75,6 +76,8 @@ export default function LeagueCreate() {
     setToast({ type: null, message: "" });
     if (!validateAll()) return;
 
+    // POST aqui
+
     setSubmitting(true);
 
     // Autogenerados visuales
@@ -90,16 +93,10 @@ export default function LeagueCreate() {
       playoffs: Number(form.playoffs), // 4 o 6
     };
 
-    // “Crear” en servidor (simulado). Si falla, no se crea parcialmente.
     try {
-      const res = await fakeLeagueCreateVisual({
-        // <-- cambio 2 (nombre)
-        ...generated,
-        name: form.name.trim(),
-        description: form.description.trim(),
-        teams: Number(form.teams),
-        commishTeamName: commishTeamName.trim(),
-        // password NUNCA debería enviarse en claro; aquí es visual.
+      const created = await CrearLiga({
+        nombre: form.name,
+        // Agregar aqui el resto de parametros que recibe POST
       });
 
       setSubmitting(false);
@@ -109,7 +106,7 @@ export default function LeagueCreate() {
         type: "ok",
         message:
           `Liga creada: ${form.name} • ID: ${generated.id} • ` +
-          `Cupos disponibles: ${res.data.remainingSlots}. ` +
+          //`Cupos disponibles: ${res.data.remainingSlots}. ` +
           `Estado: ${generated.status} • Temporada: ${generated.season} • ` +
           `Playoffs: ${generated.playoffs} (${
             WEEKS_BY_PLAYOFFS[generated.playoffs]
@@ -117,7 +114,7 @@ export default function LeagueCreate() {
       });
 
       // Redirigir a lo que indique la “API” visual
-      setTimeout(() => navigate(res.data.redirect_to), 900); // <-- cambio 2 (redirect_to)
+      setTimeout(() => navigate("/player/profile"), 900); // <-- cambio 2 (redirect_to)
       return;
     } catch (err) {
       setSubmitting(false);
@@ -297,7 +294,7 @@ export default function LeagueCreate() {
             <button
               type="button"
               className="button button--ghost"
-              onClick={() => navigate(-1)}
+              onClick={() => handleSubmit}
               disabled={submitting}
             >
               Cancelar
