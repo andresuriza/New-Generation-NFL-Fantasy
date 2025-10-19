@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getById as apiGetEquipo, update as apiUpdateEquipo } from "../../utils/communicationModule/resources/equipos";
-import { getEquipoMedia as apiGetEquipoMedia, uploadEquipoImage as apiUploadEquipoImage } from "../../utils/communicationModule/resources/media";
-import { list as apiListLigas } from "../../utils/communicationModule/resources/ligas";
+import {
+  getById as apiGetEquipo,
+  update as apiUpdateEquipo,
+} from "../../utils/communicationModule/resources/equipos";
+import {
+  getEquipoMedia as apiGetEquipoMedia,
+  uploadEquipoImage as apiUploadEquipoImage,
+} from "../../utils/communicationModule/resources/media";
+import { GetLigas as apiListLigas } from "../../utils/communicationModule/resources/ligas";
 import { useAuth } from "../../context/authContext";
 
 export default function EditarEquipo() {
@@ -34,12 +40,12 @@ export default function EditarEquipo() {
         if (!equipo) throw new Error("Equipo no encontrado");
         // Backend shape: { id, liga_id, usuario_id, nombre, thumbnail?, creado_en, actualizado_en }
         if (!isMounted) return;
-  setTeamName(equipo.nombre || "");
+        setTeamName(equipo.nombre || "");
         // We don't have manager/league names in this endpoint; keep local placeholders
         setManagerName(user?.alias || user?.nombre || "");
         // set league id for selection; we'll show names in a dropdown
-  setLeagueName(equipo.liga_id || "");
-  setInitialLigaId(equipo.liga_id || "");
+        setLeagueName(equipo.liga_id || "");
+        setInitialLigaId(equipo.liga_id || "");
 
         // resolve ligas and set state
         const ligasRes = await ligasPromise;
@@ -54,7 +60,9 @@ export default function EditarEquipo() {
         }
 
         // Load existing local logs for UX continuity
-        const storedLogs = JSON.parse(localStorage.getItem("team_change_log") || "[]");
+        const storedLogs = JSON.parse(
+          localStorage.getItem("team_change_log") || "[]"
+        );
         const teamLogs = storedLogs
           .filter((l) => l.teamId === id)
           .sort((a, b) => new Date(b.when) - new Date(a.when));
@@ -67,7 +75,9 @@ export default function EditarEquipo() {
       }
     }
     load();
-    return () => { isMounted = false };
+    return () => {
+      isMounted = false;
+    };
   }, [id, user]);
 
   const handleImageChange = async (e) => {
@@ -84,7 +94,7 @@ export default function EditarEquipo() {
       return;
     }
 
-  // image state removed; uploading directly without staging in state
+    // image state removed; uploading directly without staging in state
 
     try {
       // Upload to backend and use returned URL
@@ -96,7 +106,10 @@ export default function EditarEquipo() {
           await apiUpdateEquipo(id, { thumbnail: media.url });
         } catch (err) {
           // non-fatal, media already uploaded and preview updated
-          console.warn('No se pudo actualizar thumbnail del equipo:', err?.message || err);
+          console.warn(
+            "No se pudo actualizar thumbnail del equipo:",
+            err?.message || err
+          );
         }
       }
     } catch (err) {
@@ -120,11 +133,13 @@ export default function EditarEquipo() {
       if (initialLigaId && leagueName && leagueName !== initialLigaId) {
         payload.liga_id = leagueName;
       }
-  await apiUpdateEquipo(id, payload);
+      await apiUpdateEquipo(id, payload);
       // If an image was selected, it was already uploaded in handleImageChange
 
       // Log the change (local UX)
-      const prevLogs = JSON.parse(localStorage.getItem("team_change_log") || "[]");
+      const prevLogs = JSON.parse(
+        localStorage.getItem("team_change_log") || "[]"
+      );
       const newLog = {
         teamId: id,
         who: managerName || user?.alias || user?.nombre || "usuario",
@@ -178,9 +193,7 @@ export default function EditarEquipo() {
             onChange={(e) => setLeagueName(e.target.value)}
             title="Selecciona la liga del equipo"
           >
-            {ligas.length === 0 && (
-              <option value="">Cargando ligas…</option>
-            )}
+            {ligas.length === 0 && <option value="">Cargando ligas…</option>}
             {ligas.map((l) => (
               <option key={l.id} value={l.id}>
                 {l.nombre}

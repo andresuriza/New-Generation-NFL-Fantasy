@@ -1,13 +1,13 @@
 services:
   # FastAPI Application Only (connects to local PostgreSQL)
   api:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: xnfl_api
     environment:
       # Connect to host PostgreSQL database using host networking
-      - DATABASE_URL=postgresql://postgres:P3ts0c1t0@localhost:5432/XNFL-Fantasy
+      - DATABASE_URL=postgresql://postgres:12345678@localhost:5432/XNFL-Fantasy
       - PYTHONPATH=/app
     ports:
       - "8000:8000"
@@ -15,4 +15,4 @@ services:
     network_mode: "host"
     restart: unless-stopped
     volumes:
-      - ./API:/app/API  # Mount for development
+      - ./API:/app/API # Mount for development

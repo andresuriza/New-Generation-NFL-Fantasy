@@ -6,6 +6,8 @@ from uuid import UUID
 class LigaBase(BaseModel):
     nombre: str = Field(..., min_length=1, max_length=100, description="Nombre de la liga")
 
+class LigaCreate(LigaBase):
+    pass
 
 class LigaInDB(LigaBase):
     id: UUID = Field(..., description="ID único de la liga")
