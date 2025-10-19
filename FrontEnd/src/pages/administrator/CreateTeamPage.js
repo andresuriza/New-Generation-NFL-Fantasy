@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { register as apiRegisterEquipo, update as apiUpdateEquipo } from "../../utils/communicationModule/resources/equipos";
+import {
+  register as apiRegisterEquipo,
+  update as apiUpdateEquipo,
+} from "../../utils/communicationModule/resources/equipos";
 import { list as apiListLigas } from "../../utils/communicationModule/resources/ligas";
 import { uploadEquipoImage as apiUploadEquipoImage } from "../../utils/communicationModule/resources/media";
 import { useAuth } from "../../context/authContext";
@@ -7,8 +10,10 @@ import { useAuth } from "../../context/authContext";
 export default function CreateTeamPage() {
   const { user, isAuthenticated } = useAuth() || {};
   const [teamName, setTeamName] = useState("");
-  // Manager is always the logged-in user (enforced)
-  const managerName = useMemo(() => user?.alias || user?.nombre || user?.correo || "", [user]);
+  const managerName = useMemo(
+    () => user?.alias || user?.nombre || user?.correo || "",
+    [user]
+  );
   const [ligaId, setLigaId] = useState("");
   const [ligas, setLigas] = useState([]);
   const [image, setImage] = useState(null);
@@ -16,14 +21,10 @@ export default function CreateTeamPage() {
   const [error, setError] = useState("");
   const [log, setLog] = useState([]);
 
-  // Usar para borrar equipos
-  //localStorage.clear();
-
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate format
     const validTypes = ["image/jpeg", "image/png"];
     if (!validTypes.includes(file.type)) {
       setError("Formato invalido, utilizar JPEG o PNG.");
@@ -31,14 +32,12 @@ export default function CreateTeamPage() {
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setError("Imagen muy grande (max 5MB).");
       setImage(null);
       return;
     }
 
-    // Validate dimensions
     const img = new Image();
     img.onload = () => {
       if (
@@ -69,26 +68,26 @@ export default function CreateTeamPage() {
     img.src = URL.createObjectURL(file);
   };
 
-  // Load available ligas
   useEffect(() => {
-    let alive = true
+    let alive = true;
     async function load() {
       try {
-        const data = await apiListLigas()
-        if (alive) setLigas(Array.isArray(data) ? data : [])
+        const data = await apiListLigas();
+        if (alive) setLigas(Array.isArray(data) ? data : []);
       } catch {
-        if (alive) setLigas([])
+        if (alive) setLigas([]);
       }
     }
-    load()
-    return () => { alive = false }
-  }, [])
+    load();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    // Validations
     if (!isAuthenticated || !user?.id) {
       setError("Debes iniciar sesión para crear un equipo.");
       return;
@@ -113,35 +112,37 @@ export default function CreateTeamPage() {
         usuario_id: user.id,
         nombre: teamName,
         thumbnail: null,
-      })
+      });
 
       // Upload image and persist thumbnail url
       try {
-        const media = await apiUploadEquipoImage(created.id, image)
+        const media = await apiUploadEquipoImage(created.id, image);
         if (media?.url) {
-          await apiUpdateEquipo(created.id, { thumbnail: media.url })
-          setThumbnail(media.url)
+          await apiUpdateEquipo(created.id, { thumbnail: media.url });
+          setThumbnail(media.url);
         }
       } catch (_err) {
         // non-fatal
       }
 
       // Local UX log (optional)
-      const prevLogs = JSON.parse(localStorage.getItem("team_change_log") || "[]")
+      const prevLogs = JSON.parse(
+        localStorage.getItem("team_change_log") || "[]"
+      );
       const entry = {
         teamId: created.id,
         who: managerName,
         what: `Equipo creado: "${teamName}"`,
         why: "Registro equipo nuevo",
         when: new Date().toLocaleString(),
-      }
-      const allLogs = [entry, ...prevLogs]
-      localStorage.setItem("team_change_log", JSON.stringify(allLogs))
-      setLog(allLogs)
+      };
+      const allLogs = [entry, ...prevLogs];
+      localStorage.setItem("team_change_log", JSON.stringify(allLogs));
+      setLog(allLogs);
 
-      alert(`Equipo "${teamName}" creado!`)
+      alert(`Equipo "${teamName}" creado!`);
     } catch (err) {
-      setError(err?.message || "No se pudo crear el equipo.")
+      setError(err?.message || "No se pudo crear el equipo.");
     }
   };
 
@@ -176,7 +177,9 @@ export default function CreateTeamPage() {
           >
             <option value="">Selecciona una liga…</option>
             {ligas.map((l) => (
-              <option key={l.id} value={l.id}>{l.nombre}</option>
+              <option key={l.id} value={l.id}>
+                {l.nombre}
+              </option>
             ))}
           </select>
         </div>
