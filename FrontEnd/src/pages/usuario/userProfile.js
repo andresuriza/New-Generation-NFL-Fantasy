@@ -4,7 +4,7 @@ import { useAuth } from "../../context/authContext";
 import { getProfile, getHistory, DEFAULTS } from "../../utils/profileData";
 import { list as apiListEquipos } from "../../utils/communicationModule/resources/equipos";
 import { list as apiListUsuarios } from "../../utils/communicationModule/resources/usuarios";
-import { list as apiListLigas } from "../../utils/communicationModule/resources/ligas";
+import { GetLigas as apiListLigas } from "../../utils/communicationModule/resources/ligas";
 
 const DEFAULT_AVATAR = DEFAULTS.DEFAULT_AVATAR;
 
@@ -55,6 +55,7 @@ function EmptyState({ title, subtitle, action }) {
 export default function UserProfile() {
   const { session, isAuthenticated } = useAuth();
   const [teams, setTeams] = useState([]);
+  const [ligas, setLigas] = useState([]);
   const navigate = useNavigate();
 
   // Perfil y datos persistidos en localStorage (visual)
@@ -109,12 +110,32 @@ export default function UserProfile() {
             String(team.liga_id) ||
             "Sin Liga",
         }));
+        console.log(flat);
         setTeams(flat);
+        console.log(teams);
       } catch (_) {
         setTeams([]);
       }
     }
+
+    async function fetchLigas() {
+      try {
+        const [ligasArr] = await Promise.all([apiListLigas()]);
+        const apiList = Array.isArray(ligasArr) ? ligasArr : [];
+        const flat = apiList.map((liga) => ({
+          id: liga.id,
+          nombre: liga.nombre,
+        }));
+
+        setLigas(flat);
+      } catch (_) {
+        setLigas([]);
+      }
+    }
+
     fetchTeams();
+    fetchLigas();
+
     return () => {
       active = false;
     };
@@ -198,14 +219,14 @@ export default function UserProfile() {
         <button className="button" onClick={() => navigate("/league/create")}>
           Crear liga
         </button>
-        {commishLeagues.length === 0 ? (
+        {ligas.length === 0 ? (
           <EmptyState
             title="Aún no eres comisionado en ninguna liga"
             subtitle="Crea una liga o solicita el rol de comisionado a un administrador."
           />
         ) : (
           <div className="grid grid-3">
-            {commishLeagues.map((lg) => (
+            {ligas.map((lg) => (
               <div key={lg.id} className="card">
                 <div
                   style={{
@@ -214,11 +235,11 @@ export default function UserProfile() {
                     alignItems: "baseline",
                   }}
                 >
-                  <h4 style={{ margin: 0 }}>{lg.name}</h4>
-                  <span className="badge">{lg.season}</span>
+                  <h4 style={{ margin: 0 }}>{lg.nombre}</h4>
+                  {/*<span className="badge">{lg.season}</span>*/}
                 </div>
                 <div style={{ marginTop: 8, color: "var(--muted)" }}>
-                  {lg.teams} equipos • {lg.scoring}
+                  {/*{lg.teams} equipos • {lg.scoring}*/}
                 </div>
                 <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
                   <button

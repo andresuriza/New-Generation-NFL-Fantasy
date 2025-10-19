@@ -2,7 +2,6 @@ import http, { request } from "../httpClient";
 
 // POST Equipo
 export const register = ({ liga_id, usuario_id, nombre, thumbnail }) =>
-  // Importa orden?
   request("/equipos/", {
     method: "POST",
     body: { liga_id, usuario_id, nombre, thumbnail },

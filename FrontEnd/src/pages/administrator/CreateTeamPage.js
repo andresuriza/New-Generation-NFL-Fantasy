@@ -3,7 +3,7 @@ import {
   register as apiRegisterEquipo,
   update as apiUpdateEquipo,
 } from "../../utils/communicationModule/resources/equipos";
-import { list as apiListLigas } from "../../utils/communicationModule/resources/ligas";
+import { GetLigas as apiListLigas } from "../../utils/communicationModule/resources/ligas";
 import { uploadEquipoImage as apiUploadEquipoImage } from "../../utils/communicationModule/resources/media";
 import { useAuth } from "../../context/authContext";
 

@@ -294,7 +294,7 @@ export default function LeagueCreate() {
             <button
               type="button"
               className="button button--ghost"
-              onClick={() => handleSubmit}
+              onClick={() => navigate("/player/profile")}
               disabled={submitting}
             >
               Cancelar
