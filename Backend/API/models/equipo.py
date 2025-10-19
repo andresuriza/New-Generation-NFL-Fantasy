@@ -10,6 +10,7 @@ class EquipoCreate(EquipoBase):
     liga_id: UUID = Field(..., description="ID de la liga")
     usuario_id: UUID = Field(..., description="ID del usuario propietario")
     thumbnail: Optional[str] = Field(None, description="URL del thumbnail del equipo")
+    
 class EquipoUpdate(BaseModel):
     nombre: Optional[str] = Field(None, min_length=1, max_length=100, description="Nombre del equipo")
     thumbnail: Optional[str] = Field(None, description="URL del thumbnail del equipo")
