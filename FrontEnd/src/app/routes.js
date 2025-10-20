@@ -3,7 +3,7 @@ import Layout from "./layout";
 import Home from "../pages/home";
 import Register from "../pages/usuario/register";
 import Login from "../pages/shared/login";
-import PlayerProfile from "../pages/usuario/playerProfile";
+import UserProfile from "../pages/usuario/userProfile";
 import NotFound from "../pages/notFound"; // si ya la creaste
 import RequireAuth from "./requireAuth";
 import PlayerProfileEdit from "../pages/administrator/playerProfileEdit";
@@ -24,13 +24,13 @@ const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "/register", element: <Register /> },
       { path: "/login", element: <Login /> },
-      { path: "/season/create", element: <SeasonCreate /> },           // libre (dev)
-      { path: "/league/join", element: <LeagueJoin /> }, // libre 
+      { path: "/season/create", element: <SeasonCreate /> }, // libre (dev)
+      { path: "/league/join", element: <LeagueJoin /> }, // libre
       {
         path: "/player/profile",
         element: (
           <RequireAuth>
-            <PlayerProfile />
+            <UserProfile />
           </RequireAuth>
         ),
       },
