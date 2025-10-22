@@ -25,6 +25,7 @@ package "Backend API (Python / FastAPI)" #LightBlue {
     component "UsuariosRouter" as UsuariosRouter
     component "EquiposRouter" as EquiposRouter
     component "LigasRouter" as LigasRouter
+    component "TemporadasRouter" as TemporadasRouter
     component "MediaRouter" as MediaRouter
   }
 
@@ -33,6 +34,7 @@ package "Backend API (Python / FastAPI)" #LightBlue {
     component "UsuarioService\n(CRUD / Perfil / Desbloqueo)" as Users
     component "EquipoService\n(Reglas por liga / Recomendaciones)" as EquipoSvc
     component "LigaService\n(Listado / Consulta / Analytics)" as LigaSvc
+    component "TemporadaService\n(Gestión temporadas)" as TemporadaSvc
     component "MediaService\n(Imágenes CDN)" as MediaSvc
     component "EmailService\n(Azure Communication Email)" as Notify
     component "CDN Adapter\n(Almacenamiento imágenes)" as CDNAdapter
@@ -41,9 +43,19 @@ package "Backend API (Python / FastAPI)" #LightBlue {
     component "AnalyticsService\n(Métricas / BI / Reportes)" as AnalyticsSvc
   }
 
-  package "Datos" as DataLayer {
-    component "Modelos SQLAlchemy\n(UsuarioDB / LigaDB / EquipoDB / MediaDB)" as Models
-    component "Repositorio de Datos\n(PostgreSQL)" as Repo
+  package "Repositories (Data Access Layer)" as RepoLayer {
+    component "BaseRepository\n(Generic CRUD operations)" as BaseRepo
+    component "UsuarioRepository\n(User data access)" as UserRepo
+    component "LigaRepository\n(League data access)" as LigaRepo
+    component "EquipoRepository\n(Team data access)" as EquipoRepo
+    component "TemporadaRepository\n(Season data access)" as TemporadaRepo
+    component "MediaRepository\n(Media data access)" as MediaRepo
+  }
+
+  package "Models & Database" as DataLayer {
+    component "Pydantic Schemas\n(Request/Response models)" as Schemas
+    component "SQLAlchemy Models\n(UsuarioDB / LigaDB / EquipoDB / etc.)" as Models
+    component "Database Session\n(PostgreSQL)" as Repo
   }
 }
 
@@ -66,21 +78,32 @@ UIAdmin -[#DarkGreen]--> UIAPI
 UIAPI -[#DarkGreen]--> UsuariosRouter : Usuarios
 UIAPI -[#DarkGreen]--> EquiposRouter : Equipos
 UIAPI -[#DarkGreen]--> LigasRouter  : Ligas
+UIAPI -[#DarkGreen]--> TemporadasRouter : Temporadas
 UIAPI -[#DarkGreen]--> MediaRouter  : Media
 
 ' Routers -> Services
 UsuariosRouter -[#DarkGreen]--> Users
 EquiposRouter  -[#DarkGreen]--> EquipoSvc
 LigasRouter    -[#DarkGreen]--> LigaSvc
+TemporadasRouter -[#DarkGreen]--> TemporadaSvc
 MediaRouter    -[#DarkGreen]--> MediaSvc
 UsuariosRouter -[#DarkGreen]--> Auth
 
-' Services -> Datos
-Auth -[#DarkGreen]--> Models
-Users -[#DarkGreen]--> Models
-EquipoSvc -[#DarkGreen]--> Models
-LigaSvc -[#DarkGreen]--> Models
-MediaSvc -[#DarkGreen]--> Models
+' Services -> Repositories
+Auth -[#DarkGreen]--> UserRepo
+Users -[#DarkGreen]--> UserRepo
+EquipoSvc -[#DarkGreen]--> EquipoRepo
+LigaSvc -[#DarkGreen]--> LigaRepo
+TemporadaSvc -[#DarkGreen]--> TemporadaRepo
+MediaSvc -[#DarkGreen]--> MediaRepo
+
+' Repositories -> Models & Database
+BaseRepo -[#DarkGreen]--> Models
+UserRepo -[#DarkGreen]--> Models
+LigaRepo -[#DarkGreen]--> Models
+EquipoRepo -[#DarkGreen]--> Models
+TemporadaRepo -[#DarkGreen]--> Models
+MediaRepo -[#DarkGreen]--> Models
 Models -[#DarkGreen]--> Repo
 
 ' Servicios a Adaptadores/Externos
