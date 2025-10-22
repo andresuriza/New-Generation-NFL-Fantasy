@@ -8,8 +8,8 @@ from fastapi import HTTPException, status
 
 from models.database_models import LigaDB, LigaMiembroDB, LigaMiembroAudDB, UsuarioDB
 from models.liga import (
-    LigaResponse, LigaCreate, LigaUpdate,
-    LigaMiembroResponse, LigaConMiembros, LigaCuposResponse
+    LigaCreate, LigaUpdate, LigaResponse, LigaMiembroCreate, 
+    LigaMiembroResponse, LigaConMiembros
 )
 from repositories.liga_repository import liga_repository, liga_miembro_repository
 from services.validation_service import validation_service
@@ -37,7 +37,7 @@ class LigaService:
         contrasena_hash = security_service.hash_password(liga.contrasena)
         
         # Prepare league data
-        datos_liga = liga.model_dump(exclude={'contrasena'})
+        datos_liga = liga.model_dump(exclude={'contrasena', 'cupo_equipos'})  # Ignore deprecated cupo_equipos
         datos_liga['contrasena_hash'] = contrasena_hash
         
         nueva_liga = LigaDB(**datos_liga)
@@ -62,6 +62,8 @@ class LigaService:
     
     def _crear_membresia_comisionado(self, db: Session, liga_id: UUID, comisionado_id: UUID) -> None:
         """Create commissioner membership"""
+        # Skip capacity validation during league creation as commissioner is first member
+        
         # Get user alias or use default
         usuario = db.query(UsuarioDB).filter(UsuarioDB.id == comisionado_id).first()
         alias = usuario.alias if usuario and usuario.alias else "Comisionado"
@@ -135,14 +137,19 @@ class LigaService:
         return liga_repository.delete(db, liga_id)
     
     def unirse_liga(self, db: Session, liga_id: UUID, usuario_id: UUID, contrasena: str, alias: str) -> LigaMiembroResponse:
-        """Join a league - delegates to membership service"""
+        """Join a league using the dedicated service"""
         return liga_membresia_service.unirse_liga(db, liga_id, usuario_id, contrasena, alias)
     
-    def obtener_ligas_disponibles(self, db: Session) -> List[LigaCuposResponse]:
-        """Get leagues with available spots"""
-        ligas_cupos = liga_repository.get_ligas_disponibles(db)
-        return [LigaCuposResponse.model_validate(liga, from_attributes=True) 
-                for liga in ligas_cupos]
-
-
+    def obtener_info_cupos(self, db: Session, liga_id: UUID) -> dict:
+        """Get league capacity information"""
+        liga = validation_service.validate_liga_exists(db, liga_id)
+        current_members = validation_service.get_liga_current_members_count(db, liga_id)
+        
+        return {
+            "equipos_max": liga.equipos_max,
+            "miembros_actuales": current_members,
+            "cupos_disponibles": liga.equipos_max - current_members,
+            "esta_llena": current_members >= liga.equipos_max
+        }
+    
 liga_service = LigaService()

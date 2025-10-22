@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_
 
 from repositories.base import BaseRepository
-from models.database_models import LigaDB, LigaMiembroDB, LigaCuposVistaDB, LigaCupoDB
+from models.database_models import LigaDB, LigaMiembroDB, LigaCupoDB
 from models.liga import LigaCreate, LigaUpdate
 
 class LigaRepository(BaseRepository[LigaDB, LigaCreate, LigaUpdate]):
@@ -26,11 +26,7 @@ class LigaRepository(BaseRepository[LigaDB, LigaCreate, LigaUpdate]):
             joinedload(self.model.miembros)
         ).filter(self.model.id == liga_id).first()
     
-    def get_ligas_disponibles(self, db: Session) -> List[LigaCuposVistaDB]:
-        """Get leagues with available spots"""
-        return db.query(LigaCuposVistaDB).filter(
-            LigaCuposVistaDB.cupos_disponibles > 0
-        ).all()
+
     
     def has_associated_ligas(self, db: Session, temporada_id: UUID) -> bool:
         """Check if a season has associated leagues"""
@@ -63,6 +59,16 @@ class LigaMiembroRepository(BaseRepository[LigaMiembroDB, dict, dict]):
     def get_miembros_by_liga(self, db: Session, liga_id: UUID) -> List[LigaMiembroDB]:
         """Get all members of a league"""
         return db.query(self.model).filter(self.model.liga_id == liga_id).all()
+    
+    def count_miembros_by_liga(self, db: Session, liga_id: UUID) -> int:
+        """Count members in a league (excluding comisionado)"""
+        from models.database_models import RolMembresiaEnum
+        return db.query(self.model).filter(
+            and_(
+                self.model.liga_id == liga_id,
+                self.model.rol == RolMembresiaEnum.Manager
+            )
+        ).count()
 
 class LigaCupoRepository(BaseRepository[LigaCupoDB, dict, dict]):
     """Repository for League Quota operations"""

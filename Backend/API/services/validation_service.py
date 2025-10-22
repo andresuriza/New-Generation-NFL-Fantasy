@@ -69,14 +69,31 @@ class ValidationService:
     @staticmethod
     def validate_liga_has_cupos(db: Session, liga_id: UUID) -> None:
         """Validate that a league has available spots"""
-        cupos = db.query(LigaCupoDB).filter(LigaCupoDB.liga_id == liga_id).first()
-        liga = db.query(LigaDB).filter(LigaDB.id == liga_id).first()
+        from repositories.liga_repository import liga_repository, liga_miembro_repository
         
-        if cupos and liga and cupos.miembros_actuales >= liga.cupo_equipos:
+        # Get the league to check equipos_max
+        liga = liga_repository.get(db, liga_id)
+        if not liga:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Liga no encontrada"
+            )
+        
+        # Count current members in the league (excluding comisionado)
+        current_members_count = liga_miembro_repository.count_miembros_by_liga(db, liga_id)
+        
+        # Check if league is full (use equipos_max as the limit, comisionado doesn't count)
+        if current_members_count >= liga.equipos_max:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="La liga está llena"
             )
+    
+    @staticmethod
+    def get_liga_current_members_count(db: Session, liga_id: UUID) -> int:
+        """Get the current number of members in a league"""
+        from repositories.liga_repository import liga_miembro_repository
+        return liga_miembro_repository.count_miembros_by_liga(db, liga_id)
     
     @staticmethod
     def validate_usuario_not_in_liga(db: Session, liga_id: UUID, usuario_id: UUID) -> None:

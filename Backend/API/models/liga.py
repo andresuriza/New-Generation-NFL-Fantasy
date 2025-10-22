@@ -22,7 +22,8 @@ class LigaBase(BaseModel):
     equipos_max: int = Field(..., description="Número máximo de equipos")
     temporada_id: UUID = Field(..., description="ID de la temporada")
     comisionado_id: UUID = Field(..., description="ID del comisionado")
-    cupo_equipos: int = Field(..., description="Cupos disponibles para equipos")
+    # Temporary: Accept cupo_equipos for backward compatibility but ignore it
+    cupo_equipos: Optional[int] = Field(None, description="DEPRECATED: Use equipos_max instead")
     
     # Configuraciones opcionales
     playoffs_equipos: Optional[int] = Field(4, description="Equipos en playoffs")
@@ -71,14 +72,13 @@ class LigaInDB(BaseModel):
     estado: EstadoLiga = Field(..., description="Estado de la liga")
     temporada_id: UUID = Field(..., description="ID de la temporada")
     comisionado_id: UUID = Field(..., description="ID del comisionado")
-    cupo_equipos: int = Field(..., description="Cupos disponibles")
     playoffs_equipos: int = Field(..., description="Equipos en playoffs")
     puntajes_decimales: bool = Field(..., description="Puntajes decimales")
     trade_deadline_activa: bool = Field(..., description="Trade deadline activo")
     limite_cambios_temp: Optional[int] = Field(None, description="Límite cambios temporada")
     limite_agentes_temp: Optional[int] = Field(None, description="Límite agentes temporada")
-    formato_posiciones: Dict[str, int] = Field(..., description="Formato de posiciones")
-    puntos_config: Dict[str, Any] = Field(..., description="Configuración de puntos")
+    formato_posiciones: Optional[Dict[str, int]] = Field(None, description="Formato de posiciones")
+    puntos_config: Optional[Dict[str, Any]] = Field(None, description="Configuración de puntos")
     creado_en: datetime = Field(..., description="Fecha de creación")
     actualizado_en: datetime = Field(..., description="Fecha de actualización")
 
@@ -115,17 +115,3 @@ class LigaMiembroResponse(LigaMiembroInDB):
 
 class LigaConMiembros(LigaResponse):
     miembros: List[LigaMiembroResponse] = Field(default=[], description="Miembros de la liga")
-
-
-class LigaCuposResponse(BaseModel):
-    id: UUID = Field(..., description="ID de la liga")
-    nombre: str = Field(..., description="Nombre de la liga")
-    temporada_id: UUID = Field(..., description="ID de la temporada")
-    estado: EstadoLiga = Field(..., description="Estado de la liga")
-    cupo_equipos: int = Field(..., description="Cupos totales")
-    miembros_actuales: int = Field(..., description="Miembros actuales")
-    cupos_disponibles: int = Field(..., description="Cupos disponibles")
-    actualizado_en: datetime = Field(..., description="Última actualización")
-
-    class Config:
-        from_attributes = True

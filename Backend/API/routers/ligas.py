@@ -6,8 +6,7 @@ from pydantic import BaseModel
 
 from models.liga import (
     LigaResponse, LigaCreate, LigaUpdate,
-    LigaMiembroResponse, LigaConMiembros,
-    LigaCuposResponse
+    LigaMiembroResponse, LigaConMiembros
 )
 from services.liga_service import liga_service
 from database import get_db
@@ -32,11 +31,6 @@ async def listar_ligas(
 ):
     """Listar todas las ligas con paginación"""
     return liga_service.listar_ligas(db, skip, limit)
-
-@router.get("/disponibles", response_model=List[LigaCuposResponse])
-async def listar_ligas_disponibles(db: Session = Depends(get_db)):
-    """Listar ligas con cupos disponibles"""
-    return liga_service.obtener_ligas_disponibles(db)
 
 @router.get("/{liga_id}", response_model=LigaResponse)
 async def obtener_liga(liga_id: UUID, db: Session = Depends(get_db)):

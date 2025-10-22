@@ -91,7 +91,6 @@ class LigaDB(Base):
     estado = Column(Enum(EstadoLigaEnum), nullable=False, default=EstadoLigaEnum.Pre_draft)
     temporada_id = Column(PG_UUID(as_uuid=True), ForeignKey("temporadas.id", ondelete="RESTRICT"), nullable=False)
     comisionado_id = Column(PG_UUID(as_uuid=True), ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
-    cupo_equipos = Column(Integer, nullable=False)
 
     # Configuraciones por defecto
     playoffs_equipos = Column(SmallInteger, nullable=False, default=4)
@@ -229,20 +228,3 @@ class MediaDB(Base):
     # Relationships
     equipo = relationship("EquipoDB", back_populates="media")
 
-# Database View for ligas_cupos_vista
-class LigaCuposVistaDB(Base):
-    __tablename__ = "ligas_cupos_vista"
-    
-    id = Column(PG_UUID(as_uuid=True), primary_key=True)
-    nombre = Column(String(100), nullable=False)
-    temporada_id = Column(PG_UUID(as_uuid=True), nullable=False)
-    estado = Column(Enum(EstadoLigaEnum), nullable=False)
-    cupo_equipos = Column(Integer, nullable=False)
-    miembros_actuales = Column(Integer, nullable=False)
-    cupos_disponibles = Column(Integer, nullable=False)
-    actualizado_en = Column(DateTime(timezone=True), nullable=False)
-    
-    # Mark as view (read-only)
-    __mapper_args__ = {
-        'confirm_deleted_rows': False
-    }
