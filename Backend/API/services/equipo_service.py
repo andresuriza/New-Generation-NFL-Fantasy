@@ -1,50 +1,53 @@
-from typing import List
+"""
+Business logic service for Equipo operations with separation of concerns
+"""
+from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from models.equipo import EquipoCreate, EquipoUpdate, EquipoResponse
+from models.equipo import EquipoCreate, EquipoUpdate, EquipoResponse, EquipoConMedia
 from models.database_models import EquipoDB
-
+from repositories.equipo_repository import equipo_repository
+from services.validation_service import validation_service
 
 def _to_response(e: EquipoDB) -> EquipoResponse:
     return EquipoResponse.model_validate(e, from_attributes=True)
 
+def _to_response_con_media(e: EquipoDB) -> EquipoConMedia:
+    media_url = e.media.url if e.media else None
+    response_data = EquipoResponse.model_validate(e, from_attributes=True).model_dump()
+    response_data['media_url'] = media_url
+    return EquipoConMedia(**response_data)
+
 
 class EquipoService:
+    """Service for Equipo CRUD operations"""
+    
     def crear_equipo(self, db: Session, equipo: EquipoCreate) -> EquipoResponse:
-        exists_user_team = (
-            db.query(EquipoDB)
-            .filter(EquipoDB.liga_id == equipo.liga_id, EquipoDB.usuario_id == equipo.usuario_id)
-            .first()
-        )
-        if exists_user_team:
+        """Create a new team"""
+        # Validate league and user exist
+        validation_service.validate_liga_exists(db, equipo.liga_id)
+        validation_service.validate_usuario_exists(db, equipo.usuario_id)
+        
+        # Validate user doesn't already have a team in this league
+        existing_team = equipo_repository.get_by_liga_usuario(db, equipo.liga_id, equipo.usuario_id)
+        if existing_team:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="El usuario ya tiene un equipo en esta liga",
+                detail="El usuario ya tiene un equipo en esta liga"
             )
-
-        exists_name = (
-            db.query(EquipoDB)
-            .filter(EquipoDB.liga_id == equipo.liga_id, EquipoDB.nombre.ilike(equipo.nombre))
-            .first()
-        )
-        if exists_name:
+        
+        # Validate team name is unique in league
+        existing_name = equipo_repository.get_by_liga_nombre(db, equipo.liga_id, equipo.nombre)
+        if existing_name:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Ya existe un equipo con este nombre en la liga",
+                detail="Ya existe un equipo con este nombre en la liga"
             )
-
-        nuevo = EquipoDB(
-            liga_id=equipo.liga_id,
-            usuario_id=equipo.usuario_id,
-            nombre=equipo.nombre,
-            thumbnail=equipo.thumbnail,
-        )
-        db.add(nuevo)
-        db.commit()
-        db.refresh(nuevo)
-        return _to_response(nuevo)
+        
+        nuevo_equipo = equipo_repository.create(db, equipo)
+        return _to_response(nuevo_equipo)
 
     def listar(self, db: Session) -> List[EquipoResponse]:
         items = db.query(EquipoDB).all()

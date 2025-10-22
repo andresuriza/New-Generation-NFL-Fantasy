@@ -1,47 +1,83 @@
-from typing import Dict, List
+"""
+Business logic service for Media operations with separation of concerns
+"""
+from typing import List
 from uuid import UUID
-from datetime import datetime
+from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from models.media import Media, MediaCreate, MediaUpdate, MediaResponse
+from models.media import MediaCreate, MediaUpdate, MediaResponse
+from models.database_models import MediaDB
+from repositories.media_repository import media_repository
+from services.validation_service import validation_service
 
+def _to_media_response(media: MediaDB) -> MediaResponse:
+    return MediaResponse.model_validate(media, from_attributes=True)
 
 class MediaService:
-    def __init__(self):
-        self._db: Dict[UUID, Media] = {}
+    """Service for Media CRUD operations"""
+    
+    def crear(self, db: Session, media: MediaCreate) -> MediaResponse:
+        """Create media for a team"""
+        # Validate team exists
+        from ..repositories.equipo_repository import equipo_repository
+        equipo = equipo_repository.get(db, media.equipo_id)
+        if not equipo:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Equipo no encontrado"
+            )
+        
+        # Check if media already exists for this team
+        if media_repository.exists_for_equipo(db, media.equipo_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Ya existe un registro de media para este equipo"
+            )
+        
+        nuevo_media = media_repository.create(db, media)
+        return _to_media_response(nuevo_media)
 
-    def crear(self, media: MediaCreate) -> MediaResponse:
-        if media.equipo_id in self._db:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ya existe un registro de media para este equipo")
-        now = datetime.now()
-        nuevo = Media(equipo_id=media.equipo_id, url=media.url, generado_en=now, creado_en=now)
-        self._db[media.equipo_id] = nuevo
-        return MediaResponse.from_orm(nuevo)
+    def listar(self, db: Session, limit: int = 100) -> List[MediaResponse]:
+        """List recent media"""
+        medias = media_repository.get_recent_media(db, limit)
+        return [_to_media_response(m) for m in medias]
 
-    def listar(self) -> List[MediaResponse]:
-        return [MediaResponse.from_orm(m) for m in self._db.values()]
+    def obtener(self, db: Session, equipo_id: UUID) -> MediaResponse:
+        """Get media by team ID"""
+        media = media_repository.get_by_equipo(db, equipo_id)
+        if not media:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No se encontró media para este equipo"
+            )
+        return _to_media_response(media)
 
-    def obtener(self, equipo_id: UUID) -> MediaResponse:
-        if equipo_id not in self._db:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontró media para este equipo")
-        return MediaResponse.from_orm(self._db[equipo_id])
+    def actualizar(self, db: Session, equipo_id: UUID, media_update: MediaUpdate) -> MediaResponse:
+        """Update media for a team"""
+        media = media_repository.get_by_equipo(db, equipo_id)
+        if not media:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No se encontró media para este equipo"
+            )
+        
+        # Update generado_en if URL is being changed
+        if media_update.url and media_update.url != media.url:
+            from datetime import datetime
+            media.generado_en = datetime.now()
+        
+        updated_media = media_repository.update(db, media, media_update)
+        return _to_media_response(updated_media)
 
-    def actualizar(self, equipo_id: UUID, media_update: MediaUpdate) -> MediaResponse:
-        if equipo_id not in self._db:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontró media para este equipo")
-        media_actual = self._db[equipo_id]
-        update_data = media_update.dict(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(media_actual, field, value)
-        if "url" in update_data:
-            media_actual.generado_en = datetime.now()
-        self._db[equipo_id] = media_actual
-        return MediaResponse.from_orm(media_actual)
-
-    def eliminar(self, equipo_id: UUID) -> None:
-        if equipo_id not in self._db:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontró media para este equipo")
-        del self._db[equipo_id]
+    def eliminar(self, db: Session, equipo_id: UUID) -> bool:
+        """Delete media for a team"""
+        if not media_repository.exists_for_equipo(db, equipo_id):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No se encontró media para este equipo"
+            )
+        return media_repository.delete_by_equipo(db, equipo_id)
 
     def subir_imagen(self, equipo_id: UUID, filename: str) -> MediaResponse:
         imagen_url = f"/media/equipos/{equipo_id}/{filename}"
