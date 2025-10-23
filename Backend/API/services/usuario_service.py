@@ -1,3 +1,6 @@
+"""
+Business logic service for Usuario operations with separation of concerns
+"""
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
 from uuid import UUID
@@ -16,8 +19,10 @@ from models.usuario import (
     EstadoUsuario,
 )
 from models.database_models import UsuarioDB, RolUsuarioEnum, EstadoUsuarioEnum
+from repositories.usuario_repository import usuario_repository
 from services.auth_service import auth_service, SECRET_KEY, ALGORITHM
 from services.email_service import send_unlock_email
+from services.security_service import security_service
 
 
 def _convert_usuario_to_response(usuario_db: UsuarioDB) -> UsuarioResponse:
@@ -37,41 +42,49 @@ def _convert_usuario_to_response(usuario_db: UsuarioDB) -> UsuarioResponse:
 
 
 class UsuarioService:
+    """Service for Usuario CRUD operations"""
+    
     def crear_usuario(self, db: Session, usuario: UsuarioCreate) -> UsuarioResponse:
-        existing = db.query(UsuarioDB).filter(UsuarioDB.correo == usuario.correo).first()
-        if existing:
+        """Create a new user"""
+        # Validate unique email
+        if usuario_repository.exists_by_correo(db, usuario.correo):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="El correo electrónico ya está registrado",
+                detail="El correo electrónico ya está registrado"
+            )
+        
+        # Validate unique alias if provided
+        if usuario.alias and usuario_repository.exists_by_alias(db, usuario.alias):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El alias ya está en uso"
             )
 
+        # Hash password
         password_hash = auth_service.hash_password(usuario.contrasena)
-        nuevo = UsuarioDB(
-            nombre=usuario.nombre,
-            alias=usuario.alias,
-            correo=usuario.correo,
-            contrasena_hash=password_hash,
-            rol=RolUsuarioEnum(usuario.rol.value),
-            estado=EstadoUsuarioEnum.activa,
-            idioma=usuario.idioma or "Ingles",
-            imagen_perfil_url=usuario.imagen_perfil_url,
-            failed_attempts=0,
-        )
-        db.add(nuevo)
-        db.commit()
-        db.refresh(nuevo)
-        return _convert_usuario_to_response(nuevo)
+        
+        # Prepare user data
+        user_data = usuario.model_dump(exclude={'contrasena', 'confirmar_contrasena'})
+        user_data.update({
+            'contrasena_hash': password_hash,
+            'rol': RolUsuarioEnum(usuario.rol.value),
+            'estado': EstadoUsuarioEnum.activa,
+            'idioma': usuario.idioma or "Ingles",
+            'failed_attempts': 0
+        })
+        
+        nuevo_usuario = usuario_repository.create(db, UsuarioDB(**user_data))
+        return _convert_usuario_to_response(nuevo_usuario)
 
-    def listar_usuarios(self, db: Session) -> List[UsuarioResponse]:
-        usuarios = db.query(UsuarioDB).filter(UsuarioDB.estado != EstadoUsuarioEnum.eliminada).all()
+    def listar_usuarios(self, db: Session, skip: int = 0, limit: int = 100) -> List[UsuarioResponse]:
+        """List active users with pagination"""
+        usuarios = usuario_repository.get_activos(db, skip, limit)
         return [_convert_usuario_to_response(u) for u in usuarios]
 
     def obtener_usuario(self, db: Session, usuario_id: UUID) -> UsuarioResponse:
-        usuario = db.query(UsuarioDB).filter(
-            UsuarioDB.id == usuario_id,
-            UsuarioDB.estado != EstadoUsuarioEnum.eliminada,
-        ).first()
-        if not usuario:
+        """Get user by ID"""
+        usuario = usuario_repository.get(db, usuario_id)
+        if not usuario or usuario.estado == EstadoUsuarioEnum.eliminada:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Usuario con ID {usuario_id} no encontrado",

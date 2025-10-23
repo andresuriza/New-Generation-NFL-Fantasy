@@ -33,3 +33,8 @@ class Equipo(EquipoInDB):
 class EquipoResponse(EquipoInDB):
     """Modelo de respuesta para equipos"""
     pass
+
+
+class EquipoConMedia(EquipoResponse):
+    """Modelo de respuesta para equipos con información de media"""
+    media_url: Optional[str] = Field(None, description="URL de media asociada")

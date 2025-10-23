@@ -36,7 +36,7 @@ Sistema -[#DarkGreen]> CDN : Subida y lectura de imágenes\n(perfiles, escudos d
 
 
 legend right
-  |<back:LightBlue>   | **En alcance** - NG NFL Fantasy (FastAPI + Service Layer) |
+  |<back:LightBlue>   | **En alcance** - NG NFL Fantasy (FastAPI + Repository Pattern) |
   |<back:HoneyDew>   | **Fuera de alcance** - Servicios externos y proveedores |
   |<back:White>   | **Actores** - Usuarios y administradores del sistema |
   | | **→** Flujo principal de información / acción |

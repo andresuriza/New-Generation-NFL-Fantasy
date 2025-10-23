@@ -18,6 +18,7 @@ rectangle "NG NFL Fantasy\n(Sistema en la nube)" as Sistema #LightBlue {
       component UsuariosRouter
       component EquiposRouter
       component LigasRouter
+      component TemporadasRouter
       component MediaRouter
     }
     frame "Services (Business Logic)" as Services {
@@ -25,11 +26,19 @@ rectangle "NG NFL Fantasy\n(Sistema en la nube)" as Sistema #LightBlue {
       component UsuarioService
       component EquipoService
       component LigaService
+      component TemporadaService
       component MediaService
       component NFLService
       component ChatGPTService
       component EmailService
       component AnalyticsService
+    }
+    frame "Repositories (Data Access)" as Repositories {
+      component UsuarioRepository
+      component EquipoRepository
+      component LigaRepository
+      component TemporadaRepository
+      component MediaRepository
     }
     frame "Models & DB" as ModelsDB {
       component SQLAlchemyModels
@@ -40,19 +49,28 @@ rectangle "NG NFL Fantasy\n(Sistema en la nube)" as Sistema #LightBlue {
   FRONT -[#DarkGreen]-> UsuariosRouter : REST / HTTPS
   FRONT -[#DarkGreen]-> EquiposRouter
   FRONT -[#DarkGreen]-> LigasRouter
+  FRONT -[#DarkGreen]-> TemporadasRouter
   FRONT -[#DarkGreen]-> MediaRouter
 
   UsuariosRouter -[#DarkGreen]-> UsuarioService
   EquiposRouter  -[#DarkGreen]-> EquipoService
   LigasRouter    -[#DarkGreen]-> LigaService
+  TemporadasRouter -[#DarkGreen]-> TemporadaService
   MediaRouter    -[#DarkGreen]-> MediaService
   UsuariosRouter -[#DarkGreen]-> AuthService
 
-  AuthService -[#DarkGreen]-> SQLAlchemyModels
-  UsuarioService -[#DarkGreen]-> SQLAlchemyModels
-  EquipoService -[#DarkGreen]-> SQLAlchemyModels
-  LigaService -[#DarkGreen]-> SQLAlchemyModels
-  MediaService -[#DarkGreen]-> SQLAlchemyModels
+  AuthService -[#DarkGreen]-> UsuarioRepository
+  UsuarioService -[#DarkGreen]-> UsuarioRepository
+  EquipoService -[#DarkGreen]-> EquipoRepository
+  LigaService -[#DarkGreen]-> LigaRepository
+  TemporadaService -[#DarkGreen]-> TemporadaRepository
+  MediaService -[#DarkGreen]-> MediaRepository
+
+  UsuarioRepository -[#DarkGreen]-> SQLAlchemyModels
+  EquipoRepository -[#DarkGreen]-> SQLAlchemyModels
+  LigaRepository -[#DarkGreen]-> SQLAlchemyModels
+  TemporadaRepository -[#DarkGreen]-> SQLAlchemyModels
+  MediaRepository -[#DarkGreen]-> SQLAlchemyModels
   SQLAlchemyModels -[#DarkGreen]-> DB : Lectura/Escritura
 }
 
@@ -78,6 +96,12 @@ Usuario -[#Black]> FRONT : Interacción web\n(Registro, ligas, equipos)
 Admin -[#Black]> FRONT : Panel de administración\n(Temporadas, usuarios, soporte)
 
 note right of Sistema
+  Arquitectura por capas:
+  • Routers: HTTP endpoints
+  • Services: Lógica de negocio
+  • Repositories: Acceso a datos
+  • Models: Persistencia
+
   Ambientes recomendados:
   • Desarrollo
   • Pruebas / Staging

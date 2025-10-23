@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS ligas (
   estado               estado_liga NOT NULL DEFAULT 'Pre_draft',
   temporada_id         UUID NOT NULL REFERENCES temporadas(id) ON DELETE RESTRICT, 
   comisionado_id       UUID NOT NULL REFERENCES usuarios(id)   ON DELETE RESTRICT,  
-  cupo_equipos         INT NOT NULL,
 
   -- Configuraciones por defecto
   playoffs_equipos     SMALLINT NOT NULL DEFAULT 4 CHECK (playoffs_equipos IN (4,6)),
