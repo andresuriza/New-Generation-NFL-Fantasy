@@ -1,6 +1,6 @@
 import { useMemo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/authContext"; 
+import { useAuth } from "../../context/authContext";
 import { getProfile, getHistory, DEFAULTS } from "../../utils/profileData";
 import { list as apiListEquipos } from "../../utils/communicationModule/resources/equipos";
 import { list as apiListUsuarios } from "../../utils/communicationModule/resources/usuarios";
@@ -82,21 +82,31 @@ export default function PlayerProfile() {
           apiListLigas(),
         ]);
         if (!active) return;
-        const usuariosMap = (Array.isArray(usuariosApi) ? usuariosApi : []).reduce((m, u) => {
+        const usuariosMap = (
+          Array.isArray(usuariosApi) ? usuariosApi : []
+        ).reduce((m, u) => {
           m[String(u.id)] = u.alias || u.nombre || u.correo;
           return m;
         }, {});
-        const ligasMap = (Array.isArray(ligasApi) ? ligasApi : []).reduce((m, l) => {
-          m[String(l.id)] = l.nombre;
-          return m;
-        }, {});
+        const ligasMap = (Array.isArray(ligasApi) ? ligasApi : []).reduce(
+          (m, l) => {
+            m[String(l.id)] = l.nombre;
+            return m;
+          },
+          {}
+        );
 
         const apiList = Array.isArray(equiposApi) ? equiposApi : [];
         const flat = apiList.map((team) => ({
           id: team.id,
           name: team.nombre,
-          manager: usuariosMap[String(team.usuario_id)] || (team.usuario_id || "").toString().slice(0, 8),
-          leagueName: ligasMap[String(team.liga_id)] || String(team.liga_id) || "Sin Liga",
+          manager:
+            usuariosMap[String(team.usuario_id)] ||
+            (team.usuario_id || "").toString().slice(0, 8),
+          leagueName:
+            ligasMap[String(team.liga_id)] ||
+            String(team.liga_id) ||
+            "Sin Liga",
         }));
         setTeams(flat);
       } catch (_) {
@@ -104,7 +114,9 @@ export default function PlayerProfile() {
       }
     }
     fetchTeams();
-    return () => { active = false };
+    return () => {
+      active = false;
+    };
   }, [session]);
 
   if (!isAuthenticated || !profile) return null;
@@ -180,7 +192,7 @@ export default function PlayerProfile() {
       </div>
 
       {/* Ligas como comisionado */}
-      <section style={{ marginTop: 24 }}>
+      <section style={{ marginTop: 4 }}>
         <h3 style={{ margin: "0 0 12px 0" }}>Ligas donde soy comisionado</h3>
         {commishLeagues.length === 0 ? (
           <EmptyState

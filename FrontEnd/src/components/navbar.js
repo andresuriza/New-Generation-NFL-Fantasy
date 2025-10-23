@@ -36,6 +36,9 @@ export default function Navbar() {
             </>
           ) : (
             <>
+              <NavLink className={linkClass} to="/season/create">
+                Temporada
+              </NavLink>
               <NavLink className={linkClass} to="/player/profile">
                 Perfil
               </NavLink>
