@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useAuth } from '../context/authContext' // ajusta si tu archivo es authContext
-import { getLeague, saveLeague, addAudit, isCommissioner } from '../utils/leagueStore'
-import { fakeToggleLeagueStateRequest } from '../utils/network'
+import { useAuth } from '../../context/authContext' 
+import { getLeague, saveLeague, addAudit, isCommissioner } from '../../utils/leagueStore'
+import { fakeToggleLeagueStateRequest } from '../../utils/network'
 
 export default function LeagueAdminStatus() {
   const { id } = useParams()
@@ -15,9 +15,9 @@ export default function LeagueAdminStatus() {
   const [confirmOpen, setConfirmOpen] = useState(false) // modal de confirmación para desactivar
 
   const canToggle = useMemo(() => isAuthenticated && isCommissioner(session?.email, league), [isAuthenticated, session, league])
-  const isInactive = league.status === 'Inactive'
+  // const isInactive = league.status === 'Inactive' // not used currently
   const isPreDraft = league.status === 'Pre-Draft'
-  const isActiveSeason = league.status === 'Active'
+  // const isActiveSeason = league.status === 'Active' // not used currently
 
   function onError(msg) {
     setToast({ type: 'err', message: msg })
