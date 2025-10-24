@@ -22,8 +22,6 @@ class LigaBase(BaseModel):
     equipos_max: int = Field(..., description="Número máximo de equipos")
     temporada_id: UUID = Field(..., description="ID de la temporada")
     comisionado_id: UUID = Field(..., description="ID del comisionado")
-    # Temporary: Accept cupo_equipos for backward compatibility but ignore it
-    cupo_equipos: Optional[int] = Field(None, description="DEPRECATED: Use equipos_max instead")
     
     # Configuraciones opcionales
     playoffs_equipos: Optional[int] = Field(4, description="Equipos en playoffs")

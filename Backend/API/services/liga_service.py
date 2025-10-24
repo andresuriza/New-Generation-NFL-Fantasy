@@ -37,7 +37,7 @@ class LigaService:
         contrasena_hash = security_service.hash_password(liga.contrasena)
         
         # Prepare league data
-        datos_liga = liga.model_dump(exclude={'contrasena', 'cupo_equipos'})  # Ignore deprecated cupo_equipos
+        datos_liga = liga.model_dump(exclude={'contrasena'})
         datos_liga['contrasena_hash'] = contrasena_hash
         
         nueva_liga = LigaDB(**datos_liga)
