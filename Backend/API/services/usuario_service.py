@@ -73,7 +73,7 @@ class UsuarioService:
             'failed_attempts': 0
         })
         
-        nuevo_usuario = usuario_repository.create(db, UsuarioDB(**user_data))
+        nuevo_usuario = usuario_repository.create(db, user_data)
         return _convert_usuario_to_response(nuevo_usuario)
 
     def listar_usuarios(self, db: Session, skip: int = 0, limit: int = 100) -> List[UsuarioResponse]:
