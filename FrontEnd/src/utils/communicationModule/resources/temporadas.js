@@ -3,9 +3,10 @@ import http, { request } from "../httpClient";
 // Ligas endpoints
 export const GetTemporada = () => http.get("/temporadas/");
 
-export const getById = (ligaId) => http.get(`/temporadas/${ligaId}`);
+//export const GetTemporadaId = (id) => http.get(`/temporadas/${id}`);
 
-// Aqui colocaria un POST... SI TUVIERA UNO
+export const GetTemporadaId = (id) => http.get(`/temporadas/${id}`);
+
 export const CrearTemporada = ({
   nombre,
   semanas,

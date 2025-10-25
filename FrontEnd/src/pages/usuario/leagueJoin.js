@@ -1,20 +1,22 @@
 // src/pages/usuario/leagueJoin.js
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  searchLeaguesLocal,
-  fakeJoinLeagueVisual,
-} from "../../utils/leagueJoinNetwork";
+import { fakeJoinLeagueVisual } from "../../utils/leagueJoinNetwork";
 import {
   validateAlias,
   validateName as validateTeamName,
 } from "../../utils/validators";
 import { GetLigas } from "../../utils/communicationModule/resources/ligas";
+import {
+  GetTemporadaId,
+  GetTemporada,
+} from "../../utils/communicationModule/resources/temporadas";
 
 export default function LeagueJoin() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
-  const [season, setSeason] = useState("");
+  const [s, setS] = useState("");
+  const [season, setSeason] = useState(" ");
   const [status, setStatus] = useState(""); // 'Pre-Draft' | 'Active' | 'Inactive'
   const [results, setResults] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -25,35 +27,71 @@ export default function LeagueJoin() {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ type: null, message: "" });
   const [ligas, setLigas] = useState([]);
+  const [temporadas, setTemporadas] = useState([]);
+
+  function searchLeaguesLocal({ q = "", s = "", status } = {}) {
+    const all = ligas;
+    const qnorm = q.trim().toLowerCase();
+    const sNorm = s.trim().toLowerCase();
+
+    return all.filter((lg) => {
+      const byQ = !qnorm || (lg.nombre || "").toLowerCase().includes(qnorm);
+      const bySeason =
+        !sNorm || (lg.temporada_name || "").toLowerCase().includes(sNorm);
+      const byStatus =
+        !status ||
+        (lg.estado || "").toLowerCase() === String(status).toLowerCase();
+      return byQ && bySeason && byStatus;
+    });
+  }
 
   useEffect(() => {
     document.title = "Buscar liga";
   }, []);
 
+  useEffect(() => {
+    async function GetLigasAPI() {
+      try {
+        const ligas_api_original = await GetLigas();
+        const ligas_api = await Promise.all(
+          ligas_api_original.map(async (e) => {
+            try {
+              const temporadaName = await GetTemporadaId(e.temporada_id);
+              return {
+                ...e,
+                temporada_name: await temporadaName.nombre,
+              };
+            } catch (error) {
+              console.error("Error obteniendo temporada");
+              return { ...e, temporadaName: "Desconocido" };
+            }
+          })
+        );
+        setLigas(ligas_api);
+      } catch (error) {
+        console.error("Error fecthing ligas");
+        setLigas([]);
+      }
+    }
+
+    GetLigasAPI();
+  }, []);
+
   function doSearch() {
     const list = searchLeaguesLocal({
       q,
-      season: season || undefined,
+      s,
       status: status || undefined,
     });
     setResults(list);
   }
 
   useEffect(() => {
-    async function GetLigasAPI() {
-      const ligas_api = await GetLigas();
-      setLigas(ligas_api);
-    }
-
-    GetLigasAPI();
-  });
-
-  useEffect(() => {
     doSearch();
-  }, []); // primera carga
+  }, []);
 
   const seasonsInData = useMemo(() => {
-    const uniq = new Set(results.map((r) => r.season).filter(Boolean));
+    const uniq = new Set(results.map((r) => r.temporada_id).filter(Boolean));
     return Array.from(uniq).sort();
   }, [results]);
 
@@ -120,8 +158,8 @@ export default function LeagueJoin() {
           <input
             className="input"
             placeholder="Temporada (ej. 2025)"
-            value={season}
-            onChange={(e) => setSeason(e.target.value)}
+            value={s}
+            onChange={(e) => setS(e.target.value)}
           />
           <select
             className="input"
@@ -147,7 +185,7 @@ export default function LeagueJoin() {
             </div>
           )}
           {results.map((lg) => {
-            const capacity = Number(lg.teams || lg.teamsMax || 0);
+            const capacity = Number(lg.equipos_max || 0);
             const regs = Number(lg.registeredTeams || lg.members?.length || 0);
             const remaining = capacity ? Math.max(capacity - regs, 0) : 0;
             return (
@@ -167,13 +205,13 @@ export default function LeagueJoin() {
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: 600 }}>{lg.name}</div>
+                    <div style={{ fontWeight: 600 }}>{lg.nombre}</div>
                     <div className="help">
-                      Temporada: {lg.season || "—"} • Estado: {lg.status || "—"}{" "}
-                      • Cupos restantes: {remaining}
+                      Temporada: {lg.temporada_name || "—"} • Estado:{" "}
+                      {lg.estado || "—"} • Cupos restantes: {remaining}
                     </div>
-                    {lg.description && (
-                      <div className="help">{lg.description}</div>
+                    {lg.descripcion && (
+                      <div className="help">{lg.descripcion}</div>
                     )}
                   </div>
                   <div>

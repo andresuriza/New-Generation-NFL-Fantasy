@@ -58,8 +58,6 @@ export default function UserProfile() {
   const [ligas, setLigas] = useState([]);
   const navigate = useNavigate();
 
-  console.log(user.id);
-
   // Perfil y datos persistidos en localStorage (visual)
   const profile = useMemo(
     () => (session ? getProfile(session.email) : null),
@@ -112,9 +110,7 @@ export default function UserProfile() {
             String(team.liga_id) ||
             "Sin Liga",
         }));
-        console.log(flat);
         setTeams(flat);
-        console.log(teams);
       } catch (_) {
         setTeams([]);
       }
