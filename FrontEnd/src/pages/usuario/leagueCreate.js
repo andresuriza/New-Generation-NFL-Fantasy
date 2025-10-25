@@ -11,6 +11,8 @@ import {
 } from "../../utils/leagueValidators";
 import { CrearLiga } from "../../utils/communicationModule/resources/ligas";
 import { fakeLeagueCreateVisual } from "../../utils/leagueNetwork";
+import { useAuth } from "../../context/authContext";
+import { GetTemporadaActual } from "../../utils/communicationModule/resources/temporadas";
 
 const CURRENT_SEASON = 2025;
 
@@ -29,7 +31,7 @@ const WEEKS_BY_PLAYOFFS = {
 };
 
 export default function LeagueCreate() {
-  // const { isAuthenticated } = useAuth() // not used currently
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   // Estado del formulario
@@ -74,8 +76,6 @@ export default function LeagueCreate() {
     setToast({ type: null, message: "" });
     if (!validateAll()) return;
 
-    // POST aqui
-
     setSubmitting(true);
 
     // Autogenerados visuales
@@ -92,13 +92,15 @@ export default function LeagueCreate() {
     };
 
     try {
+      const temporada = await GetTemporadaActual();
+
       const created = await CrearLiga({
         nombre: form.name,
         descripcion: form.description,
         contrasena: form.password,
         equipos_max: form.teams,
-        //temporada_id: temporada.id,
-        //comisionado_id: ,
+        temporada_id: temporada.id,
+        comisionado_id: user.id,
       });
 
       setSubmitting(false);
@@ -133,7 +135,6 @@ export default function LeagueCreate() {
       <div className="card" style={{ maxWidth: 720, margin: "0 auto" }}>
         <h2 style={{ marginTop: 0 }}>Crear liga</h2>
         <form className="form" onSubmit={handleSubmit} noValidate>
-          {/* Nombre */}
           <div className="form__group">
             <label htmlFor="name">Nombre de la liga *</label>
             <input
@@ -146,7 +147,6 @@ export default function LeagueCreate() {
             />
             {errors.name && <div className="error">{errors.name}</div>}
           </div>
-          {/* Descripción opcional */}
           <div className="form__group">
             <label htmlFor="description">Descripción (opcional)</label>
             <textarea
@@ -158,10 +158,21 @@ export default function LeagueCreate() {
               placeholder="Reglas, notas, etc."
             />
           </div>
-
-          {/* Cantidad de equipos */}
           <div className="form__group">
-            <label htmlFor="teams">Cantidad de equipos *</label>
+            <label htmlFor="password">Contraseña de la liga *</label>
+            <input
+              id="password"
+              className={`input ${errors.password ? "input--invalid" : ""}`}
+              type="password"
+              value={form.password}
+              onChange={(e) => setField("password", e.target.value)}
+              maxLength={12}
+              placeholder={PASS_PLACEHOLDER}
+            />
+            {errors.password && <div className="error">{errors.password}</div>}
+          </div>
+          <div className="form__group">
+            <label htmlFor="teams">Cantidad de equipos maximo *</label>
             <select
               id="teams"
               className={`input ${errors.teams ? "input--invalid" : ""}`}
@@ -180,24 +191,48 @@ export default function LeagueCreate() {
               <strong>{availableSlots}</strong>
             </div>
           </div>
-          {/* Contraseña de liga */}
           <div className="form__group">
-            <label htmlFor="password">Contraseña de la liga *</label>
-            <input
-              id="password"
-              className={`input ${errors.password ? "input--invalid" : ""}`}
-              type="password"
-              value={form.password}
-              onChange={(e) => setField("password", e.target.value)}
-              maxLength={12}
-              placeholder={PASS_PLACEHOLDER}
-            />
-            {errors.password && <div className="error">{errors.password}</div>}
+            <label>Formato de playoffs *</label>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              {[4, 6].map((n) => (
+                <label
+                  key={n}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="playoffs"
+                    value={n}
+                    checked={Number(form.playoffs) === n}
+                    onChange={(e) =>
+                      setField("playoffs", Number(e.target.value))
+                    }
+                  />
+                  {n} equipos ({WEEKS_BY_PLAYOFFS[n]})
+                </label>
+              ))}
+            </div>
           </div>
-          {/* Equipo del comisionado */}
+          <div
+            className="form__group"
+            style={{ display: "flex", alignItems: "center", gap: 8 }}
+          >
+            <input
+              id="allowDecimals"
+              type="checkbox"
+              checked={!!form.allowDecimals}
+              onChange={(e) => setField("allowDecimals", e.target.checked)}
+            />
+            <label htmlFor="allowDecimals">
+              Permitir puntajes con decimales
+            </label>
+          </div>
           <div className="form__group">
             <label htmlFor="commishTeam">Nombre de tu equipo *</label>
-            {/* Verificar con API? */}
             <input
               id="commishTeam"
               className={`input ${
@@ -212,8 +247,6 @@ export default function LeagueCreate() {
               <div className="error">{errors.commishTeamName}</div>
             )}
           </div>
-          {/* Playoffs */}
-          {/* Resumen (solo lectura) */}
           <fieldset className="card" style={{ borderColor: "var(--border)" }}>
             <legend style={{ color: "var(--muted)" }}>Se creará con</legend>
             <ul style={{ margin: 0, paddingLeft: 18 }}>
@@ -240,8 +273,6 @@ export default function LeagueCreate() {
               </li>
             </ul>
           </fieldset>
-
-          {/* Acciones */}
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <button className="button button--accent" disabled={submitting}>
               {submitting ? "Creando…" : "Crear liga"}
@@ -249,14 +280,12 @@ export default function LeagueCreate() {
             <button
               type="button"
               className="button button--ghost"
-              onClick={() => navigate("/player/profile")}
+              onClick={() => navigate(-1)}
               disabled={submitting}
             >
               Cancelar
             </button>
           </div>
-
-          {/* Mensajes */}
           {toast.message && (
             <div
               className={`toast ${

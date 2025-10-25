@@ -3,7 +3,7 @@ import http, { request } from "../httpClient";
 // Ligas endpoints
 export const GetTemporada = () => http.get("/temporadas/");
 
-//export const GetTemporadaId = (id) => http.get(`/temporadas/${id}`);
+export const GetTemporadaActual = () => http.get("/temporadas/actual");
 
 export const GetTemporadaId = (id) => http.get(`/temporadas/${id}`);
 
