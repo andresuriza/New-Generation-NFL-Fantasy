@@ -6,13 +6,18 @@ import {
   validateAlias,
   validateName as validateTeamName,
 } from "../../utils/validators";
-import { GetLigas } from "../../utils/communicationModule/resources/ligas";
+import {
+  GetLigas,
+  JoinLiga,
+} from "../../utils/communicationModule/resources/ligas";
 import {
   GetTemporadaId,
   GetTemporada,
 } from "../../utils/communicationModule/resources/temporadas";
+import { useAuth } from "../../context/authContext";
 
 export default function LeagueJoin() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [s, setS] = useState("");
@@ -116,21 +121,30 @@ export default function LeagueJoin() {
 
     setLoading(true);
     try {
+      /*
       const res = await fakeJoinLeagueVisual({
         leagueId: selected.id,
         alias: alias.trim(),
         teamName: teamName.trim(),
         password: password, // el backend real validará
       });
+      */
+
+      const res = await JoinLiga({
+        liga_id: selected.id,
+        usuario_id: user.id,
+        contrasena: password,
+        alias: alias.trim(),
+      });
+
       setLoading(false);
       setToast({
         type: "ok",
-        message: `¡Te uniste a ${selected.name}! Cupos restantes: ${res.data.remainingSlots}.`,
+        message: `¡Te uniste a ${selected.nombre}!`,
       });
-      setTimeout(() => navigate(res.data.redirect_to), 900);
+      setTimeout(() => navigate("/player/profile"), 900);
     } catch (err) {
       setLoading(false);
-      // mensaje genérico (no revelar detalles)
       setToast({
         type: "err",
         message: err?.message || "No fue posible unirse. Verifica los datos.",
@@ -144,7 +158,6 @@ export default function LeagueJoin() {
         <h2 style={{ marginTop: 0, textAlign: "center" }}>
           Buscar liga y unirse
         </h2>
-        {/* Filtros */}
         <div
           className="grid"
           style={{ gridTemplateColumns: "2fr 1fr 1fr auto", gap: 8 }}
@@ -175,8 +188,6 @@ export default function LeagueJoin() {
             Buscar
           </button>
         </div>
-
-        {/* Resultados */}
         <div className="card" style={{ marginTop: 12 }}>
           <h3 style={{ marginTop: 0 }}>Resultados ({results.length})</h3>
           {results.length === 0 && (
@@ -232,11 +243,9 @@ export default function LeagueJoin() {
             );
           })}
         </div>
-
-        {/* Formulario de unión */}
         {selected && (
           <div className="card" style={{ marginTop: 12 }}>
-            <h3 style={{ marginTop: 0 }}>Unirse a: {selected.name}</h3>
+            <h3 style={{ marginTop: 0 }}>Unirse a: {selected.nombre}</h3>
             <div
               className="grid"
               style={{ gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}
