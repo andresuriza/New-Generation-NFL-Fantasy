@@ -24,8 +24,8 @@ const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "/register", element: <Register /> },
       { path: "/login", element: <Login /> },
-      { path: "/season/create", element: <SeasonCreate /> }, // libre (dev)
-      { path: "/league/join", element: <LeagueJoin /> }, // libre
+      { path: "/season/create", element: <SeasonCreate /> },
+      { path: "/league/join", element: <LeagueJoin /> },
       {
         path: "/player/profile",
         element: (

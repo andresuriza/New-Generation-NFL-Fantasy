@@ -269,11 +269,7 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres;
 
 SELECT 'Database schema created successfully!' as result;
 
--- Trigger: al crear la liga, agrega comisionado a membresías y auditoría
-CREATE OR REPLACE FUNCTION trg_liga_insert_add_commissioner()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
+-- Trigger to add comisionado as league member upon league creation
 DECLARE
   v_alias TEXT;
 BEGIN
@@ -296,20 +292,15 @@ BEGIN
 
   RETURN NEW;
 END;
-$$;
 
--- helper para updated_at
-CREATE OR REPLACE FUNCTION trg_set_actualizado_liga()
-RETURNS trigger LANGUAGE plpgsql AS $$
+
+
 BEGIN
   NEW.actualizado_en := now();
   RETURN NEW;
-END$$;
+END
 
-DROP TRIGGER IF EXISTS trg_ligas_actualizado ON ligas;
-CREATE TRIGGER trg_ligas_actualizado
-BEFORE UPDATE ON ligas
-FOR EACH ROW EXECUTE FUNCTION trg_set_actualizado_liga();
+
 -- ============================================================================
 -- END OF SCRIPT
 -- ============================================================================
