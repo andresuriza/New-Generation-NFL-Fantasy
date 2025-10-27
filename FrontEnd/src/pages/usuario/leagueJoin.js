@@ -1,23 +1,23 @@
 // src/pages/usuario/leagueJoin.js
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fakeJoinLeagueVisual } from "../../utils/leagueJoinNetwork";
 import {
   validateAlias,
   validateName as validateTeamName,
 } from "../../utils/validators";
-import { GetLigas } from "../../utils/communicationModule/resources/ligas";
 import {
-  GetTemporadaId,
-  GetTemporada,
-} from "../../utils/communicationModule/resources/temporadas";
+  GetLigas,
+  JoinLiga,
+} from "../../utils/communicationModule/resources/ligas";
+import { GetTemporadaId } from "../../utils/communicationModule/resources/temporadas";
+import { useAuth } from "../../context/authContext";
 
 export default function LeagueJoin() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [s, setS] = useState("");
-  const [season, setSeason] = useState(" ");
-  const [status, setStatus] = useState(""); // 'Pre-Draft' | 'Active' | 'Inactive'
+  const [status, setStatus] = useState("");
   const [results, setResults] = useState([]);
   const [selected, setSelected] = useState(null);
   const [alias, setAlias] = useState("");
@@ -27,9 +27,9 @@ export default function LeagueJoin() {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ type: null, message: "" });
   const [ligas, setLigas] = useState([]);
-  const [temporadas, setTemporadas] = useState([]);
 
   function searchLeaguesLocal({ q = "", s = "", status } = {}) {
+    //console.log(status);
     const all = ligas;
     const qnorm = q.trim().toLowerCase();
     const sNorm = s.trim().toLowerCase();
@@ -88,7 +88,7 @@ export default function LeagueJoin() {
 
   useEffect(() => {
     doSearch();
-  }, []);
+  }, [ligas]);
 
   const seasonsInData = useMemo(() => {
     const uniq = new Set(results.map((r) => r.temporada_id).filter(Boolean));
@@ -116,21 +116,21 @@ export default function LeagueJoin() {
 
     setLoading(true);
     try {
-      const res = await fakeJoinLeagueVisual({
-        leagueId: selected.id,
+      const res = await JoinLiga({
+        liga_id: selected.id,
+        usuario_id: user.id,
+        contrasena: password,
         alias: alias.trim(),
-        teamName: teamName.trim(),
-        password: password, // el backend real validará
       });
+
       setLoading(false);
       setToast({
         type: "ok",
-        message: `¡Te uniste a ${selected.name}! Cupos restantes: ${res.data.remainingSlots}.`,
+        message: `¡Te uniste a ${selected.nombre}!`,
       });
-      setTimeout(() => navigate(res.data.redirect_to), 900);
+      setTimeout(() => navigate("/player/profile"), 900);
     } catch (err) {
       setLoading(false);
-      // mensaje genérico (no revelar detalles)
       setToast({
         type: "err",
         message: err?.message || "No fue posible unirse. Verifica los datos.",
@@ -144,7 +144,6 @@ export default function LeagueJoin() {
         <h2 style={{ marginTop: 0, textAlign: "center" }}>
           Buscar liga y unirse
         </h2>
-        {/* Filtros */}
         <div
           className="grid"
           style={{ gridTemplateColumns: "2fr 1fr 1fr auto", gap: 8 }}
@@ -167,16 +166,14 @@ export default function LeagueJoin() {
             onChange={(e) => setStatus(e.target.value)}
           >
             <option value="">Estado (todos)</option>
-            <option>Pre-Draft</option>
-            <option>Active</option>
-            <option>Inactive</option>
+            <option value="Pre_Draft">Pre-Draft</option>
+            <option>Activa</option>
+            <option>Inactiva</option>
           </select>
           <button className="button" onClick={doSearch}>
             Buscar
           </button>
         </div>
-
-        {/* Resultados */}
         <div className="card" style={{ marginTop: 12 }}>
           <h3 style={{ marginTop: 0 }}>Resultados ({results.length})</h3>
           {results.length === 0 && (
@@ -232,11 +229,9 @@ export default function LeagueJoin() {
             );
           })}
         </div>
-
-        {/* Formulario de unión */}
         {selected && (
           <div className="card" style={{ marginTop: 12 }}>
-            <h3 style={{ marginTop: 0 }}>Unirse a: {selected.name}</h3>
+            <h3 style={{ marginTop: 0 }}>Unirse a: {selected.nombre}</h3>
             <div
               className="grid"
               style={{ gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}

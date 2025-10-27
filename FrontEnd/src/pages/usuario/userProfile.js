@@ -214,7 +214,10 @@ export default function UserProfile() {
       {/* Ligas como comisionado */}
       <section style={{ marginTop: 24 }}>
         <h3 style={{ margin: "0 0 12px 0" }}>Ligas donde soy comisionado</h3>
-        <button className="button" onClick={() => navigate("/league/join")}>
+        <button
+          className="liga-button"
+          onClick={() => navigate("/league/join")}
+        >
           Unirme a liga
         </button>
         <button className="button" onClick={() => navigate("/league/create")}>

@@ -24,3 +24,13 @@ export const CrearLiga = ({
       comisionado_id,
     },
   });
+
+export const JoinLiga = ({ liga_id, usuario_id, contrasena, alias }) =>
+  request(`/ligas/${liga_id}/unirse`, {
+    method: "POST",
+    body: {
+      usuario_id,
+      contrasena,
+      alias,
+    },
+  });
