@@ -29,7 +29,10 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABC
     
     def create(self, db: Session, obj_in: CreateSchemaType) -> ModelType:
         """Create a new record"""
-        obj_data = obj_in.model_dump() if hasattr(obj_in, 'model_dump') else obj_in.dict()
+        if isinstance(obj_in, dict):
+            obj_data = obj_in
+        else:
+            obj_data = obj_in.model_dump() if hasattr(obj_in, 'model_dump') else obj_in.dict()
         db_obj = self.model(**obj_data)
         try:
             db.add(db_obj)
