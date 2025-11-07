@@ -1,79 +1,95 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/authContext'
-import { LOGIN_REDIRECT } from '../../app/config'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/authContext";
+import { LOGIN_REDIRECT } from "../../app/config";
 
 export default function Login() {
-  const { loginAsync } = useAuth()
-  const navigate = useNavigate()
+  const { loginAsync } = useAuth();
+  const navigate = useNavigate();
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [caps, setCaps] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [info, setInfo] = useState('')
-  const [requesting, setRequesting] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [caps, setCaps] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
+  const [requesting, setRequesting] = useState(false);
 
   async function handleSubmit(e) {
-    e.preventDefault()
-    setError('')
-    setInfo('')
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setInfo("");
+    setLoading(true);
 
     try {
-      const result = await loginAsync({ correo: email.trim(), contrasena: password })
-      setLoading(false)
+      const result = await loginAsync({
+        correo: email.trim(),
+        contrasena: password,
+      });
+      setLoading(false);
       if (!result.ok) {
-        const status = result.status
+        const status = result.status;
         // Backend messages already localized; surface them
-        setError(result.message || (status === 423 ? 'Cuenta bloqueada o inactiva.' : 'Credenciales inválidas.'))
-        return
+        setError(
+          result.message ||
+            (status === 423
+              ? "Cuenta bloqueada o inactiva."
+              : "Credenciales inválidas.")
+        );
+        return;
       }
-  let redirect = result.data?.redirect_to || LOGIN_REDIRECT
-  // Normalize known legacy path
-  if (redirect === '/profile') redirect = '/player/profile'
-  navigate(redirect)
+      let redirect = result.data?.redirect_to || LOGIN_REDIRECT;
+      // Normalize known legacy path
+      if (redirect === "/profile") redirect = "/player/profile";
+      navigate(redirect);
     } catch (e) {
-      setLoading(false)
-      setError('No se pudo conectar con el servidor.')
+      setLoading(false);
+      setError("No se pudo conectar con el servidor.");
     }
   }
 
   async function handleRequestUnlock() {
-    setError('')
-    setInfo('')
-    const correo = email.trim()
+    setError("");
+    setInfo("");
+    const correo = email.trim();
     if (!correo) {
-      setError('Ingresa tu correo para solicitar el desbloqueo.')
-      return
+      setError("Ingresa tu correo para solicitar el desbloqueo.");
+      return;
     }
     try {
-      setRequesting(true)
-      const base = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000'
-      const basePath = process.env.REACT_APP_API_BASE_PATH || '/api'
+      setRequesting(true);
+      const base =
+        process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
+      const basePath = process.env.REACT_APP_API_BASE_PATH || "/api";
       const res = await fetch(`${base}${basePath}/usuarios/unlock/request`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ correo }),
-      })
-      const data = await res.json().catch(() => ({}))
+      });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data?.detail || data?.message || 'No se pudo procesar la solicitud')
+        throw new Error(
+          data?.detail || data?.message || "No se pudo procesar la solicitud"
+        );
       }
-      setInfo(data?.message || 'Si la cuenta existe y está bloqueada, enviaremos un enlace a tu correo.')
+      setInfo(
+        data?.message ||
+          "Si la cuenta existe y está bloqueada, enviaremos un enlace a tu correo."
+      );
     } catch (err) {
-      setError(err?.message || 'No se pudo procesar la solicitud')
+      setError(err?.message || "No se pudo procesar la solicitud");
     } finally {
-      setRequesting(false)
+      setRequesting(false);
     }
   }
 
   return (
     <div className="container" style={{ paddingTop: 24, paddingBottom: 48 }}>
-      <div className="card" style={{ maxWidth: 480, margin: '0 auto' }}>
+      <div className="card" style={{ maxWidth: 480, margin: "0 auto" }}>
         <h2 style={{ marginTop: 0 }}>Iniciar sesión</h2>
-        <p style={{ color: 'var(--muted)' }}>Introduce tu correo y contraseña para acceder.</p>
+        <p style={{ color: "var(--muted)" }}>
+          Introduce tu correo y contraseña para acceder.
+        </p>
 
         <form className="form" onSubmit={handleSubmit} noValidate>
           <div className="form__group">
@@ -99,7 +115,9 @@ export default function Login() {
               name="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyUp={(e) => setCaps(e.getModifierState && e.getModifierState('CapsLock'))}
+              onKeyUp={(e) =>
+                setCaps(e.getModifierState && e.getModifierState("CapsLock"))
+              }
               placeholder="••••••••"
               maxLength={12}
             />
@@ -107,23 +125,36 @@ export default function Login() {
           </div>
 
           <button className="button button--accent" disabled={loading}>
-            {loading ? 'Verificando…' : 'Entrar'}
+            {loading ? "Verificando…" : "Entrar"}
           </button>
 
-          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            <button type="button" className="button" onClick={handleRequestUnlock} disabled={requesting}>
-              {requesting ? 'Enviando…' : 'Solicitar desbloqueo'}
+          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+            <button
+              type="button"
+              className="button"
+              onClick={handleRequestUnlock}
+              disabled={requesting}
+            >
+              {requesting ? "Enviando…" : "Solicitar desbloqueo"}
             </button>
           </div>
 
-          {error && <div className="toast toast--err" style={{ marginTop: 12 }}>{error}</div>}
-          {info && <div className="toast toast--ok" style={{ marginTop: 12 }}>{info}</div>}
+          {error && (
+            <div className="toast toast--err" style={{ marginTop: 12 }}>
+              {error}
+            </div>
+          )}
+          {info && (
+            <div className="toast toast--ok" style={{ marginTop: 12 }}>
+              {info}
+            </div>
+          )}
 
           <div className="help" style={{ marginTop: 8 }}>
-            ¿No tienes cuenta? Regístrate.
+            ¿No tienes cuenta? <a href="register">Regístrate.</a>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }
