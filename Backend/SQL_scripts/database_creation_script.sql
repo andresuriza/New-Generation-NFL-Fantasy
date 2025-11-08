@@ -266,7 +266,7 @@ COMMENT ON TABLE ligas_miembros IS 'League membership table (users joined to lea
 COMMENT ON TABLE ligas_miembros_aud IS 'Audit trail for league membership changes';
 COMMENT ON TABLE ligas_cupos IS 'League quotas tracking current members count';
 COMMENT ON TABLE equipos IS 'Teams within leagues';
-COMMENT ON TABLE ligas_equipos IS 'Relationship between leagues and teams';
+--COMMENT ON TABLE ligas_equipos IS 'Relationship between leagues and teams';
 COMMENT ON TABLE media IS 'Media files associated with teams';
 
 COMMENT ON COLUMN ligas.equipos_max IS 'Maximum number of regular members (excludes comisionado)';
