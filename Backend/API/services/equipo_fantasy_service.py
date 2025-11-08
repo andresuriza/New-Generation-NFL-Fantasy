@@ -4,7 +4,6 @@ Business logic service for Equipos Fantasy (Fantasy Teams) operations
 from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 import re
 
 from models.database_models import EquipoFantasyDB, EquipoFantasyAuditDB
@@ -16,6 +15,9 @@ from models.equipo_fantasy import (
 from repositories.equipo_fantasy_repository import equipo_fantasy_repository, equipo_fantasy_audit_repository
 from repositories.liga_repository import liga_repository
 from repositories.usuario_repository import usuario_repository
+from services.error_handling import handle_db_errors
+from validators.equipo_fantasy_validator import EquipoFantasyValidator
+from exceptions.business_exceptions import ValidationError, ConflictError, NotFoundError
 
 def _to_equipo_fantasy_response(equipo: EquipoFantasyDB) -> EquipoFantasyResponse:
     return EquipoFantasyResponse.model_validate(equipo, from_attributes=True)
@@ -34,21 +36,6 @@ def _to_audit_response(audit: EquipoFantasyAuditDB) -> EquipoFantasyAuditRespons
         audit_data.usuario = UsuarioResponseBasic.model_validate(audit.usuario, from_attributes=True)
     return audit_data
 
-def _validate_image_requirements(imagen_url: str) -> None:
-    """Validate image format (basic validation - detailed validation should be done at upload time)"""
-    if not imagen_url or not imagen_url.strip():
-        return
-    
-    # Validate format
-    if not re.match(r'.*\.(jpg|jpeg|png)(\?.*)?$', imagen_url, re.IGNORECASE):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La imagen debe ser formato JPEG o PNG"
-        )
-    
-    # Note: Size and dimension validation should be implemented at image upload time
-    # This is a basic URL format validation only
-
 def _generate_thumbnail_url(imagen_url: Optional[str]) -> Optional[str]:
     """Generate thumbnail URL from image URL (placeholder implementation)"""
     if not imagen_url:
@@ -64,43 +51,20 @@ def _generate_thumbnail_url(imagen_url: Optional[str]) -> Optional[str]:
 class EquipoFantasyService:
     """Service for Fantasy Team CRUD operations"""
     
+    @handle_db_errors
     def crear_equipo_fantasy(self, db: Session, equipo: EquipoFantasyCreate, usuario_id: UUID) -> EquipoFantasyResponse:
         """Create a new fantasy team"""
         
-        # Validate league exists
-        liga = liga_repository.get(db, equipo.liga_id)
-        if not liga:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Liga no encontrada"
-            )
-        
-        # Validate user exists
-        usuario = usuario_repository.get(db, usuario_id)
-        if not usuario:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Usuario no encontrado"
-            )
-        
-        # Check if user already has a team in this league
-        equipo_existente = equipo_fantasy_repository.get_by_liga_and_usuario(db, equipo.liga_id, usuario_id)
-        if equipo_existente:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="El usuario ya tiene un equipo en esta liga"
-            )
-        
-        # Check if team name is unique in league
-        if equipo_fantasy_repository.exists_nombre_in_liga(db, equipo.liga_id, equipo.nombre):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Ya existe un equipo con este nombre en la liga"
-            )
+        # Use validator for all validations
+        validator = EquipoFantasyValidator()
+        validator.validate_liga_exists(db, equipo.liga_id)
+        validator.validate_usuario_exists(db, usuario_id)
+        validator.validate_usuario_not_has_team_in_liga(db, usuario_id, equipo.liga_id)
+        validator.validate_nombre_unique_in_liga(db, equipo.nombre, equipo.liga_id)
         
         # Validate image if provided
         if equipo.imagen_url:
-            _validate_image_requirements(equipo.imagen_url)
+            validator.validate_imagen_url_format(equipo.imagen_url)
         
         # Generate thumbnail
         thumbnail_url = _generate_thumbnail_url(equipo.imagen_url)
@@ -120,43 +84,29 @@ class EquipoFantasyService:
         """Get fantasy team by ID with relationships"""
         equipo = equipo_fantasy_repository.get_with_relations(db, equipo_id)
         if not equipo:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Equipo fantasy no encontrado"
-            )
+            raise NotFoundError("Equipo fantasy no encontrado")
         return _to_equipo_fantasy_con_relaciones_response(equipo)
     
+    @handle_db_errors
     def actualizar_equipo_fantasy(self, db: Session, equipo_id: UUID, equipo_update: EquipoFantasyUpdate, usuario_id: UUID) -> EquipoFantasyResponse:
         """Update fantasy team"""
-        equipo = equipo_fantasy_repository.get(db, equipo_id)
-        if not equipo:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Equipo fantasy no encontrado"
-            )
+        validator = EquipoFantasyValidator()
+        equipo = validator.validate_exists(db, equipo_id)
         
-        # Check ownership
-        if equipo.usuario_id != usuario_id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="No tiene permisos para modificar este equipo"
-            )
+        # Check ownership using validator
+        validator.validate_usuario_owns_team(equipo, usuario_id)
         
         update_data = {}
         
         # Validate and update name
         if equipo_update.nombre is not None:
-            if equipo_fantasy_repository.exists_nombre_in_liga(db, equipo.liga_id, equipo_update.nombre, equipo_id):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Ya existe un equipo con este nombre en la liga"
-                )
+            validator.validate_nombre_unique_in_liga(db, equipo_update.nombre, equipo.liga_id, equipo_id)
             update_data['nombre'] = equipo_update.nombre
         
         # Validate and update image
         if equipo_update.imagen_url is not None:
             if equipo_update.imagen_url.strip():
-                _validate_image_requirements(equipo_update.imagen_url)
+                validator.validate_imagen_url_format(equipo_update.imagen_url)
                 update_data['imagen_url'] = equipo_update.imagen_url
                 update_data['thumbnail_url'] = _generate_thumbnail_url(equipo_update.imagen_url)
             else:
@@ -167,19 +117,11 @@ class EquipoFantasyService:
     
     def eliminar_equipo_fantasy(self, db: Session, equipo_id: UUID, usuario_id: UUID) -> bool:
         """Delete fantasy team"""
-        equipo = equipo_fantasy_repository.get(db, equipo_id)
-        if not equipo:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Equipo fantasy no encontrado"
-            )
+        validator = EquipoFantasyValidator()
+        equipo = validator.validate_exists(db, equipo_id)
         
-        # Check ownership
-        if equipo.usuario_id != usuario_id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="No tiene permisos para eliminar este equipo"
-            )
+        # Check ownership using validator
+        validator.validate_usuario_owns_team(equipo, usuario_id)
         
         return equipo_fantasy_repository.delete(db, equipo_id)
     
@@ -202,10 +144,7 @@ class EquipoFantasyService:
         """Get audit history for a fantasy team"""
         # Check if team exists
         if not equipo_fantasy_repository.get(db, equipo_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Equipo fantasy no encontrado"
-            )
+            raise NotFoundError("Equipo fantasy no encontrado")
         
         audits = equipo_fantasy_audit_repository.get_by_equipo_fantasy(db, equipo_id, skip, limit)
         return [_to_audit_response(audit) for audit in audits]
@@ -214,10 +153,7 @@ class EquipoFantasyService:
         """Get recent changes for all fantasy teams in a league"""
         # Check if league exists
         if not liga_repository.get(db, liga_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Liga no encontrada"
-            )
+            raise NotFoundError("Liga no encontrada")
         
         audits = equipo_fantasy_audit_repository.get_recent_changes(db, liga_id, limit)
         return [_to_audit_response(audit) for audit in audits]

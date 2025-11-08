@@ -4,7 +4,6 @@ Business logic service for Jugadores (Players) operations
 from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 import os
 import shutil
 from datetime import datetime
@@ -17,6 +16,8 @@ from models.jugador import (
 from repositories.jugador_repository import jugador_repository
 from repositories.equipo_repository import equipo_repository
 from services.validation_service import validation_service
+from services.error_handling import handle_db_errors
+from exceptions.business_exceptions import ValidationError, ConflictError, NotFoundError
 
 def _to_jugador_response(jugador: JugadoresDB) -> JugadorResponse:
     return JugadorResponse.model_validate(jugador, from_attributes=True)
@@ -30,39 +31,40 @@ def _to_jugador_con_equipo_response(jugador: JugadoresDB) -> JugadorConEquipo:
 class JugadorService:
     """Service for Player CRUD operations"""
     
-    def crear_jugador(self, db: Session, jugador: JugadorCreate) -> JugadorResponse:
-        """Create a new player"""
-        # Validate NFL team exists
-        equipo = equipo_repository.get(db, jugador.equipo_id)
+    @handle_db_errors
+    def create(self, db: Session, jugador_data: JugadorCreate) -> JugadorResponse:
+        """Create a new jugador with validations"""
+        # Validate input data
+        if not jugador_data.nombre or not jugador_data.nombre.strip():
+            raise ValidationError("El nombre del jugador es requerido")
+        
+        if not jugador_data.email or not validation_service.is_valid_email(jugador_data.email):
+            raise ValidationError("Email inválido")
+        
+        if jugador_data.dorsal is not None and jugador_data.dorsal <= 0:
+            raise ValidationError("El dorsal debe ser mayor que 0")
+        
+        # Check if team exists
+        equipo = equipo_repository.get_by_id(db, jugador_data.equipo_nfl_id)
         if not equipo:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Equipo NFL no encontrado"
+            raise NotFoundError("Equipo NFL no encontrado")
+        
+        # Check for existing dorsal in team
+        if jugador_data.dorsal:
+            existing_jugador = jugador_repository.get_by_team_and_dorsal(
+                db, jugador_data.equipo_nfl_id, jugador_data.dorsal
             )
+            if existing_jugador:
+                raise ConflictError(f"El dorsal {jugador_data.dorsal} ya existe en este equipo")
         
-        # Validate unique name per NFL team
-        existing_jugador = jugador_repository.get_by_nombre_equipo(db, jugador.nombre, jugador.equipo_id)
-        if existing_jugador:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Ya existe un jugador con ese nombre en el equipo"
-            )
+        # Check for existing email
+        existing_email = jugador_repository.get_by_email(db, jugador_data.email)
+        if existing_email:
+            raise ConflictError("Email ya registrado")
         
-        # Create player
-        nuevo_jugador = JugadoresDB(**jugador.model_dump())
-        
-        try:
-            db.add(nuevo_jugador)
-            db.commit()
-            db.refresh(nuevo_jugador)
-            return _to_jugador_response(nuevo_jugador)
-            
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Error al crear el jugador"
-            ) from e
+        # Create jugador
+        db_jugador = jugador_repository.create(db, jugador_data)
+        return self._to_response(db_jugador)
     
     def listar_jugadores(self, db: Session, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
         """List all players with pagination"""
@@ -73,39 +75,28 @@ class JugadorService:
         """Get a player by ID"""
         jugador = jugador_repository.get(db, jugador_id)
         if not jugador:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Jugador no encontrado"
-            )
+            raise NotFoundError("Jugador no encontrado")
         return _to_jugador_response(jugador)
     
     def obtener_jugador_con_equipo(self, db: Session, jugador_id: UUID) -> JugadorConEquipo:
         """Get player with NFL team information"""
         jugador = jugador_repository.get_with_equipo(db, jugador_id)
         if not jugador:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Jugador no encontrado"
-            )
+            raise NotFoundError("Jugador no encontrado")
         return _to_jugador_con_equipo_response(jugador)
     
+    @handle_db_errors
     def actualizar_jugador(self, db: Session, jugador_id: UUID, actualizacion: JugadorUpdate) -> JugadorResponse:
         """Update a player"""
         jugador = jugador_repository.get(db, jugador_id)
         if not jugador:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Jugador no encontrado"
-            )
+            raise NotFoundError("Jugador no encontrado")
         
         # Validate NFL team exists if changing
         if actualizacion.equipo_id:
             equipo = equipo_repository.get(db, actualizacion.equipo_id)
             if not equipo:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Equipo NFL no encontrado"
-                )
+                raise NotFoundError("Equipo NFL no encontrado")
         
         # Validate unique name per NFL team if changing name or team
         if actualizacion.nombre or actualizacion.equipo_id:
@@ -114,40 +105,18 @@ class JugadorService:
             
             existing_jugador = jugador_repository.get_by_nombre_equipo(db, nuevo_nombre, nuevo_equipo_id)
             if existing_jugador and existing_jugador.id != jugador_id:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Ya existe un jugador con ese nombre en el equipo"
-                )
+                raise ValidationError("Ya existe un jugador con ese nombre en el equipo")
         
-        try:
-            updated_jugador = jugador_repository.update(db, jugador, actualizacion)
-            return _to_jugador_response(updated_jugador)
-            
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Error al actualizar el jugador"
-            ) from e
+        updated_jugador = jugador_repository.update(db, jugador, actualizacion)
+        return _to_jugador_response(updated_jugador)
     
     def eliminar_jugador(self, db: Session, jugador_id: UUID) -> bool:
         """Delete a player"""
         jugador = jugador_repository.get(db, jugador_id)
         if not jugador:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Jugador no encontrado"
-            )
+            raise NotFoundError("Jugador no encontrado")
         
-        try:
-            return jugador_repository.delete(db, jugador_id)
-            
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Error al eliminar el jugador"
-            ) from e
+        return jugador_repository.delete(db, jugador_id)
     
     def buscar_jugadores(self, db: Session, filters: JugadorFilter, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
         """Search players with filters"""
@@ -159,10 +128,7 @@ class JugadorService:
         # Validate NFL team exists
         equipo = equipo_repository.get(db, equipo_id)
         if not equipo:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Equipo NFL no encontrado"
-            )
+            raise NotFoundError("Equipo NFL no encontrado")
         
         jugadores = jugador_repository.get_by_equipo(db, equipo_id, skip, limit)
         return [_to_jugador_response(jugador) for jugador in jugadores]
@@ -174,10 +140,7 @@ class JugadorService:
         try:
             posicion_enum = PosicionJugadorEnum(posicion)
         except ValueError:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Posición inválida"
-            )
+            raise ValidationError("Posición inválida")
         
         jugadores = jugador_repository.get_by_posicion(db, posicion_enum, skip, limit)
         return [_to_jugador_response(jugador) for jugador in jugadores]
@@ -192,10 +155,7 @@ class JugadorService:
             from repositories.liga_repository import liga_repository
             liga = liga_repository.get(db, liga_id)
             if not liga:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Liga no encontrada"
-                )
+                raise NotFoundError("Liga no encontrada")
         
         jugadores = jugador_repository.get_by_liga_id(db, liga_id, skip, limit)
         return [_to_jugador_response(jugador) for jugador in jugadores]
@@ -210,10 +170,7 @@ class JugadorService:
             from repositories.usuario_repository import usuario_repository
             usuario = usuario_repository.get(db, usuario_id)
             if not usuario:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Usuario no encontrado"
-                )
+                raise NotFoundError("Usuario no encontrado")
         
         jugadores = jugador_repository.get_by_usuario_id(db, usuario_id, skip, limit)
         return [_to_jugador_response(jugador) for jugador in jugadores]

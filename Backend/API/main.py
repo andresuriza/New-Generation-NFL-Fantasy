@@ -1,6 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError, DataError, DatabaseError
+import traceback
+
 from routers import usuarios, equipos, media, ligas, temporadas, chatgpt, analytics, jugadores, equipos_fantasy
+from routers.exception_handlers import create_business_exception_handlers
+from services.constraint_error_service import constraint_error_service
 
 app = FastAPI(
     title="XNFL Fantasy API",
@@ -22,6 +28,46 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add business exception handlers
+create_business_exception_handlers(app)
+
+# Global exception handlers for unhandled database errors
+@app.exception_handler(IntegrityError)
+async def integrity_error_handler(request: Request, exc: IntegrityError):
+    """Handle unhandled database integrity errors globally"""
+    try:
+        constraint_error_service.handle_integrity_error(exc)
+    except Exception as business_exc:
+        # This should be handled by business exception handlers, but just in case
+        return JSONResponse(
+            status_code=400,
+            content={"detail": str(business_exc)}
+        )
+
+@app.exception_handler(DataError)
+async def data_error_handler(request: Request, exc: DataError):
+    """Handle unhandled database data errors globally"""
+    try:
+        constraint_error_service.handle_data_error(exc)
+    except Exception as business_exc:
+        # This should be handled by business exception handlers, but just in case
+        return JSONResponse(
+            status_code=400,
+            content={"detail": str(business_exc)}
+        )
+
+@app.exception_handler(DatabaseError)
+async def database_error_handler(request: Request, exc: DatabaseError):
+    """Handle general database errors"""
+    # Log the full error for debugging
+    print(f"Database error: {exc}")
+    print(f"Traceback: {traceback.format_exc()}")
+    
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Error interno del servidor. Por favor, inténtelo más tarde."}
+    )
 
 # Incluir los routers
 app.include_router(usuarios.router, prefix="/api/usuarios", tags=["usuarios"])
