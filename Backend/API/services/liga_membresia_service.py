@@ -19,7 +19,7 @@ def _to_miembro_response(miembro: LigaMiembroDB) -> LigaMiembroResponse:
 class LigaMembresiaService:
     """Service for handling league membership operations"""
     
-    def unirse_liga(self, db: Session, liga_id: UUID, usuario_id: UUID, contrasena: str, alias: str) -> LigaMiembroResponse:
+    def unirse_liga(self, db: Session, liga_id: UUID, usuario_id: UUID, contrasena: str, alias: str, nombre_equipo: str) -> LigaMiembroResponse:
         """Join a league"""
         # Use validators
         liga_validator = LigaValidator()
@@ -44,6 +44,11 @@ class LigaMembresiaService:
         # Validate alias is unique in league
         liga_validator.validate_alias_unique_in_liga(db, liga_id, alias)
         
+        # Validate team name is unique in league
+        from validators.equipo_fantasy_validator import EquipoFantasyValidator
+        equipo_validator = EquipoFantasyValidator()
+        equipo_validator.validate_nombre_unique_in_liga(db, nombre_equipo, liga_id)
+        
         # Create membership
         nueva_membresia = LigaMiembroDB(
             liga_id=liga_id,
@@ -52,11 +57,11 @@ class LigaMembresiaService:
             rol="Manager"
         )
         
-        # Create corresponding fantasy team with the same alias as team name
+        # Create corresponding fantasy team with the specified team name
         nuevo_equipo_fantasy = EquipoFantasyDB(
             liga_id=liga_id,
             usuario_id=usuario_id,
-            nombre=alias  # Use alias as default team name
+            nombre=nombre_equipo
         )
         
         try:

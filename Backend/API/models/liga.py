@@ -113,3 +113,10 @@ class LigaMiembroResponse(LigaMiembroInDB):
 
 class LigaConMiembros(LigaResponse):
     miembros: List[LigaMiembroResponse] = Field(default=[], description="Miembros de la liga")
+
+
+class LigaFilter(BaseModel):
+    """Filter for league search"""
+    nombre: Optional[str] = Field(None, description="Buscar por nombre (parcial)")
+    temporada_id: Optional[UUID] = Field(None, description="Filtrar por temporada")
+    estado: Optional[EstadoLiga] = Field(None, description="Filtrar por estado")

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from models.database_models import LigaDB, LigaMiembroDB, LigaMiembroAudDB, UsuarioDB, EquipoFantasyDB
 from models.liga import (
     LigaCreate, LigaUpdate, LigaResponse, LigaMiembroCreate, 
-    LigaMiembroResponse, LigaConMiembros
+    LigaMiembroResponse, LigaConMiembros, LigaFilter
 )
 from repositories.liga_repository import liga_repository, liga_miembro_repository
 from services.security_service import security_service
@@ -76,7 +76,7 @@ class LigaService:
         equipo_fantasy_comisionado = EquipoFantasyDB(
             liga_id=liga_id,
             usuario_id=comisionado_id,
-            nombre=alias  # Use alias as team name
+            nombre=f"Equipo {alias}"  # Use a descriptive team name
         )
         db.add(equipo_fantasy_comisionado)
         
@@ -91,6 +91,11 @@ class LigaService:
     def listar_ligas(self, db: Session, skip: int = 0, limit: int = 100) -> List[LigaResponse]:
         """List all leagues with pagination"""
         ligas = liga_repository.get_multi(db, skip, limit)
+        return [_to_liga_response(liga) for liga in ligas]
+    
+    def buscar_ligas(self, db: Session, filtros: LigaFilter, skip: int = 0, limit: int = 100) -> List[LigaResponse]:
+        """Search leagues with filters"""
+        ligas = liga_repository.search_with_filter(db, filtros, skip, limit)
         return [_to_liga_response(liga) for liga in ligas]
     
     def obtener_liga(self, db: Session, liga_id: UUID) -> LigaResponse:
@@ -135,9 +140,9 @@ class LigaService:
         
         return liga_repository.delete(db, liga_id)
     
-    def unirse_liga(self, db: Session, liga_id: UUID, usuario_id: UUID, contrasena: str, alias: str) -> LigaMiembroResponse:
+    def unirse_liga(self, db: Session, liga_id: UUID, usuario_id: UUID, contrasena: str, alias: str, nombre_equipo: str) -> LigaMiembroResponse:
         """Join a league using the dedicated service"""
-        return liga_membresia_service.unirse_liga(db, liga_id, usuario_id, contrasena, alias)
+        return liga_membresia_service.unirse_liga(db, liga_id, usuario_id, contrasena, alias, nombre_equipo)
     
     def obtener_info_cupos(self, db: Session, liga_id: UUID) -> dict:
         """Get league capacity information"""

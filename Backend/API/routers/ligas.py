@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session
 from uuid import UUID
 from pydantic import BaseModel
 
 from models.liga import (
     LigaResponse, LigaCreate, LigaUpdate,
-    LigaMiembroResponse, LigaConMiembros
+    LigaMiembroResponse, LigaConMiembros, LigaFilter
 )
 from services.liga_service import liga_service
 from database import get_db
@@ -17,6 +17,7 @@ class UnirseRequest(BaseModel):
     usuario_id: UUID
     contrasena: str
     alias: str
+    nombre_equipo: str
 
 @router.post("/", response_model=LigaResponse, status_code=status.HTTP_201_CREATED)
 async def crear_liga(liga: LigaCreate, db: Session = Depends(get_db)):
@@ -31,6 +32,23 @@ async def listar_ligas(
 ):
     """Listar todas las ligas con paginación"""
     return liga_service.listar_ligas(db, skip, limit)
+
+@router.get("/buscar", response_model=List[LigaResponse])
+async def buscar_ligas(
+    nombre: Optional[str] = Query(None, description="Buscar por nombre (parcial)"),
+    temporada_id: Optional[UUID] = Query(None, description="Filtrar por temporada"),
+    estado: Optional[str] = Query(None, description="Filtrar por estado (Pre_draft, Draft)"),
+    skip: int = Query(0, ge=0, description="Elementos a omitir"),
+    limit: int = Query(100, ge=1, le=100, description="Límite de elementos"),
+    db: Session = Depends(get_db)
+):
+    """Buscar ligas con filtros"""
+    filtros = LigaFilter(
+        nombre=nombre,
+        temporada_id=temporada_id,
+        estado=estado
+    )
+    return liga_service.buscar_ligas(db, filtros, skip, limit)
 
 @router.get("/{liga_id}", response_model=LigaResponse)
 async def obtener_liga(liga_id: UUID, db: Session = Depends(get_db)):
@@ -64,5 +82,5 @@ async def unirse_liga(
 ):
     """Unirse a una liga"""
     return liga_service.unirse_liga(
-        db, liga_id, request.usuario_id, request.contrasena, request.alias
+        db, liga_id, request.usuario_id, request.contrasena, request.alias, request.nombre_equipo
     )
