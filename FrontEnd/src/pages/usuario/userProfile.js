@@ -268,16 +268,32 @@ export default function UserProfile() {
       {/* Mis equipos por liga */}
       <section style={{ marginTop: 24 }}>
         <h3 style={{ margin: "0 0 12px 0" }}>Equipos NFL</h3>
-        {user.rol == "administrador" ? (
-          <div style={{ marginBottom: 22 }}>
+
+        {user.rol === "administrador" && (
+          <div
+            style={{
+              marginBottom: 22,
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
             <button
               className="button"
               onClick={() => navigate("/crear-equipo")}
             >
               Crear equipo
             </button>
+
+            <button
+              className="button "
+              onClick={() => navigate("/create-player")}
+            >
+              Crear jugador NFL
+            </button>
           </div>
-        ) : null}
+        )}
+
         {teams.length === 0 ? (
           <EmptyState
             title="No tienes equipos aún"

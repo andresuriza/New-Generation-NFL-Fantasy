@@ -16,6 +16,7 @@ import CreateTeamPage from "../pages/administrator/CreateTeamPage";
 import EditarEquipo from "../pages/administrator/EditarEquipo";
 import SeasonCreate from "../pages/administrator/seasonCreate";
 import LeagueJoin from "../pages/usuario/leagueJoin";
+import CreatePlayerPage from "../pages/administrator/CreatePlayerForm";
 
 const router = createBrowserRouter([
   {
@@ -89,6 +90,15 @@ const router = createBrowserRouter([
         path: "/crear-equipo",
         element: <CreateTeamPage />,
       },
+      {
+  path: "/create-player",
+  element: (
+    <RequireAuth>
+      <CreatePlayerPage />
+    </RequireAuth>
+  ),
+},
+
     ],
   },
 ]);
