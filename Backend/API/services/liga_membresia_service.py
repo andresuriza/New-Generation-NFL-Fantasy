@@ -6,10 +6,11 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from models.database_models import LigaMiembroDB, LigaMiembroAudDB
+from models.database_models import LigaMiembroDB, LigaMiembroAudDB, EquipoFantasyDB
 from models.liga import LigaMiembroResponse, LigaMiembroCreate
 from repositories.liga_repository import liga_miembro_repository, liga_cupo_repository
-from services.validation_service import validation_service
+from validators.liga_validator import LigaValidator
+from validators.usuario_validator import UsuarioValidator
 from services.security_service import security_service
 
 def _to_miembro_response(miembro: LigaMiembroDB) -> LigaMiembroResponse:
@@ -20,8 +21,12 @@ class LigaMembresiaService:
     
     def unirse_liga(self, db: Session, liga_id: UUID, usuario_id: UUID, contrasena: str, alias: str) -> LigaMiembroResponse:
         """Join a league"""
+        # Use validators
+        liga_validator = LigaValidator()
+        usuario_validator = UsuarioValidator()
+        
         # Validate league exists and get it
-        liga = validation_service.validate_liga_exists(db, liga_id)
+        liga = liga_validator.validate_exists(db, liga_id)
         
         # Verify password
         if not security_service.verify_password(contrasena, liga.contrasena_hash):
@@ -31,13 +36,13 @@ class LigaMembresiaService:
             )
         
         # Validate user is not already in league
-        validation_service.validate_usuario_not_in_liga(db, liga_id, usuario_id)
+        liga_validator.validate_usuario_not_in_liga(db, liga_id, usuario_id)
         
         # Validate league has available spots
-        validation_service.validate_liga_has_cupos(db, liga_id)
+        liga_validator.validate_liga_has_cupos(db, liga_id)
         
         # Validate alias is unique in league
-        validation_service.validate_alias_unique_in_liga(db, liga_id, alias)
+        liga_validator.validate_alias_unique_in_liga(db, liga_id, alias)
         
         # Create membership
         nueva_membresia = LigaMiembroDB(
@@ -47,8 +52,16 @@ class LigaMembresiaService:
             rol="Manager"
         )
         
+        # Create corresponding fantasy team with the same alias as team name
+        nuevo_equipo_fantasy = EquipoFantasyDB(
+            liga_id=liga_id,
+            usuario_id=usuario_id,
+            nombre=alias  # Use alias as default team name
+        )
+        
         try:
             db.add(nueva_membresia)
+            db.add(nuevo_equipo_fantasy)
             
             # Add audit record
             audit_record = LigaMiembroAudDB(
@@ -72,7 +85,8 @@ class LigaMembresiaService:
     def salir_liga(self, db: Session, liga_id: UUID, usuario_id: UUID) -> bool:
         """Leave a league"""
         # Validate league exists
-        validation_service.validate_liga_exists(db, liga_id)
+        liga_validator = LigaValidator()
+        liga_validator.validate_exists(db, liga_id)
         
         # Get membership
         membresia = liga_miembro_repository.get_by_liga_usuario(db, liga_id, usuario_id)
@@ -89,6 +103,12 @@ class LigaMembresiaService:
                 detail="El comisionado no puede abandonar la liga"
             )
         
+        # Get the corresponding fantasy team
+        equipo_fantasy = db.query(EquipoFantasyDB).filter(
+            EquipoFantasyDB.liga_id == liga_id,
+            EquipoFantasyDB.usuario_id == usuario_id
+        ).first()
+        
         try:
             # Add audit record before deleting
             audit_record = LigaMiembroAudDB(
@@ -97,6 +117,10 @@ class LigaMembresiaService:
                 accion="salir"
             )
             db.add(audit_record)
+            
+            # Delete fantasy team if it exists
+            if equipo_fantasy:
+                db.delete(equipo_fantasy)
             
             # Delete membership
             db.delete(membresia)
@@ -112,14 +136,16 @@ class LigaMembresiaService:
     
     def obtener_miembros_liga(self, db: Session, liga_id: UUID) -> List[LigaMiembroResponse]:
         """Get all members of a league"""
-        validation_service.validate_liga_exists(db, liga_id)
+        liga_validator = LigaValidator()
+        liga_validator.validate_exists(db, liga_id)
         miembros = liga_miembro_repository.get_miembros_by_liga(db, liga_id)
         return [_to_miembro_response(m) for m in miembros]
     
     def cambiar_alias(self, db: Session, liga_id: UUID, usuario_id: UUID, nuevo_alias: str) -> LigaMiembroResponse:
         """Change user alias in a league"""
         # Validate league exists
-        validation_service.validate_liga_exists(db, liga_id)
+        liga_validator = LigaValidator()
+        liga_validator.validate_exists(db, liga_id)
         
         # Get membership
         membresia = liga_miembro_repository.get_by_liga_usuario(db, liga_id, usuario_id)
@@ -130,7 +156,7 @@ class LigaMembresiaService:
             )
         
         # Validate new alias is unique
-        validation_service.validate_alias_unique_in_liga(db, liga_id, nuevo_alias, usuario_id)
+        liga_validator.validate_alias_unique_in_liga(db, liga_id, nuevo_alias, usuario_id)
         
         # Update alias
         membresia.alias = nuevo_alias
