@@ -279,7 +279,8 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres;
 
 SELECT 'Database schema created successfully!' as result;
 
--- Trigger to add comisionado as league member upon league creation
+CREATE OR REPLACE FUNCTION agregar_comisionado_auto()
+RETURNS TRIGGER AS $$
 DECLARE
   v_alias TEXT;
 BEGIN
@@ -290,8 +291,7 @@ BEGIN
 
   v_alias := COALESCE(NULLIF(v_alias, ''), 'Comisionado');
 
-  -- Inserta membresía del comisionado (rol fijo) 
-  -- Nota: no debería haber conflicto al crear la liga; ON CONFLICT por seguridad
+  -- Inserta membresía del comisionado (rol fijo)
   INSERT INTO ligas_miembros (liga_id, usuario_id, alias, rol)
   VALUES (NEW.id, NEW.comisionado_id, v_alias, 'Comisionado')
   ON CONFLICT DO NOTHING;
@@ -302,14 +302,21 @@ BEGIN
 
   RETURN NEW;
 END;
+$$ LANGUAGE plpgsql;
 
+-- Then create the trigger:
+CREATE TRIGGER agregar_comisionado_auto_trigger
+AFTER INSERT ON ligas
+FOR EACH ROW
+EXECUTE FUNCTION agregar_comisionado_auto();
 
-
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
 BEGIN
-  NEW.actualizado_en := now();
-  RETURN NEW;
-END
-
+    NEW.actualizado_en = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
 
 -- ============================================================================
 -- END OF SCRIPT
