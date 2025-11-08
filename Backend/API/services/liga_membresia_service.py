@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from models.database_models import LigaMiembroDB, LigaMiembroAudDB
+from models.database_models import LigaMiembroDB, LigaMiembroAudDB, EquipoFantasyDB
 from models.liga import LigaMiembroResponse, LigaMiembroCreate
 from repositories.liga_repository import liga_miembro_repository, liga_cupo_repository
 from services.validation_service import validation_service
@@ -47,8 +47,16 @@ class LigaMembresiaService:
             rol="Manager"
         )
         
+        # Create corresponding fantasy team with the same alias as team name
+        nuevo_equipo_fantasy = EquipoFantasyDB(
+            liga_id=liga_id,
+            usuario_id=usuario_id,
+            nombre=alias  # Use alias as default team name
+        )
+        
         try:
             db.add(nueva_membresia)
+            db.add(nuevo_equipo_fantasy)
             
             # Add audit record
             audit_record = LigaMiembroAudDB(
@@ -89,6 +97,12 @@ class LigaMembresiaService:
                 detail="El comisionado no puede abandonar la liga"
             )
         
+        # Get the corresponding fantasy team
+        equipo_fantasy = db.query(EquipoFantasyDB).filter(
+            EquipoFantasyDB.liga_id == liga_id,
+            EquipoFantasyDB.usuario_id == usuario_id
+        ).first()
+        
         try:
             # Add audit record before deleting
             audit_record = LigaMiembroAudDB(
@@ -97,6 +111,10 @@ class LigaMembresiaService:
                 accion="salir"
             )
             db.add(audit_record)
+            
+            # Delete fantasy team if it exists
+            if equipo_fantasy:
+                db.delete(equipo_fantasy)
             
             # Delete membership
             db.delete(membresia)

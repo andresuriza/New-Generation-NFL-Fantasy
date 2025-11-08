@@ -1,0 +1,122 @@
+[
+  {
+    "nombre": "Josh Allen",
+    "posicion": "QB",
+    "equipo_nfl": "Buffalo Bills",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/josh-allen-headshot.jpg"
+  },
+  {
+    "nombre": "Stefon Diggs",
+    "posicion": "WR", 
+    "equipo_nfl": "Buffalo Bills",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/stefon-diggs-headshot.jpg"
+  },
+  {
+    "nombre": "Derrick Henry",
+    "posicion": "RB",
+    "equipo_nfl": "Tennessee Titans",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/derrick-henry-headshot.jpg"
+  },
+  {
+    "nombre": "Travis Kelce",
+    "posicion": "TE",
+    "equipo_nfl": "Kansas City Chiefs",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/travis-kelce-headshot.jpg"
+  },
+  {
+    "nombre": "Patrick Mahomes",
+    "posicion": "QB",
+    "equipo_nfl": "Kansas City Chiefs",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/patrick-mahomes-headshot.jpg"
+  },
+  {
+    "nombre": "Lamar Jackson",
+    "posicion": "QB",
+    "equipo_nfl": "Baltimore Ravens",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/lamar-jackson-headshot.jpg"
+  },
+  {
+    "nombre": "Aaron Rodgers",
+    "posicion": "QB",
+    "equipo_nfl": "Green Bay Packers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/aaron-rodgers-headshot.jpg"
+  },
+  {
+    "nombre": "Dak Prescott",
+    "posicion": "QB",
+    "equipo_nfl": "Dallas Cowboys",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/dak-prescott-headshot.jpg"
+  },
+  {
+    "nombre": "Christian McCaffrey",
+    "posicion": "RB",
+    "equipo_nfl": "San Francisco 49ers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/christian-mccaffrey-headshot.jpg"
+  },
+  {
+    "nombre": "Alvin Kamara",
+    "posicion": "RB",
+    "equipo_nfl": "New Orleans Saints",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/alvin-kamara-headshot.jpg"
+  },
+  {
+    "nombre": "Cooper Kupp",
+    "posicion": "WR",
+    "equipo_nfl": "Los Angeles Rams",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/cooper-kupp-headshot.jpg"
+  },
+  {
+    "nombre": "Davante Adams",
+    "posicion": "WR",
+    "equipo_nfl": "Las Vegas Raiders",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/davante-adams-headshot.jpg"
+  },
+  {
+    "nombre": "George Kittle",
+    "posicion": "TE",
+    "equipo_nfl": "San Francisco 49ers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/george-kittle-headshot.jpg"
+  },
+  {
+    "nombre": "Mark Andrews",
+    "posicion": "TE",
+    "equipo_nfl": "Baltimore Ravens",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/mark-andrews-headshot.jpg"
+  },
+  {
+    "nombre": "Justin Tucker",
+    "posicion": "K",
+    "equipo_nfl": "Baltimore Ravens",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/justin-tucker-headshot.jpg"
+  },
+  {
+    "nombre": "Aaron Donald",
+    "posicion": "DEF",
+    "equipo_nfl": "Los Angeles Rams",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/aaron-donald-headshot.jpg"
+  },
+  {
+    "nombre": "T.J. Watt",
+    "posicion": "DEF",
+    "equipo_nfl": "Pittsburgh Steelers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/tj-watt-headshot.jpg"
+  },
+  {
+    "nombre": "Nick Chubb",
+    "posicion": "RB",
+    "equipo_nfl": "Cleveland Browns",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/nick-chubb-headshot.jpg"
+  },
+  {
+    "nombre": "Joe Burrow",
+    "posicion": "QB",
+    "equipo_nfl": "Cincinnati Bengals",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/joe-burrow-headshot.jpg"
+  },
+  {
+    "nombre": "Ja'Marr Chase",
+    "posicion": "WR",
+    "equipo_nfl": "Cincinnati Bengals",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/jamarr-chase-headshot.jpg"
+  }
+]

@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from models.database_models import LigaDB, LigaMiembroDB, LigaMiembroAudDB, UsuarioDB
+from models.database_models import LigaDB, LigaMiembroDB, LigaMiembroAudDB, UsuarioDB, EquipoFantasyDB
 from models.liga import (
     LigaCreate, LigaUpdate, LigaResponse, LigaMiembroCreate, 
     LigaMiembroResponse, LigaConMiembros
@@ -61,7 +61,7 @@ class LigaService:
             ) from e
     
     def _crear_membresia_comisionado(self, db: Session, liga_id: UUID, comisionado_id: UUID) -> None:
-        """Create commissioner membership"""
+        """Create commissioner membership and corresponding fantasy team"""
         # Skip capacity validation during league creation as commissioner is first member
         
         # Get user alias or use default
@@ -76,6 +76,14 @@ class LigaService:
             rol="Comisionado"
         )
         db.add(membresia_comisionado)
+        
+        # Create commissioner fantasy team
+        equipo_fantasy_comisionado = EquipoFantasyDB(
+            liga_id=liga_id,
+            usuario_id=comisionado_id,
+            nombre=alias  # Use alias as team name
+        )
+        db.add(equipo_fantasy_comisionado)
         
         # Create audit record
         audit_record = LigaMiembroAudDB(

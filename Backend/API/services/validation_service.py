@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from models.database_models import LigaDB, TemporadaDB, UsuarioDB, LigaMiembroDB, LigaCupoDB
-
+#TODO: VERIFICACION DE SEMANAS DE TEMPORADA
+#TODO: Separacion de http de servicios
 class ValidationService:
     """Service for handling business rule validations"""
     

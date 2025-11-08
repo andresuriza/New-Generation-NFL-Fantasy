@@ -12,7 +12,7 @@ from services.liga_service import liga_service
 from database import get_db
 
 router = APIRouter()
-
+#!TODO: GET  CUPOS
 class UnirseRequest(BaseModel):
     usuario_id: UUID
     contrasena: str

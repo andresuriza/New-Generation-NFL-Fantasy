@@ -149,21 +149,56 @@ CREATE TABLE ligas_cupos (
     CONSTRAINT ck_miembros_no_negativos CHECK (miembros_actuales >= 0)
 );
 
--- Teams table
+-- NFL Teams table
 CREATE TABLE equipos (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    liga_id UUID NOT NULL,
-    usuario_id UUID NOT NULL,
     nombre VARCHAR(100) NOT NULL,
     ciudad VARCHAR(100) NOT NULL,
     thumbnail TEXT,
     creado_en TIMESTAMPTZ DEFAULT NOW(),
     actualizado_en TIMESTAMPTZ DEFAULT NOW(),
     
-    FOREIGN KEY (liga_id) REFERENCES ligas(id) ON DELETE CASCADE,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE RESTRICT
+
 );
 
+CREATE TABLE equipos_fantasy (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    liga_id UUID NOT NULL,
+    usuario_id UUID NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    imagen_url TEXT,
+    thumbnail_url TEXT,
+    creado_en TIMESTAMPTZ DEFAULT NOW(),
+    actualizado_en TIMESTAMPTZ DEFAULT NOW(),
+    
+   
+    FOREIGN KEY (liga_id) REFERENCES ligas(id) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE RESTRICT,
+    
+    
+    CONSTRAINT uq_nombre_equipo_fantasy_por_liga UNIQUE (liga_id, nombre),
+    CONSTRAINT ck_nombre_equipo_fantasy_len CHECK (length(nombre) BETWEEN 1 AND 100),
+    
+    CONSTRAINT ck_imagen_url_format CHECK (
+        imagen_url IS NULL OR 
+        imagen_url ~ '\.(jpg|jpeg|png)(\?.*)?$'
+    )
+);
+
+-- Fantasy Teams Audit table for tracking changes
+CREATE TABLE equipos_fantasy_audit (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    equipo_fantasy_id UUID NOT NULL,
+    usuario_id UUID NOT NULL,
+    accion VARCHAR(50) NOT NULL, -- 'UPDATE_NOMBRE', 'UPDATE_IMAGEN', 'CREATE', 'DELETE'
+    campo_modificado VARCHAR(50), -- 'nombre', 'imagen_url', NULL for CREATE/DELETE
+    valor_anterior TEXT,
+    valor_nuevo TEXT,
+    timestamp_accion TIMESTAMPTZ DEFAULT NOW(),
+    
+    FOREIGN KEY (equipo_fantasy_id) REFERENCES equipos_fantasy(id) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE RESTRICT
+);
 
 -- Media table
 CREATE TABLE media (
@@ -222,6 +257,16 @@ CREATE INDEX idx_equipos_usuario ON equipos(usuario_id);
 CREATE INDEX idx_miembros_liga ON ligas_miembros(liga_id);
 CREATE INDEX idx_miembros_usuario ON ligas_miembros(usuario_id);
 
+-- Fantasy teams indexes
+CREATE INDEX idx_equipos_fantasy_liga ON equipos_fantasy(liga_id);
+CREATE INDEX idx_equipos_fantasy_usuario ON equipos_fantasy(usuario_id);
+CREATE INDEX idx_equipos_fantasy_nombre ON equipos_fantasy(nombre);
+
+-- Fantasy teams audit indexes  
+CREATE INDEX idx_equipos_fantasy_audit_equipo ON equipos_fantasy_audit(equipo_fantasy_id);
+CREATE INDEX idx_equipos_fantasy_audit_usuario ON equipos_fantasy_audit(usuario_id);
+CREATE INDEX idx_equipos_fantasy_audit_timestamp ON equipos_fantasy_audit(timestamp_accion);
+
 -- ============================================================================
 -- TRIGGERS FOR UPDATED_AT
 -- ============================================================================
@@ -241,6 +286,77 @@ CREATE TRIGGER update_ligas_updated_at BEFORE UPDATE ON ligas
 
 CREATE TRIGGER update_equipos_updated_at BEFORE UPDATE ON equipos
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_equipos_fantasy_updated_at BEFORE UPDATE ON equipos_fantasy
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================================
+-- AUDIT TRIGGERS FOR FANTASY TEAMS
+-- ============================================================================
+
+-- Function to track changes in fantasy teams
+CREATE OR REPLACE FUNCTION audit_equipos_fantasy_changes() 
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Handle INSERT
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO equipos_fantasy_audit (
+            equipo_fantasy_id, usuario_id, accion, campo_modificado, 
+            valor_anterior, valor_nuevo, timestamp_accion
+        ) VALUES (
+            NEW.id, NEW.usuario_id, 'CREATE', NULL, 
+            NULL, NULL, NOW()
+        );
+        RETURN NEW;
+    END IF;
+    
+    -- Handle UPDATE
+    IF TG_OP = 'UPDATE' THEN
+        -- Track name changes
+        IF OLD.nombre IS DISTINCT FROM NEW.nombre THEN
+            INSERT INTO equipos_fantasy_audit (
+                equipo_fantasy_id, usuario_id, accion, campo_modificado, 
+                valor_anterior, valor_nuevo, timestamp_accion
+            ) VALUES (
+                NEW.id, NEW.usuario_id, 'UPDATE_NOMBRE', 'nombre', 
+                OLD.nombre, NEW.nombre, NOW()
+            );
+        END IF;
+        
+        -- Track image changes
+        IF OLD.imagen_url IS DISTINCT FROM NEW.imagen_url THEN
+            INSERT INTO equipos_fantasy_audit (
+                equipo_fantasy_id, usuario_id, accion, campo_modificado, 
+                valor_anterior, valor_nuevo, timestamp_accion
+            ) VALUES (
+                NEW.id, NEW.usuario_id, 'UPDATE_IMAGEN', 'imagen_url', 
+                OLD.imagen_url, NEW.imagen_url, NOW()
+            );
+        END IF;
+        
+        RETURN NEW;
+    END IF;
+    
+    -- Handle DELETE
+    IF TG_OP = 'DELETE' THEN
+        INSERT INTO equipos_fantasy_audit (
+            equipo_fantasy_id, usuario_id, accion, campo_modificado, 
+            valor_anterior, valor_nuevo, timestamp_accion
+        ) VALUES (
+            OLD.id, OLD.usuario_id, 'DELETE', NULL, 
+            NULL, NULL, NOW()
+        );
+        RETURN OLD;
+    END IF;
+    
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger for fantasy teams audit
+CREATE TRIGGER trigger_audit_equipos_fantasy
+    AFTER INSERT OR UPDATE OR DELETE ON equipos_fantasy
+    FOR EACH ROW EXECUTE FUNCTION audit_equipos_fantasy_changes();
 
 -- ============================================================================
 -- SAMPLE DATA (Optional)
@@ -265,13 +381,19 @@ COMMENT ON TABLE ligas IS 'Fantasy football leagues';
 COMMENT ON TABLE ligas_miembros IS 'League membership table (users joined to leagues)';
 COMMENT ON TABLE ligas_miembros_aud IS 'Audit trail for league membership changes';
 COMMENT ON TABLE ligas_cupos IS 'League quotas tracking current members count';
-COMMENT ON TABLE equipos IS 'Teams within leagues';
+COMMENT ON TABLE equipos IS 'NFL teams (real teams that players belong to)';
+COMMENT ON TABLE equipos_fantasy IS 'Fantasy teams within leagues (user-created teams)';
+COMMENT ON TABLE equipos_fantasy_audit IS 'Audit trail for fantasy team changes (name, image modifications)';
 COMMENT ON TABLE ligas_equipos IS 'Relationship between leagues and teams';
 COMMENT ON TABLE media IS 'Media files associated with teams';
+COMMENT ON TABLE jugadores IS 'NFL players assigned to real NFL teams';
 
 COMMENT ON COLUMN ligas.equipos_max IS 'Maximum number of regular members (excludes comisionado)';
 COMMENT ON COLUMN ligas.formato_posiciones IS 'JSONB configuration for team positions';
 COMMENT ON COLUMN ligas.puntos_config IS 'JSONB configuration for scoring rules';
+COMMENT ON COLUMN equipos_fantasy.nombre IS 'Fantasy team name (1-100 chars, unique per league)';
+COMMENT ON COLUMN equipos_fantasy.imagen_url IS 'Team image URL (JPEG/PNG, max 5MB, 300x300-1024x1024px)';
+COMMENT ON COLUMN equipos_fantasy.thumbnail_url IS 'Auto-generated thumbnail from team image';
 COMMENT ON INDEX uq_unico_comisionado_por_liga IS 'Ensures only one comisionado per league';
 
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
