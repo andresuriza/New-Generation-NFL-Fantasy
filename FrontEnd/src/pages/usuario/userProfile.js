@@ -76,6 +76,7 @@ export default function UserProfile() {
 
   useEffect(() => {
     let active = true;
+
     async function fetchTeams() {
       try {
         const [equiposApi, usuariosApi, ligasApi] = await Promise.all([
@@ -172,9 +173,9 @@ export default function UserProfile() {
             }}
           />
           <div style={{ flex: 1, minWidth: 220 }}>
-            <h2 style={{ margin: 0 }}>{profile.name}</h2>
+            <h2 style={{ margin: 0 }}>{user.nombre}</h2>
             <div style={{ color: "var(--muted)", fontSize: 14 }}>
-              {profile.email}
+              {user.correo}
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -192,22 +193,13 @@ export default function UserProfile() {
           className="grid"
           style={{ gridTemplateColumns: "repeat(4, minmax(0,1fr))" }}
         >
-          <Field label="ID">
-            {(session?.user && session.user.id) || profile.id}
-          </Field>
-          <Field label="Alias">
-            {(session?.user && session.user.alias) || profile.alias}
-          </Field>
-          <Field label="Idioma">
-            {(profile.language || "en").toUpperCase()}
-          </Field>
-          <Field label="Rol">{profile.role}</Field>
-          <Field label="Estado">{profile.status}</Field>
+          <Field label="Alias">{user.alias}</Field>
+          <Field label="Idioma">{user.idioma}</Field>
+          <Field label="Rol">{user.rol}</Field>
+          <Field label="Estado">{user.estado}</Field>
           <Field label="Creado">
-            {new Date(profile.createdAt).toLocaleString()}
+            {new Date(user.creado_en).toLocaleString()}
           </Field>
-          <Field label="Correo">{profile.email}</Field>
-          <Field label="Nombre">{profile.name}</Field>
         </div>
       </div>
 
@@ -275,12 +267,17 @@ export default function UserProfile() {
 
       {/* Mis equipos por liga */}
       <section style={{ marginTop: 24 }}>
-        <h3 style={{ margin: "0 0 12px 0" }}>Mis equipos</h3>
-        <div style={{ marginBottom: 22 }}>
-          <button className="button" onClick={() => navigate("/crear-equipo")}>
-            Crear equipo
-          </button>
-        </div>
+        <h3 style={{ margin: "0 0 12px 0" }}>Equipos NFL</h3>
+        {user.rol == "administrador" ? (
+          <div style={{ marginBottom: 22 }}>
+            <button
+              className="button"
+              onClick={() => navigate("/crear-equipo")}
+            >
+              Crear equipo
+            </button>
+          </div>
+        ) : null}
         {teams.length === 0 ? (
           <EmptyState
             title="No tienes equipos aún"

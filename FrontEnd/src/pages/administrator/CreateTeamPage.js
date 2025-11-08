@@ -10,6 +10,7 @@ import { useAuth } from "../../context/authContext";
 export default function CreateTeamPage() {
   const { user, isAuthenticated } = useAuth() || {};
   const [teamName, setTeamName] = useState("");
+  const [cityName, setCityName] = useState("");
   const managerName = useMemo(
     () => user?.alias || user?.nombre || user?.correo || "",
     [user]
@@ -148,7 +149,7 @@ export default function CreateTeamPage() {
 
   return (
     <div className="container create-team-page">
-      <h2 className="section-title">Crear equipo nuevo</h2>
+      <h2 className="section-title">Crear equipo NFL</h2>
 
       <form className="card form" onSubmit={handleSubmit}>
         <div className="form__group">
@@ -161,29 +162,16 @@ export default function CreateTeamPage() {
             placeholder="Ingresar nombre de equipo..."
           />
         </div>
-
         <div className="form__group">
-          <label>Manager</label>
-          <input type="text" className="input" value={managerName} readOnly />
-          <small className="help">El manager es el usuario autenticado.</small>
-        </div>
-
-        <div className="form__group">
-          <label>Liga</label>
-          <select
+          <label>Ciudad</label>
+          <input
+            type="text"
             className="input"
-            value={ligaId}
-            onChange={(e) => setLigaId(e.target.value)}
-          >
-            <option value="">Selecciona una liga…</option>
-            {ligas.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.nombre}
-              </option>
-            ))}
-          </select>
+            value={cityName}
+            onChange={(e) => setCityName(e.target.value)}
+            placeholder="Ingresar ciudad..."
+          />
         </div>
-
         <div className="form__group">
           <label>Imagen de equipo (JPEG/PNG, max 5MB)</label>
           <input type="file" accept="image/*" onChange={handleImageUpload} />

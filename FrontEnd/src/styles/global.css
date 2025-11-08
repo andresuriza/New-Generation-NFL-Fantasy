@@ -249,7 +249,8 @@ body {
 }
 
 /* Línea con label + contador a la derecha */
-.label-row {
+.label-row,
+select {
   display: flex;
   align-items: center;
   justify-content: space-between;
