@@ -157,6 +157,63 @@ class JugadorValidator:
         # For now, we'll just check if player exists
         jugador = JugadorValidator.validate_exists(db, jugador_id)
         # Add more business rules as needed
+    
+    @staticmethod
+    def validate_required_fields_bulk(jugador_data) -> None:
+        """Validate required fields for bulk creation"""
+        if not jugador_data.nombre:
+            raise ValidationError("Campo 'nombre' es requerido")
+        
+        if not jugador_data.posicion:
+            raise ValidationError("Campo 'posicion' es requerido")
+        
+        if not jugador_data.equipo_nfl:
+            raise ValidationError("Campo 'equipo_nfl' es requerido")
+        
+        if not jugador_data.imagen:
+            raise ValidationError("Campo 'imagen' es requerido")
+    
+    @staticmethod
+    def validate_posicion_format_bulk(posicion: str) -> None:
+        """Validate position format for bulk creation"""
+        try:
+            PosicionJugadorEnum(posicion)
+        except ValueError:
+            valid_positions = [pos.value for pos in PosicionJugadorEnum]
+            raise ValidationError(f"Posición inválida. Posiciones válidas: {', '.join(valid_positions)}")
+    
+    @staticmethod
+    def validate_equipo_exists_by_nombre(db: Session, equipo_nombre: str, equipo_cache: dict) -> EquipoDB:
+        """Validate NFL team exists by name with caching support"""
+        # Check cache first
+        if equipo_nombre in equipo_cache:
+            return equipo_cache[equipo_nombre]
+        
+        # Query database
+        equipo = db.query(EquipoDB).filter(EquipoDB.nombre.ilike(equipo_nombre)).first()
+        if not equipo:
+            raise NotFoundError(f"Equipo NFL '{equipo_nombre}' no encontrado")
+        
+        # Store in cache
+        equipo_cache[equipo_nombre] = equipo
+        return equipo
+    
+    @staticmethod
+    def validate_jugador_unique_by_nombre_equipo(db: Session, nombre: str, equipo_id: UUID) -> None:
+        """Validate player doesn't already exist in team"""
+        existing_player = db.query(JugadoresDB).filter(
+            JugadoresDB.nombre == nombre,
+            JugadoresDB.equipo_id == equipo_id
+        ).first()
+        
+        if existing_player:
+            raise ConflictError(f"Ya existe un jugador con ese nombre en el equipo")
+    
+    @staticmethod
+    def validate_imagen_url_bulk(imagen_url: str) -> None:
+        """Validate image URL format for bulk creation"""
+        if not imagen_url.startswith(('http://', 'https://')):
+            raise ValidationError("URL de imagen debe comenzar con http:// o https://")
 
 
 # Create validator instance

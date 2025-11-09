@@ -17,6 +17,7 @@ from repositories.jugador_repository import jugador_repository
 from repositories.equipo_repository import equipo_repository
 from services.validation_service import validation_service
 from services.error_handling import handle_db_errors
+from validators.jugador_validator import jugador_validator
 from exceptions.business_exceptions import ValidationError, ConflictError, NotFoundError
 
 def _to_jugador_response(jugador: JugadoresDB) -> JugadorResponse:
@@ -201,50 +202,24 @@ class JugadorService:
         # Step 1: Validation phase
         for i, jugador_data in enumerate(jugadores_data):
             try:
-                # Validate required fields (nombre, posicion, equipo_nfl, imagen)
-                if not jugador_data.nombre:
-                    errors.append(f"Jugador {i+1}: Campo 'nombre' es requerido")
-                    continue
+                # Validate required fields using validator
+                jugador_validator.validate_required_fields_bulk(jugador_data)
                 
-                if not jugador_data.posicion:
-                    errors.append(f"Jugador {i+1}: Campo 'posicion' es requerido")
-                    continue
-                    
-                if not jugador_data.equipo_nfl:
-                    errors.append(f"Jugador {i+1}: Campo 'equipo_nfl' es requerido")
-                    continue
-                    
-                if not jugador_data.imagen:
-                    errors.append(f"Jugador {i+1}: Campo 'imagen' es requerido")
-                    continue
+                # Validate position format using validator
+                jugador_validator.validate_posicion_format_bulk(jugador_data.posicion)
                 
-                # Get or find NFL team by name
-                equipo_nfl = None
-                if jugador_data.equipo_nfl in equipo_cache:
-                    equipo_nfl = equipo_cache[jugador_data.equipo_nfl]
-                else:
-                    # Search for team by name (case-insensitive)
-                    equipo_nfl = equipo_repository.get_by_nombre(db, jugador_data.equipo_nfl)
-                    if equipo_nfl:
-                        equipo_cache[jugador_data.equipo_nfl] = equipo_nfl
+                # Validate and get NFL team by name (with caching) using validator
+                equipo_nfl = jugador_validator.validate_equipo_exists_by_nombre(
+                    db, jugador_data.equipo_nfl, equipo_cache
+                )
                 
-                if not equipo_nfl:
-                    errors.append(f"Jugador {i+1} ({jugador_data.nombre}): Equipo NFL '{jugador_data.equipo_nfl}' no encontrado")
-                    continue
+                # Validate player uniqueness in team using validator
+                jugador_validator.validate_jugador_unique_by_nombre_equipo(
+                    db, jugador_data.nombre, equipo_nfl.id
+                )
                 
-                # Check if player name already exists in team
-                existing_player = jugador_repository.get_by_nombre_equipo(db, jugador_data.nombre, equipo_nfl.id)
-                if existing_player:
-                    errors.append(f"Jugador {i+1} ({jugador_data.nombre}): Ya existe un jugador con ese nombre en el equipo {jugador_data.equipo_nfl}")
-                    continue
-                
-                # Validate image URL format (basic validation)
-                if not jugador_data.imagen.startswith(('http://', 'https://')):
-                    errors.append(f"Jugador {i+1} ({jugador_data.nombre}): URL de imagen debe comenzar con http:// o https://")
-                    continue
-                
-                # Position validation is handled by Pydantic automatically
-                # If we reach this point, the position is already valid
+                # Validate image URL format using validator
+                jugador_validator.validate_imagen_url_bulk(jugador_data.imagen)
                 
                 # If we get here, the player data is valid
                 prepared_player = {
@@ -257,6 +232,12 @@ class JugadorService:
                 }
                 created_players.append(prepared_player)
                 
+            except ValidationError as e:
+                errors.append(f"Jugador {i+1} ({jugador_data.nombre if jugador_data.nombre else 'sin nombre'}): {e.message}")
+            except ConflictError as e:
+                errors.append(f"Jugador {i+1} ({jugador_data.nombre if jugador_data.nombre else 'sin nombre'}): {e.message}")
+            except NotFoundError as e:
+                errors.append(f"Jugador {i+1} ({jugador_data.nombre if jugador_data.nombre else 'sin nombre'}): {e.message}")
             except Exception as e:
                 errors.append(f"Jugador {i+1}: Error de validación: {str(e)}")
         
