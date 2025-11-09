@@ -6,8 +6,8 @@ import {
   validateName as validateTeamName,
 } from "../../utils/validators";
 import {
-  GetLigas,
-  JoinLiga,
+  JoinLeague,
+  SearchLeague,
 } from "../../utils/communicationModule/resources/ligas";
 import { GetTemporadaId } from "../../utils/communicationModule/resources/temporadas";
 import { useAuth } from "../../context/authContext";
@@ -50,34 +50,6 @@ export default function LeagueJoin() {
     document.title = "Buscar liga";
   }, []);
 
-  useEffect(() => {
-    async function GetLigasAPI() {
-      try {
-        const ligas_api_original = await GetLigas();
-        const ligas_api = await Promise.all(
-          ligas_api_original.map(async (e) => {
-            try {
-              const temporadaName = await GetTemporadaId(e.temporada_id);
-              return {
-                ...e,
-                temporada_name: await temporadaName.nombre,
-              };
-            } catch (error) {
-              console.error("Error obteniendo temporada");
-              return { ...e, temporadaName: "Desconocido" };
-            }
-          })
-        );
-        setLigas(ligas_api);
-      } catch (error) {
-        console.error("Error fecthing ligas");
-        setLigas([]);
-      }
-    }
-
-    GetLigasAPI();
-  }, []);
-
   function doSearch() {
     const list = searchLeaguesLocal({
       q,
@@ -108,22 +80,39 @@ export default function LeagueJoin() {
 
   async function handleJoin() {
     setToast({ type: null, message: "" });
-    if (!selected) return;
+    //if (!selected) return;
     if (!validateJoin()) return;
 
     setLoading(true);
     try {
-      const res = await JoinLiga({
-        liga_id: selected.id,
+      const liga = await SearchLeague({
+        nombre: name,
+        skip: 0,
+        limit: 100,
+      });
+
+      if (liga.length == 0) {
+        setToast({
+          type: "err",
+          message: "No se encontro una liga con ese nombre",
+        });
+        return;
+      }
+
+      const leagueID = liga[0].id;
+
+      const res = await JoinLeague({
+        liga_id: leagueID,
         usuario_id: user.id,
         contrasena: password,
         alias: alias.trim(),
+        nombre_equipo: teamName,
       });
 
       setLoading(false);
       setToast({
         type: "ok",
-        message: `¡Te uniste a ${selected.nombre}!`,
+        message: `¡Te uniste a ${name}!`,
       });
       setTimeout(() => navigate("/player/profile"), 900);
     } catch (err) {
@@ -144,7 +133,7 @@ export default function LeagueJoin() {
           style={{ gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}
         >
           <div className="form__group">
-            <label>Nombre liga*</label>
+            <label>Nombre liga *</label>
             <input
               className={`input ${errors.alias ? "input--invalid" : ""}`}
               value={name}
