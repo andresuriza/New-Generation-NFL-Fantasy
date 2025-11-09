@@ -69,9 +69,9 @@ class TemporadaValidator:
     
     @staticmethod
     def validate_weeks_count_range(semanas: int) -> None:
-        """Validate number of weeks in season (1-17 range for NFL)"""
-        if semanas < 1 or semanas > 17:
-            raise ValidationError("El número de semanas debe estar entre 1 y 17")
+        """Validate number of weeks in season (1-18 range for NFL)"""
+        if semanas < 1 or semanas > 18:
+            raise ValidationError("El número de semanas debe estar entre 1 y 18")
     
     @staticmethod
     def validate_fecha_fin_posterior_inicio(fecha_inicio: date, fecha_fin: date) -> None:
