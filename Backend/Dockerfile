@@ -24,6 +24,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy the API source code
 COPY API/ ./API/
 
+# Create directories for image storage
+RUN mkdir -p /app/imgs/pics /app/imgs/thumbnails /app/processed_files && \
+    chmod -R 755 /app/imgs /app/processed_files
+
 # Change to API directory
 WORKDIR /app/API
 

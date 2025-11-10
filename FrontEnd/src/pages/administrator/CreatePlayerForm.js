@@ -3,7 +3,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/global.css";
 import { list } from "../../utils/communicationModule/resources/equipos.js";
-import { postPlayer } from "../../utils/communicationModule/resources/players.js";
+import {
+  postPlayer,
+  postPlayers,
+} from "../../utils/communicationModule/resources/players.js";
 
 function CreateNflPlayerForm() {
   const [form, setForm] = useState({
@@ -16,12 +19,52 @@ function CreateNflPlayerForm() {
   });
   const [teams, setTeams] = useState([]);
   const [toast, setToast] = useState({ type: null, message: "" });
+  const [status, setStatus] = useState("");
 
   const navigate = useNavigate();
 
   // Solo usamos estado para la vista previa del thumbnail
   const [imageUrl, setImageUrl] = useState("");
   const [error, setError] = useState("");
+  const [fileName, setFileName] = useState("");
+  const [jsonData, setJsonData] = useState(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setFileName(file.name);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+        setJsonData(data);
+        setStatus("JSON loaded successfully!");
+      } catch (err) {
+        console.error("Invalid JSON:", err);
+        setStatus("Invalid JSON file");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleUpload = async () => {
+    if (!jsonData) {
+      setStatus("Please select a valid JSON file first.");
+      return;
+    }
+
+    try {
+      const response = await postPlayers({
+        jugadores: jsonData,
+        filename: fileName,
+      });
+      alert("Jugadores creados con éxito!");
+    } catch (err) {
+      setError(err?.message || "Error al subir archivo");
+    }
+  };
 
   function setField(name, value) {
     setForm((f) => ({ ...f, [name]: value }));
@@ -55,8 +98,10 @@ function CreateNflPlayerForm() {
         equipo_id: form.equipo_id,
         imagen_url: form.imagen_url,
         thumbnail_url: form.imagen_url,
-        activo: "true",
+        activo: form.activo,
       });
+
+      alert(`Jugador "${form.nombre}" creado!`);
     } catch (err) {
       setError(err?.message || "No se pudo crear el jugador.");
     }
@@ -194,10 +239,6 @@ function CreateNflPlayerForm() {
               Los jugadores nuevos se crean activos por defecto.
             </small>
           </div>
-          <div className="form-field">
-            <p>O bien, subir archivo JSON con jugadores: </p>
-            <button className="button">Subir</button>
-          </div>
 
           {/* Notas / criterios visuales */}
           <div className="nfl-player-form__info-box">
@@ -211,6 +252,7 @@ function CreateNflPlayerForm() {
               </li>
             </ul>
           </div>
+          {error && <div className="toast toast--err">{error}</div>}
 
           {/* Botones */}
           <div className="form-actions">
@@ -226,6 +268,14 @@ function CreateNflPlayerForm() {
             </button>
           </div>
         </form>
+        <div className="form-field">
+          <p>O bien, subir archivo JSON con jugadores: </p>
+          <input type="file" accept=".json" onChange={handleFileChange} />
+          <button className="button" onClick={handleUpload}>
+            Subir
+          </button>
+          {status && <p>{status}</p>}
+        </div>
       </div>
     </div>
   );

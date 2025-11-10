@@ -1,0 +1,26 @@
+[
+  {
+    "nombre": "Josh Allen",
+    "posicion": "QB",
+    "equipo_nfl": "Patriots",
+    "imagen": "https://static.clubs.nfl.com/image/upload/t_editorial_landscape_12_desktop/chiefs/a6vwen0wtjgti32nxfmw"
+  },
+  {
+    "nombre": "Derrick Henry",
+    "posicion": "RB",
+    "equipo_nfl": "Patriots",
+    "imagen": "https://static.clubs.nfl.com/image/upload/t_editorial_landscape_12_desktop/chiefs/a6vwen0wtjgti32nxfmw"
+  },
+  {
+    "nombre": "Patrick Mahomes",
+    "posicion": "QB",
+    "equipo_nfl": "Patriots",
+    "imagen": "https://static.clubs.nfl.com/image/upload/t_editorial_landscape_12_desktop/chiefs/a6vwen0wtjgti32nxfmw"
+  },
+  {
+    "nombre": "Lamar Jackson",
+    "posicion": "QB",
+    "equipo_nfl": "Patriots",
+    "imagen": "https://static.clubs.nfl.com/image/upload/t_editorial_landscape_12_desktop/chiefs/a6vwen0wtjgti32nxfmw"
+  }
+]

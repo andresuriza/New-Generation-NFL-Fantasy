@@ -1,8 +1,10 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import IntegrityError, DataError, DatabaseError
 import traceback
+import os
 
 from routers import usuarios, equipos, media, ligas, temporadas, chatgpt, analytics, jugadores, equipos_fantasy
 from routers.exception_handlers import create_business_exception_handlers
@@ -79,6 +81,15 @@ app.include_router(temporadas.router, prefix="/api/temporadas", tags=["temporada
 app.include_router(chatgpt.router, prefix="/api/chatgpt", tags=["chatgpt"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
 app.include_router(jugadores.router, prefix="/api/jugadores", tags=["jugadores"])
+
+# Mount static files for images
+# Ensure directories exist
+imgs_base_path = "/app/imgs"
+os.makedirs(os.path.join(imgs_base_path, "pics"), exist_ok=True)
+os.makedirs(os.path.join(imgs_base_path, "thumbnails"), exist_ok=True)
+
+# Mount static directories - FastAPI sirve las imágenes directamente
+app.mount("/imgs", StaticFiles(directory=imgs_base_path), name="imgs")
 
 @app.get("/")
 def read_root():

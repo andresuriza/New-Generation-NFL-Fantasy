@@ -65,10 +65,10 @@ class JugadorValidator:
                 raise ValidationError("El dorsal no puede ser mayor a 99")
     
     @staticmethod
-    def validate_dorsal_unique_in_team(db: Session, equipo_nfl_id: UUID, dorsal: int, exclude_id: Optional[UUID] = None) -> None:
+    def validate_dorsal_unique_in_team(db: Session, equipo_id: UUID, dorsal: int, exclude_id: Optional[UUID] = None) -> None:
         """Validate that jersey number is unique within the team"""
         query = db.query(JugadoresDB).filter(
-            JugadoresDB.equipo_nfl_id == equipo_nfl_id,
+            JugadoresDB.equipo_id == equipo_id,
             JugadoresDB.dorsal == dorsal
         )
         
@@ -80,9 +80,9 @@ class JugadorValidator:
             raise ConflictError(f"El dorsal {dorsal} ya existe en este equipo")
     
     @staticmethod
-    def validate_equipo_nfl_exists(db: Session, equipo_nfl_id: UUID) -> EquipoDB:
+    def validate_equipo_nfl_exists(db: Session, equipo_id: UUID) -> EquipoDB:
         """Validate that NFL team exists"""
-        equipo = db.query(EquipoDB).filter(EquipoDB.id == equipo_nfl_id).first()
+        equipo = db.query(EquipoDB).filter(EquipoDB.id == equipo_id).first()
         if not equipo:
             raise NotFoundError("Equipo NFL no encontrado")
         return equipo
@@ -118,11 +118,11 @@ class JugadorValidator:
                 raise ValidationError("La edad debe estar entre 18 y 50 años")
     
     @staticmethod
-    def validate_nombre_unique_in_team(db: Session, nombre: str, equipo_nfl_id: UUID, exclude_id: Optional[UUID] = None) -> None:
+    def validate_nombre_unique_in_team(db: Session, nombre: str, equipo_id: UUID, exclude_id: Optional[UUID] = None) -> None:
         """Validate that player name is unique within the team"""
         query = db.query(JugadoresDB).filter(
             JugadoresDB.nombre == nombre,
-            JugadoresDB.equipo_nfl_id == equipo_nfl_id
+            JugadoresDB.equipo_id == equipo_id
         )
         
         if exclude_id:

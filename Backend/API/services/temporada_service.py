@@ -37,8 +37,14 @@ class TemporadaService:
     def crear_temporada(self, db: Session, temporada: TemporadaCreate) -> TemporadaResponse:
         """Create a new season"""
         # Use validator for all validations
-        validator = TemporadaValidator(db)
-        validator.validate_complete_season_creation(temporada)
+        TemporadaValidator.validate_complete_season_creation(
+            db, 
+            temporada.nombre,
+            temporada.semanas,
+            temporada.fecha_inicio,
+            temporada.fecha_fin,
+            temporada.es_actual
+        )
         
         # Handle current season logic
         if temporada.es_actual:
@@ -74,18 +80,15 @@ class TemporadaService:
         if not temporada:
             raise NotFoundError("Temporada no encontrada")
         
-        # Use validator for validations
-        validator = TemporadaValidator(db)
-        
         # Validate updates if date range or weeks are being updated
         datos_actualizados = actualizacion.model_dump(exclude_unset=True)
         if "fecha_inicio" in datos_actualizados or "fecha_fin" in datos_actualizados:
             fecha_inicio = datos_actualizados.get("fecha_inicio", temporada.fecha_inicio)
             fecha_fin = datos_actualizados.get("fecha_fin", temporada.fecha_fin)
-            validator.validate_fecha_fin_posterior_inicio(fecha_inicio, fecha_fin)
+            TemporadaValidator.validate_fecha_fin_posterior_inicio(fecha_inicio, fecha_fin)
         
         if "semanas" in datos_actualizados:
-            validator.validate_weeks_count_range(datos_actualizados["semanas"])
+            TemporadaValidator.validate_weeks_count_range(datos_actualizados["semanas"])
         
         # Si se marca como actual, desmarcar otras temporadas actuales
         if actualizacion.es_actual:
@@ -118,8 +121,13 @@ class TemporadaService:
     def crear_semana(self, db: Session, semana: TemporadaSemanaCreate) -> TemporadaSemanaResponse:
         """Crear una semana para una temporada"""
         # Use validator for week creation
-        validator = TemporadaValidator(db)
-        validator.validate_week_creation(semana)
+        TemporadaValidator.validate_week_creation(
+            db,
+            semana.temporada_id,
+            semana.numero,
+            semana.fecha_inicio,
+            semana.fecha_fin
+        )
         
         nueva_semana = TemporadaSemanaDB(**semana.model_dump())
         

@@ -17,8 +17,22 @@ class JugadorBase(BaseModel):
     activo: bool = Field(True, description="Si el jugador está activo")
 
 # For creating a new player
-class JugadorCreate(JugadorBase):
-    pass
+class JugadorCreate(BaseModel):
+    """
+    Modelo para crear un jugador.
+    - nombre: requerido
+    - posicion: requerido
+    - equipo_id: requerido (debe ser un equipo NFL existente)
+    - imagen_url: requerido
+    - thumbnail_url: opcional, se genera automáticamente si no se proporciona
+    - activo: por defecto True
+    """
+    nombre: str = Field(..., min_length=1, max_length=100, description="Nombre del jugador")
+    posicion: PosicionJugadorEnum = Field(..., description="Posición del jugador")
+    equipo_id: UUID = Field(..., description="ID del equipo NFL")
+    imagen_url: str = Field(..., description="URL de la imagen del jugador")
+    thumbnail_url: Optional[str] = Field(None, description="URL del thumbnail (se genera automáticamente si no se proporciona)")
+    activo: bool = Field(default=True, description="Si el jugador está activo")
 
 # For updating a player
 class JugadorUpdate(BaseModel):

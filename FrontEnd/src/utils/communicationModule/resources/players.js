@@ -1,14 +1,14 @@
 import { request } from "../httpClient";
 
-export const postPlayer = (
+export const postPlayer = ({
   nombre,
   posicion,
   equipo_id,
   imagen_url,
   thumbnail_url,
-  activo
-) => {
-  return request("/jugadores/", {
+  activo,
+}) =>
+  request("/jugadores/", {
     method: "POST",
     body: {
       nombre,
@@ -19,4 +19,9 @@ export const postPlayer = (
       activo,
     },
   });
-};
+
+export const postPlayers = (data) =>
+  request("/jugadores/bulk", {
+    method: "POST",
+    body: data,
+  });
