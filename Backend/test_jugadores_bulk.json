@@ -1,125 +1,125 @@
 {
   "jugadores": [
     {
-      "nombre": "Josh Allen",
+      "nombre": "James Winston",
       "posicion": "QB",
       "equipo_nfl": "Buffalo Bills",
-      "imagen": "https://example.com/players/josh_allen.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Derrick Henry",
+      "nombre": "Carlos Rodriguez",
       "posicion": "RB",
       "equipo_nfl": "Tennessee Titans",
-      "imagen": "https://example.com/players/derrick_henry.png"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Patrick Mahomes",
+      "nombre": "Marcus Thompson",
       "posicion": "QB",
       "equipo_nfl": "Kansas City Chiefs",
-      "imagen": "https://example.com/players/patrick_mahomes.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Lamar Jackson",
+      "nombre": "Derek Williams",
       "posicion": "QB",
       "equipo_nfl": "Baltimore Ravens",
-      "imagen": "https://example.com/players/lamar_jackson.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Aaron Jones",
+      "nombre": "Tyler Mitchell",
       "posicion": "RB",
       "equipo_nfl": "Green Bay Packers",
-      "imagen": "https://example.com/players/aaron_jones.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "CeeDee Lamb",
+      "nombre": "Brandon Foster",
       "posicion": "WR",
       "equipo_nfl": "Dallas Cowboys",
-      "imagen": "https://example.com/players/ceedee_lamb.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Christian McCaffrey",
+      "nombre": "Nathan Parker",
       "posicion": "RB",
       "equipo_nfl": "San Francisco 49ers",
-      "imagen": "https://example.com/players/christian_mccaffrey.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Alvin Kamara",
+      "nombre": "Raymond Brooks",
       "posicion": "RB",
       "equipo_nfl": "New Orleans Saints",
-      "imagen": "https://example.com/players/alvin_kamara.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Cooper Kupp",
+      "nombre": "Kevin Anderson",
       "posicion": "WR",
       "equipo_nfl": "Los Angeles Rams",
-      "imagen": "https://example.com/players/cooper_kupp.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Davante Adams",
+      "nombre": "Michael Stewart",
       "posicion": "WR",
       "equipo_nfl": "Las Vegas Raiders",
-      "imagen": "https://example.com/players/davante_adams.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "T.J. Watt",
+      "nombre": "Christopher Hayes",
       "posicion": "DEF",
       "equipo_nfl": "Pittsburgh Steelers",
-      "imagen": "https://example.com/players/tj_watt.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Nick Chubb",
+      "nombre": "Daniel Martinez",
       "posicion": "RB",
       "equipo_nfl": "Cleveland Browns",
-      "imagen": "https://example.com/players/nick_chubb.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Ja'Marr Chase",
+      "nombre": "Anthony Cooper",
       "posicion": "WR",
       "equipo_nfl": "Cincinnati Bengals",
-      "imagen": "https://example.com/players/jamarr_chase.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Travis Kelce",
+      "nombre": "Robert Turner",
       "posicion": "TE",
       "equipo_nfl": "Kansas City Chiefs",
-      "imagen": "https://example.com/players/travis_kelce.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Justin Tucker",
+      "nombre": "Samuel Collins",
       "posicion": "K",
       "equipo_nfl": "Baltimore Ravens",
-      "imagen": "https://example.com/players/justin_tucker.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "George Kittle",
+      "nombre": "Benjamin Price",
       "posicion": "TE",
       "equipo_nfl": "San Francisco 49ers",
-      "imagen": "https://example.com/players/george_kittle.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Stefon Diggs",
+      "nombre": "Andrew Richardson",
       "posicion": "WR",
       "equipo_nfl": "Buffalo Bills",
-      "imagen": "https://example.com/players/stefon_diggs.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Najee Harris",
+      "nombre": "Jonathan Walker",
       "posicion": "RB",
       "equipo_nfl": "Pittsburgh Steelers",
-      "imagen": "https://example.com/players/najee_harris.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     },
     {
-      "nombre": "Tyreek Hill",
+      "nombre": "Gregory Bennett",
       "posicion": "WR",
       "equipo_nfl": "Kansas City Chiefs",
-      "imagen": "https://example.com/players/tyreek_hill.jpg",
-      "id": "custom-id-tyreek-001"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg",
+      "id": "custom-id-gregory-001"
     },
     {
-      "nombre": "Mark Andrews",
+      "nombre": "Steven Hughes",
       "posicion": "TE",
       "equipo_nfl": "Baltimore Ravens",
-      "imagen": "https://example.com/players/mark_andrews.jpg"
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/250px-Michael_Jordan_in_2014.jpg"
     }
   ],
   "filename": "test_jugadores_bulk.json"

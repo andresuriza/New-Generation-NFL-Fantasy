@@ -54,7 +54,22 @@ async def crear_jugadores_bulk(
         HTTPException 400: Si hay errores en los datos
         HTTPException 500: Si hay errores en el procesamiento
     """
-    return jugador_service.crear_jugadores_bulk(db, request.jugadores, request.filename)
+    result = jugador_service.crear_jugadores_bulk(db, request.jugadores, request.filename)
+    
+    # Si la operación no fue exitosa, retornar error 400
+    if not result.success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Error en la creación masiva de jugadores",
+                "created_count": result.created_count,
+                "error_count": result.error_count,
+                "errors": result.errors,
+                "processed_file": result.processed_file
+            }
+        )
+    
+    return result
 
 @router.get("/", response_model=List[JugadorResponse])
 async def listar_jugadores(

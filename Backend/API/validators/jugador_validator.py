@@ -211,9 +211,31 @@ class JugadorValidator:
     
     @staticmethod
     def validate_imagen_url_bulk(imagen_url: str) -> None:
-        """Validate image URL format for bulk creation"""
-        if not imagen_url.startswith(('http://', 'https://')):
-            raise ValidationError("URL de imagen debe comenzar con http:// o https://")
+        """
+        Validate image URL format for bulk creation.
+        Accepts:
+        - URLs: http:// or https://
+        - Data URIs: data:image/...;base64,...
+        - Raw base64: strings that look like base64 encoded data
+        """
+        import re
+        
+        # Check if it's a URL
+        if imagen_url.startswith(('http://', 'https://')):
+            return
+        
+        # Check if it's a data URI
+        if imagen_url.startswith('data:'):
+            return
+        
+        # Check if it's raw base64 (common chars in base64: A-Z, a-z, 0-9, +, /, =)
+        # Must be at least 100 chars and match base64 pattern
+        if len(imagen_url) >= 100:
+            base64_pattern = r'^[A-Za-z0-9+/]*={0,2}$'
+            if re.match(base64_pattern, imagen_url):
+                return
+        
+        raise ValidationError("Imagen debe ser una URL (http:// o https://), datos base64 con prefijo data:, o base64 sin prefijo")
 
 
 # Create validator instance
