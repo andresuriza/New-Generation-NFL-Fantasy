@@ -65,13 +65,19 @@ class TemporadaValidator:
             raise ValidationError("La temporada debe tener al menos 1 semana")
         
         if semanas > 18:
-            raise ValidationError("La temporada no puede tener más de 18 semanas")
+            raise ValidationError(
+                f"La temporada no puede tener más de 18 semanas. Valor proporcionado: {semanas}. "
+                "La NFL regular season tiene 18 semanas (semanas 1-18), que es el máximo permitido."
+            )
     
     @staticmethod
     def validate_weeks_count_range(semanas: int) -> None:
         """Validate number of weeks in season (1-18 range for NFL)"""
         if semanas < 1 or semanas > 18:
-            raise ValidationError("El número de semanas debe estar entre 1 y 18")
+            raise ValidationError(
+                f"El número de semanas debe estar entre 1 y 18 (temporada regular NFL). "
+                f"Valor proporcionado: {semanas}"
+            )
     
     @staticmethod
     def validate_fecha_fin_posterior_inicio(fecha_inicio: date, fecha_fin: date) -> None:

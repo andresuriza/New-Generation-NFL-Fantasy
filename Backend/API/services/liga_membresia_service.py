@@ -22,15 +22,6 @@ class LigaMembresiaService:
     def unirse_liga(self, db: Session, liga_id: UUID, usuario_id: UUID, contrasena: str, alias: str, nombre_equipo: str) -> LigaMiembroResponse:
         """
         Unirse a una liga.
-        
-        Requiere:
-        - ID de la liga válido
-        - ID del usuario válido
-        - Contraseña correcta de la liga
-        - Alias único en la liga
-        - Nombre de equipo único en la liga
-        - Que la liga tenga cupos disponibles
-        - Que el usuario no esté ya en la liga
         """
         # Use validators
         liga_validator = LigaValidator()
