@@ -75,12 +75,22 @@ class JugadorService:
         if existing_jugador:
             raise ConflictError(f"El jugador '{jugador_data.nombre}' ya existe en el equipo '{equipo.nombre}'")
         
-        # Download and save image, generate thumbnail
+        # Save image (detect if URL or base64) and generate thumbnail
         try:
-            saved_image_path, saved_thumbnail_path = cdn_service.save_image_from_url(
-                jugador_data.imagen_url,
-                entity_type="jugador"
-            )
+            # Detect if it's base64 data or URL
+            if jugador_data.imagen_url.startswith('data:') or self._is_base64(jugador_data.imagen_url):
+                # It's base64 data
+                saved_image_path, saved_thumbnail_path = cdn_service.save_base64_image(
+                    jugador_data.imagen_url,
+                    entity_type="jugador"
+                )
+            else:
+                # It's a URL
+                saved_image_path, saved_thumbnail_path = cdn_service.save_image_from_url(
+                    jugador_data.imagen_url,
+                    entity_type="jugador"
+                )
+            
             # Update paths to local storage
             jugador_data.imagen_url = saved_image_path
             jugador_data.thumbnail_url = saved_thumbnail_path
@@ -245,12 +255,23 @@ class JugadorService:
                 # Validate image URL format using validator
                 jugador_validator.validate_imagen_url_bulk(jugador_data.imagen)
                 
-                # Download and save image, generate thumbnail
+                # Save image (detect if URL or base64) and generate thumbnail
                 try:
-                    saved_image_path, saved_thumbnail_path = cdn_service.save_image_from_url(
-                        jugador_data.imagen.strip(),
-                        entity_type="jugador"
-                    )
+                    imagen_stripped = jugador_data.imagen.strip()
+                    
+                    # Detect if it's base64 data or URL
+                    if imagen_stripped.startswith('data:') or self._is_base64(imagen_stripped):
+                        # It's base64 data
+                        saved_image_path, saved_thumbnail_path = cdn_service.save_base64_image(
+                            imagen_stripped,
+                            entity_type="jugador"
+                        )
+                    else:
+                        # It's a URL
+                        saved_image_path, saved_thumbnail_path = cdn_service.save_image_from_url(
+                            imagen_stripped,
+                            entity_type="jugador"
+                        )
                 except ValueError as img_error:
                     raise ValidationError(f"Error al procesar imagen: {str(img_error)}")
                 
@@ -314,6 +335,25 @@ class JugadorService:
                 errors=[f"Error al crear jugadores en base de datos: {str(e)}"],
                 processed_file=self._move_processed_file(filename, success=False) if filename else None
             )
+    
+    def _is_base64(self, data: str) -> bool:
+        """
+        Check if a string is valid base64 data.
+        
+        Args:
+            data: String to check
+            
+        Returns:
+            True if valid base64, False otherwise
+        """
+        
+        if len(data) < 100:  #imagen de menos de 100 caracteres no contiene suficiente data
+            return False
+        
+        # expresion regular para revisar si es base64
+        import re
+        base64_pattern = r'^[A-Za-z0-9+/]*={0,2}$'
+        return bool(re.match(base64_pattern, data))
     
     def _generate_thumbnail_url(self, imagen_url: str) -> Optional[str]:
         """Generate thumbnail URL from image URL"""

@@ -4,6 +4,8 @@ CDN Service for handling image uploads and storage
 import os
 import uuid
 import shutil
+import base64
+import re
 from typing import Optional, Tuple
 from pathlib import Path
 from PIL import Image
@@ -161,6 +163,88 @@ class CDNService:
             
         except Exception as e:
             raise ValueError(f"Error al procesar archivo subido: {str(e)}")
+    
+    def save_base64_image(self, base64_data: str, entity_type: str = "jugador") -> Tuple[str, str]:
+        """
+        Save image from base64 encoded data and generate thumbnail.
+        
+        Args:
+            base64_data: Base64 encoded image data (with or without data URI prefix)
+                         Examples:
+                         - "data:image/png;base64,iVBORw0KG..."
+                         - "iVBORw0KG..." (just the base64 string)
+            entity_type: Type of entity (jugador, equipo, usuario, etc.)
+            
+        Returns:
+            Tuple of (image_path, thumbnail_path) - relative paths to stored images
+            
+        Raises:
+            ValueError: If base64 data is invalid or cannot be processed
+        """
+        try:
+            # Remove data URI prefix if present (e.g., "data:image/png;base64,")
+            if base64_data.startswith('data:'):
+                # Extract the actual base64 data after the comma
+                match = re.match(r'data:image/(\w+);base64,(.+)', base64_data)
+                if match:
+                    image_format = match.group(1)  # png, jpeg, etc.
+                    base64_string = match.group(2)
+                else:
+                    raise ValueError("Formato de data URI inválido")
+            else:
+                # Assume it's just the base64 string
+                base64_string = base64_data
+                image_format = 'jpg'  # Default format
+            
+            # Decode base64 to binary
+            try:
+                image_binary = base64.b64decode(base64_string)
+            except Exception as e:
+                raise ValueError(f"Error al decodificar base64: {str(e)}")
+            
+            # Open image with PIL
+            image = Image.open(BytesIO(image_binary))
+            
+            # Determine file extension
+            # PIL automatically detects format, use it if available
+            if image.format:
+                ext = f".{image.format.lower()}"
+                if ext == '.jpeg':
+                    ext = '.jpg'
+            else:
+                ext = f".{image_format.lower()}"
+            
+            # Validate extension
+            if ext not in self.ALLOWED_EXTENSIONS:
+                ext = '.jpg'  # Default to jpg if format not recognized
+            
+            # Generate unique filename
+            unique_filename = f"{uuid.uuid4()}{ext}"
+            
+            # Save original image
+            image_path = os.path.join(self.PICS_DIR, unique_filename)
+            image.save(image_path, quality=85, optimize=True)
+            
+            # Generate and save thumbnail
+            thumbnail_filename = f"thumb_{unique_filename}"
+            thumbnail_path = os.path.join(self.THUMBNAILS_DIR, thumbnail_filename)
+            
+            # Create thumbnail
+            thumbnail = image.copy()
+            thumbnail.thumbnail(self.THUMBNAIL_SIZE, Image.Resampling.LANCZOS)
+            thumbnail.save(thumbnail_path, quality=85, optimize=True)
+            
+            # Return relative paths
+            relative_image_path = f"/imgs/pics/{unique_filename}"
+            relative_thumbnail_path = f"/imgs/thumbnails/{thumbnail_filename}"
+            
+            return relative_image_path, relative_thumbnail_path
+            
+        except ValueError:
+            # Re-raise ValueError with original message
+            raise
+        except Exception as e:
+            raise ValueError(f"Error al procesar imagen base64: {str(e)}")
     
     def delete_image(self, image_path: str) -> bool:
         """
