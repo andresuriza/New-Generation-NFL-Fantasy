@@ -18,8 +18,10 @@ router = APIRouter()
 
 @router.post("/", response_model=JugadorResponse, status_code=status.HTTP_201_CREATED)
 async def crear_jugador(jugador: JugadorCreate, db: Session = Depends(get_db)):
-    """Crear un nuevo jugador"""
-    return jugador_service.crear_jugador(db, jugador)
+    """
+    Crear un nuevo jugador.
+    """
+    return jugador_service.create(db, jugador)
 
 @router.post("/bulk", response_model=JugadorBulkResult, status_code=status.HTTP_201_CREATED)
 async def crear_jugadores_bulk(

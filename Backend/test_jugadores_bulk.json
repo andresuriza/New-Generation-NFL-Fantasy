@@ -1,0 +1,126 @@
+{
+  "jugadores": [
+    {
+      "nombre": "Josh Allen",
+      "posicion": "QB",
+      "equipo_nfl": "Buffalo Bills",
+      "imagen": "https://example.com/players/josh_allen.jpg"
+    },
+    {
+      "nombre": "Derrick Henry",
+      "posicion": "RB",
+      "equipo_nfl": "Tennessee Titans",
+      "imagen": "https://example.com/players/derrick_henry.png"
+    },
+    {
+      "nombre": "Patrick Mahomes",
+      "posicion": "QB",
+      "equipo_nfl": "Kansas City Chiefs",
+      "imagen": "https://example.com/players/patrick_mahomes.jpg"
+    },
+    {
+      "nombre": "Lamar Jackson",
+      "posicion": "QB",
+      "equipo_nfl": "Baltimore Ravens",
+      "imagen": "https://example.com/players/lamar_jackson.jpg"
+    },
+    {
+      "nombre": "Aaron Jones",
+      "posicion": "RB",
+      "equipo_nfl": "Green Bay Packers",
+      "imagen": "https://example.com/players/aaron_jones.jpg"
+    },
+    {
+      "nombre": "CeeDee Lamb",
+      "posicion": "WR",
+      "equipo_nfl": "Dallas Cowboys",
+      "imagen": "https://example.com/players/ceedee_lamb.jpg"
+    },
+    {
+      "nombre": "Christian McCaffrey",
+      "posicion": "RB",
+      "equipo_nfl": "San Francisco 49ers",
+      "imagen": "https://example.com/players/christian_mccaffrey.jpg"
+    },
+    {
+      "nombre": "Alvin Kamara",
+      "posicion": "RB",
+      "equipo_nfl": "New Orleans Saints",
+      "imagen": "https://example.com/players/alvin_kamara.jpg"
+    },
+    {
+      "nombre": "Cooper Kupp",
+      "posicion": "WR",
+      "equipo_nfl": "Los Angeles Rams",
+      "imagen": "https://example.com/players/cooper_kupp.jpg"
+    },
+    {
+      "nombre": "Davante Adams",
+      "posicion": "WR",
+      "equipo_nfl": "Las Vegas Raiders",
+      "imagen": "https://example.com/players/davante_adams.jpg"
+    },
+    {
+      "nombre": "T.J. Watt",
+      "posicion": "DEF",
+      "equipo_nfl": "Pittsburgh Steelers",
+      "imagen": "https://example.com/players/tj_watt.jpg"
+    },
+    {
+      "nombre": "Nick Chubb",
+      "posicion": "RB",
+      "equipo_nfl": "Cleveland Browns",
+      "imagen": "https://example.com/players/nick_chubb.jpg"
+    },
+    {
+      "nombre": "Ja'Marr Chase",
+      "posicion": "WR",
+      "equipo_nfl": "Cincinnati Bengals",
+      "imagen": "https://example.com/players/jamarr_chase.jpg"
+    },
+    {
+      "nombre": "Travis Kelce",
+      "posicion": "TE",
+      "equipo_nfl": "Kansas City Chiefs",
+      "imagen": "https://example.com/players/travis_kelce.jpg"
+    },
+    {
+      "nombre": "Justin Tucker",
+      "posicion": "K",
+      "equipo_nfl": "Baltimore Ravens",
+      "imagen": "https://example.com/players/justin_tucker.jpg"
+    },
+    {
+      "nombre": "George Kittle",
+      "posicion": "TE",
+      "equipo_nfl": "San Francisco 49ers",
+      "imagen": "https://example.com/players/george_kittle.jpg"
+    },
+    {
+      "nombre": "Stefon Diggs",
+      "posicion": "WR",
+      "equipo_nfl": "Buffalo Bills",
+      "imagen": "https://example.com/players/stefon_diggs.jpg"
+    },
+    {
+      "nombre": "Najee Harris",
+      "posicion": "RB",
+      "equipo_nfl": "Pittsburgh Steelers",
+      "imagen": "https://example.com/players/najee_harris.jpg"
+    },
+    {
+      "nombre": "Tyreek Hill",
+      "posicion": "WR",
+      "equipo_nfl": "Kansas City Chiefs",
+      "imagen": "https://example.com/players/tyreek_hill.jpg",
+      "id": "custom-id-tyreek-001"
+    },
+    {
+      "nombre": "Mark Andrews",
+      "posicion": "TE",
+      "equipo_nfl": "Baltimore Ravens",
+      "imagen": "https://example.com/players/mark_andrews.jpg"
+    }
+  ],
+  "filename": "test_jugadores_bulk.json"
+}
