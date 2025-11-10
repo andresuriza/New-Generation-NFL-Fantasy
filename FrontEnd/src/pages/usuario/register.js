@@ -135,7 +135,7 @@ export default function Register() {
         correo: form.email.trim(),
         contrasena: form.password,
         confirmar_contrasena: form.confirm,
-        rol: form.rol,
+        rol: "manager",
       };
       await apiRegisterUser(payload);
       setSubmitting(false);
@@ -343,16 +343,6 @@ export default function Register() {
 
           {/* Alias */}
           <div className="form__group">
-            <div className="label-row">
-              <label>
-                Rol:
-                <select name="rol" value={form.rol} onChange={handleChange}>
-                  <option value="">Seleccione uno</option>
-                  <option value="administrador">Administrador</option>
-                  <option value="manager">Manager</option>
-                </select>
-              </label>
-            </div>
             <div className="label-row">
               <label htmlFor="alias">Alias (opcional)</label>
               <span className="counter">

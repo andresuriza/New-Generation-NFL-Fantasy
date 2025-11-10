@@ -1,7 +1,17 @@
 import http, { request } from "../httpClient";
 
 // POST Equipo
-export const register = ({ nombre, liga_id, usuario_id, thumbnail }) =>
+export const postNFLTeam = ({ nombre, ciudad, thumbnail }) =>
+  request("/equipos/", {
+    method: "POST",
+    body: {
+      nombre,
+      ciudad,
+      thumbnail,
+    },
+  });
+
+export const postFantasyTeam = ({ nombre, liga_id, usuario_id, thumbnail }) =>
   request("/equipos/", {
     method: "POST",
     body: { nombre, liga_id, usuario_id, thumbnail },

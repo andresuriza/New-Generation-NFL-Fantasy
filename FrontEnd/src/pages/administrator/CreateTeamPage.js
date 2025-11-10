@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  register as apiRegisterEquipo,
+  postNFLTeam,
   update as apiUpdateEquipo,
 } from "../../utils/communicationModule/resources/equipos";
 import { GetLigas as apiListLigas } from "../../utils/communicationModule/resources/ligas";
@@ -97,10 +97,6 @@ export default function CreateTeamPage() {
       setError("El nombre del equipo debe estar entre 1 y 100 caracteres.");
       return;
     }
-    if (!ligaId) {
-      setError("Debes seleccionar una liga.");
-      return;
-    }
     if (!image) {
       setError("Una imagen valida debe ser subida.");
       return;
@@ -108,11 +104,10 @@ export default function CreateTeamPage() {
 
     try {
       // Create equipo on backend
-      const created = await apiRegisterEquipo({
-        liga_id: ligaId,
-        usuario_id: user.id,
+      const created = await postNFLTeam({
         nombre: teamName,
-        thumbnail: null,
+        ciudad: cityName,
+        thumbnail: thumbnail,
       });
 
       // Upload image and persist thumbnail url

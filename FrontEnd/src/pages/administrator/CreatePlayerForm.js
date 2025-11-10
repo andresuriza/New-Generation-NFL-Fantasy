@@ -1,28 +1,65 @@
 // src/components/CreateNflPlayerForm.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/global.css";
+import { list } from "../../utils/communicationModule/resources/equipos.js";
+import { postPlayer } from "../../utils/communicationModule/resources/players.js";
 
 function CreateNflPlayerForm() {
+  const [form, setForm] = useState({
+    nombre: "",
+    posicion: "",
+    equipo_id: "",
+    imagen_url: "",
+    thumbnail_url: "",
+    activo: true,
+  });
+  const [teams, setTeams] = useState([]);
+  const [toast, setToast] = useState({ type: null, message: "" });
+
   const navigate = useNavigate();
 
   // Solo usamos estado para la vista previa del thumbnail
   const [imageUrl, setImageUrl] = useState("");
+  const [error, setError] = useState("");
+
+  function setField(name, value) {
+    setForm((f) => ({ ...f, [name]: value }));
+    setToast({ type: null, message: "" });
+  }
+
+  useEffect(() => {
+    async function GetTeams() {
+      try {
+        const [teams] = await Promise.all([list()]);
+        setTeams(teams);
+      } catch (_) {
+        setTeams([]);
+      }
+    }
+
+    GetTeams();
+  }, []);
 
   // Datos de ejemplo (luego los puedes traer del backend o props)
   const examplePositions = ["QB", "RB", "WR", "TE", "K", "DEF"];
-  const exampleTeams = [
-    "Arizona Cardinals",
-    "Atlanta Falcons",
-    "Baltimore Ravens",
-    "Buffalo Bills",
-    "Carolina Panthers",
-    "Chicago Bears",
-  ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Meramente visual por ahora
+    setError("");
+
+    try {
+      const created = await postPlayer({
+        nombre: form.nombre,
+        posicion: form.posicion,
+        equipo_id: form.equipo_id,
+        imagen_url: form.imagen_url,
+        thumbnail_url: form.imagen_url,
+        activo: "true",
+      });
+    } catch (err) {
+      setError(err?.message || "No se pudo crear el jugador.");
+    }
   };
 
   return (
@@ -40,7 +77,10 @@ function CreateNflPlayerForm() {
         </div>
 
         {/* Body */}
-        <form className="card-body nfl-player-form__body" onSubmit={handleSubmit}>
+        <form
+          className="card-body nfl-player-form__body"
+          onSubmit={handleSubmit}
+        >
           {/* Nombre */}
           <div className="form-field">
             <label htmlFor="player-name" className="form-label">
@@ -53,6 +93,8 @@ function CreateNflPlayerForm() {
               required
               className="form-input"
               placeholder="Ej. Patrick Mahomes"
+              value={form.nombre}
+              onChange={(e) => setField("nombre", e.target.value)}
             />
             <small className="form-help">
               Usa el nombre oficial del jugador para evitar duplicados.
@@ -69,7 +111,8 @@ function CreateNflPlayerForm() {
               name="position"
               required
               className="form-select"
-              defaultValue=""
+              onChange={(e) => setField("posicion", e.target.value)}
+              value={form.posicion}
             >
               <option value="" disabled>
                 Selecciona una posición
@@ -92,14 +135,16 @@ function CreateNflPlayerForm() {
               name="team"
               required
               className="form-select"
-              defaultValue=""
+              onChange={(e) => setField("equipo_id", e.target.value)}
+              value={form.equipo_id}
             >
               <option value="" disabled>
                 Selecciona un equipo
               </option>
-              {exampleTeams.map((team) => (
-                <option key={team} value={team}>
-                  {team}
+              {/* Cambiar aqui */}
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.nombre}
                 </option>
               ))}
             </select>
@@ -114,26 +159,22 @@ function CreateNflPlayerForm() {
               URL de imagen <span className="required">*</span>
             </label>
             <input
-              id="player-image"
+              id="player-img"
               name="image"
               type="url"
               required
               className="form-input"
-              placeholder="https://ejemplo.com/jugador.jpg"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+              value={form.imagen_url}
+              onChange={(e) => setField("imagen_url", e.target.value)}
             />
-            <small className="form-help">
-              La imagen se usará para el perfil del jugador y el thumbnail.
-            </small>
           </div>
 
           {/* Thumbnail generado (vista previa) */}
-          {imageUrl && (
+          {form.imagen_url && (
             <div className="form-field nfl-player-form__thumbnail">
               <span className="form-label">Thumbnail generado</span>
               <div className="nfl-player-form__thumbnail-box">
-                <img src={imageUrl} alt="Vista previa del jugador" />
+                <img src={form.imagen_url} alt="Vista previa del jugador" />
               </div>
             </div>
           )}
@@ -144,13 +185,18 @@ function CreateNflPlayerForm() {
               <input
                 type="checkbox"
                 name="isActive"
-                defaultChecked={true}
+                checked={form.activo}
+                onChange={(e) => setField("activo", e.target.checked)}
               />
               <span>Jugador activo</span>
             </label>
             <small className="form-help">
               Los jugadores nuevos se crean activos por defecto.
             </small>
+          </div>
+          <div className="form-field">
+            <p>O bien, subir archivo JSON con jugadores: </p>
+            <button className="button">Subir</button>
           </div>
 
           {/* Notas / criterios visuales */}
