@@ -28,7 +28,10 @@ class LigaService:
     
     @handle_db_errors
     def crear_liga(self, db: Session, liga: LigaCreate) -> LigaResponse:
-        """Create a new league"""
+        """
+        Crear una nueva liga con todas las validaciones y configuraciones por defecto.
+        
+        """
         # Use validator for business rules
         validator = LigaValidator()
         validator.validate_nombre_unique(db, liga.nombre)
@@ -39,8 +42,8 @@ class LigaService:
         security_service.validate_password_strength(liga.contrasena)
         contrasena_hash = security_service.hash_password(liga.contrasena)
         
-        # Prepare league data
-        datos_liga = liga.model_dump(exclude={'contrasena'})
+        # Prepare league data (exclude nombre_equipo_comisionado as it's not a DB field)
+        datos_liga = liga.model_dump(exclude={'contrasena', 'nombre_equipo_comisionado'})
         datos_liga['contrasena_hash'] = contrasena_hash
         
         nueva_liga = LigaDB(**datos_liga)
@@ -48,14 +51,14 @@ class LigaService:
         db.add(nueva_liga)
         db.flush()  # Get ID without full commit
         
-        # Create commissioner membership
-        self._crear_membresia_comisionado(db, nueva_liga.id, nueva_liga.comisionado_id)
+        # Create commissioner membership with team name
+        self._crear_membresia_comisionado(db, nueva_liga.id, nueva_liga.comisionado_id, liga.nombre_equipo_comisionado)
         
         db.commit()
         db.refresh(nueva_liga)
         return _to_liga_response(nueva_liga)
     
-    def _crear_membresia_comisionado(self, db: Session, liga_id: UUID, comisionado_id: UUID) -> None:
+    def _crear_membresia_comisionado(self, db: Session, liga_id: UUID, comisionado_id: UUID, nombre_equipo: str) -> None:
         """Create commissioner membership and corresponding fantasy team"""
         # Skip capacity validation during league creation as commissioner is first member
         
@@ -72,11 +75,11 @@ class LigaService:
         )
         db.add(membresia_comisionado)
         
-        # Create commissioner fantasy team
+        # Create commissioner fantasy team with the provided name
         equipo_fantasy_comisionado = EquipoFantasyDB(
             liga_id=liga_id,
             usuario_id=comisionado_id,
-            nombre=f"Equipo {alias}"  # Use a descriptive team name
+            nombre=nombre_equipo
         )
         db.add(equipo_fantasy_comisionado)
         

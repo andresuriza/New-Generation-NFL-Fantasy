@@ -20,7 +20,18 @@ class LigaMembresiaService:
     """Service for handling league membership operations"""
     
     def unirse_liga(self, db: Session, liga_id: UUID, usuario_id: UUID, contrasena: str, alias: str, nombre_equipo: str) -> LigaMiembroResponse:
-        """Join a league"""
+        """
+        Unirse a una liga.
+        
+        Requiere:
+        - ID de la liga válido
+        - ID del usuario válido
+        - Contraseña correcta de la liga
+        - Alias único en la liga
+        - Nombre de equipo único en la liga
+        - Que la liga tenga cupos disponibles
+        - Que el usuario no esté ya en la liga
+        """
         # Use validators
         liga_validator = LigaValidator()
         usuario_validator = UsuarioValidator()
@@ -29,10 +40,18 @@ class LigaMembresiaService:
         liga = liga_validator.validate_exists(db, liga_id)
         
         # Verify password
-        if not security_service.verify_password(contrasena, liga.contrasena_hash):
+        try:
+            password_valid = security_service.verify_password(contrasena, liga.contrasena_hash)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al verificar contraseña: {str(e)}"
+            )
+        
+        if not password_valid:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Contraseña incorrecta"
+                detail="Contraseña de liga incorrecta"
             )
         
         # Validate user is not already in league

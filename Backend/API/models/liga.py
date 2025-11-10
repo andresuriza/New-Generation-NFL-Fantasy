@@ -46,7 +46,7 @@ class LigaBase(BaseModel):
 
 
 class LigaCreate(LigaBase):
-    pass
+    nombre_equipo_comisionado: str = Field(..., min_length=1, max_length=50, description="Nombre del equipo del comisionado")
 
 
 class LigaUpdate(BaseModel):

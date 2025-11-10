@@ -12,17 +12,34 @@ from services.liga_service import liga_service
 from database import get_db
 
 router = APIRouter()
-#!TODO: GET  CUPOS
+
+class LigaCreateResponse(BaseModel):
+    """Response for league creation including available slots"""
+    liga: LigaResponse
+    cupos_disponibles: int
+    equipos_max: int
+    miembros_actuales: int
+
 class UnirseRequest(BaseModel):
     usuario_id: UUID
     contrasena: str
     alias: str
     nombre_equipo: str
 
-@router.post("/", response_model=LigaResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=LigaCreateResponse, status_code=status.HTTP_201_CREATED)
 async def crear_liga(liga: LigaCreate, db: Session = Depends(get_db)):
-    """Crear una nueva liga"""
-    return liga_service.crear_liga(db, liga)
+    """
+    Crear una nueva liga.
+    """
+    liga_creada = liga_service.crear_liga(db, liga)
+    info_cupos = liga_service.obtener_info_cupos(db, liga_creada.id)
+    
+    return LigaCreateResponse(
+        liga=liga_creada,
+        cupos_disponibles=info_cupos["cupos_disponibles"],
+        equipos_max=info_cupos["equipos_max"],
+        miembros_actuales=info_cupos["miembros_actuales"]
+    )
 
 @router.get("/", response_model=List[LigaResponse])
 async def listar_ligas(
@@ -59,6 +76,14 @@ async def obtener_liga(liga_id: UUID, db: Session = Depends(get_db)):
 async def obtener_liga_completa(liga_id: UUID, db: Session = Depends(get_db)):
     """Obtener liga con sus miembros"""
     return liga_service.obtener_liga_con_miembros(db, liga_id)
+
+@router.get("/{liga_id}/cupos", response_model=dict)
+async def obtener_cupos_liga(liga_id: UUID, db: Session = Depends(get_db)):
+    """
+    Obtener información de cupos disponibles en la liga.
+    
+    """
+    return liga_service.obtener_info_cupos(db, liga_id)
 
 @router.put("/{liga_id}", response_model=LigaResponse)
 async def actualizar_liga(
