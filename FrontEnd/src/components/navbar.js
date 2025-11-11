@@ -22,9 +22,6 @@ export default function Navbar() {
           <NavLink className={linkClass} to="/">
             Home
           </NavLink>
-          <NavLink className={linkClass} to="/players">
-            Jugadores
-          </NavLink>
           {!isAuthenticated ? (
             <>
               <NavLink className={linkClass} to="/register">
