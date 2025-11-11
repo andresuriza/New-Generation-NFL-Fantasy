@@ -20,6 +20,9 @@ export const postFantasyTeam = ({ nombre, liga_id, usuario_id, thumbnail }) =>
 // GET Equipo
 export const list = () => http.get("/equipos/");
 
+// GET Equipo
+export const getFantasyTeam = () => http.get("/equipos-fantasy/");
+
 export const getById = (equipoId) => http.get(`/equipos/${equipoId}`);
 
 // UPDATE Equipo

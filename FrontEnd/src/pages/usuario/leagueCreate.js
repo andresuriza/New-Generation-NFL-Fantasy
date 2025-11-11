@@ -40,6 +40,10 @@ export default function LeagueCreate() {
     description: "",
     teams: 10,
     password: "",
+    equipos_max: 0,
+    playoffs_equipos: 0,
+    puntajes_decimales: false,
+    nombre_equipo_comisionado: "",
   });
   const [commishTeamName, setCommishTeamName] = useState("");
   const [errors, setErrors] = useState({});
@@ -65,7 +69,7 @@ export default function LeagueCreate() {
     if (eSize) e.teams = eSize;
     const ePass = validateLeaguePasswordWrapper(form.password);
     if (ePass) e.password = ePass;
-    const eTeam = validateCommissionerTeamName(commishTeamName);
+    const eTeam = validateCommissionerTeamName(form.nombre_equipo_comisionado);
     if (eTeam) e.commishTeamName = eTeam;
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -76,7 +80,7 @@ export default function LeagueCreate() {
     setToast({ type: null, message: "" });
     if (!validateAll()) return;
 
-    setSubmitting(true);
+    //setSubmitting(true);
 
     // Autogenerados visuales
     const generated = {
@@ -91,6 +95,8 @@ export default function LeagueCreate() {
       playoffs: Number(form.playoffs), // 4 o 6
     };
 
+    //console.log(form);
+
     try {
       const temporada = await GetTemporadaActual();
 
@@ -99,6 +105,9 @@ export default function LeagueCreate() {
         descripcion: form.description,
         contrasena: form.password,
         equipos_max: form.teams,
+        playoffs_equipos: form.playoffs_equipos,
+        puntajes_decimales: form.puntajes_decimales,
+        nombre_equipo_comisionado: form.nombre_equipo_comisionado,
         temporada_id: temporada.id,
         comisionado_id: user.id,
       });
@@ -207,9 +216,9 @@ export default function LeagueCreate() {
                     type="radio"
                     name="playoffs"
                     value={n}
-                    checked={Number(form.playoffs) === n}
+                    checked={Number(form.playoffs_equipos) === n}
                     onChange={(e) =>
-                      setField("playoffs", Number(e.target.value))
+                      setField("playoffs_equipos", Number(e.target.value))
                     }
                   />
                   {n} equipos ({WEEKS_BY_PLAYOFFS[n]})
@@ -224,8 +233,8 @@ export default function LeagueCreate() {
             <input
               id="allowDecimals"
               type="checkbox"
-              checked={!!form.allowDecimals}
-              onChange={(e) => setField("allowDecimals", e.target.checked)}
+              checked={!!form.puntajes_decimales}
+              onChange={(e) => setField("puntajes_decimales", e.target.checked)}
             />
             <label htmlFor="allowDecimals">
               Permitir puntajes con decimales
@@ -238,8 +247,10 @@ export default function LeagueCreate() {
               className={`input ${
                 errors.commishTeamName ? "input--invalid" : ""
               }`}
-              value={commishTeamName}
-              onChange={(e) => setCommishTeamName(e.target.value)}
+              value={form.nombre_equipo_comisionado}
+              onChange={(e) =>
+                setField("nombre_equipo_comisionado", e.target.value)
+              }
               maxLength={50}
               placeholder="Mi primer equipo"
             />

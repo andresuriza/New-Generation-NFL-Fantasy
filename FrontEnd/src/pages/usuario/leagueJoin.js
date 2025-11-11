@@ -66,12 +66,19 @@ export default function LeagueJoin() {
 
   function validateJoin() {
     const e = {};
+
+    if (!name || !name.trim()) e.name = "Ingresa un nombre de liga";
+
     const eAlias = validateAlias(alias);
-    if (eAlias) e.alias = eAlias;
+
+    if (eAlias)
+      e.alias = "Alias: " + eAlias.replace("Alias", "obligatorio y ≤ 50");
+
     const eTeam = validateTeamName(teamName);
     if (eTeam)
       e.teamName =
         "Nombre de equipo: " + eTeam.replace("El nombre", "obligatorio y ≤ 50");
+
     if (!password || !password.trim())
       e.password = "Ingresa la contraseña de la liga.";
     setErrors(e);
@@ -135,12 +142,12 @@ export default function LeagueJoin() {
           <div className="form__group">
             <label>Nombre liga *</label>
             <input
-              className={`input ${errors.alias ? "input--invalid" : ""}`}
+              className={`input ${errors.name ? "input--invalid" : ""}`}
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={50}
             />
-            {errors.alias && <div className="error">{errors.alias}</div>}
+            {errors.alias && <div className="error">{errors.name}</div>}
           </div>
           <div className="form__group">
             <label>Alias (opcional)</label>
