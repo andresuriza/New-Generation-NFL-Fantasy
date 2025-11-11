@@ -6,7 +6,7 @@ from typing import Optional, List
 
 class TemporadaBase(BaseModel):
     nombre: str = Field(..., min_length=1, max_length=100, description="Nombre de la temporada")
-    semanas: int = Field(..., ge=1, le=17, description="Número de semanas (1-17)")
+    semanas: int = Field(..., ge=1, le=18, description="Número de semanas (1-18)")
     fecha_inicio: date = Field(..., description="Fecha de inicio de la temporada")
     fecha_fin: date = Field(..., description="Fecha de fin de la temporada")
     es_actual: Optional[bool] = Field(False, description="Si es la temporada actual")
@@ -24,7 +24,7 @@ class TemporadaCreate(TemporadaBase):
 
 class TemporadaUpdate(BaseModel):
     nombre: Optional[str] = Field(None, min_length=1, max_length=100)
-    semanas: Optional[int] = Field(None, ge=1, le=17)
+    semanas: Optional[int] = Field(None, ge=1, le=18)
     fecha_inicio: Optional[date] = None
     fecha_fin: Optional[date] = None
     es_actual: Optional[bool] = None

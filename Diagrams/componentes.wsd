@@ -1,129 +1,158 @@
 @startuml C3
 title New Generation NFL Fantasy — Diagrama de Componentes (C3)
 
-skinparam dpi 140
+skinparam dpi 100
 skinparam rectangle {
   RoundCorner 12
 }
-skinparam packageStyle rectangle
-skinparam linetype ortho
-skinparam nodesep 10
-skinparam ranksep 20
-top to bottom direction
+skinparam componentStyle rectangle
+skinparam linetype polyline
+skinparam nodesep 50
+skinparam ranksep 60
+skinparam padding 10
+skinparam wrapWidth 200
+skinparam maxMessageSize 150
+left to right direction
 
 actor "Usuario / Visitante" as Usuario
 actor "Operaciones X-NFL\n(Admin / Soporte)" as Admin
 
-package "Frontend Web (React / Next.js)" #LightBlue {
-  component "UI de Usuario\n(Registro / Ligas / Equipos)" as UIUser
-  component "Panel Administrativo\n(Gestión de temporadas / usuarios)" as UIAdmin
-  component "Módulo de Comunicación\nHTTP / REST" as UIAPI
+rectangle "Frontend Web (React / Next.js)" #LightBlue {
+  component "UI de Usuario\n(Registro/Ligas/Equipos)" as UIUser
+  component "Panel Administrativo\n(Gestión temporadas/usuarios)" as UIAdmin
+  component "Módulo Comunicación\nHTTP/REST" as HTTPClient
 }
 
-package "Backend API (Python / FastAPI)" #LightBlue {
-  package "Routers (Thin Controllers)" as Routers {
-    component "UsuariosRouter" as UsuariosRouter
+rectangle "Backend API (Python / FastAPI)" #LightCyan {
+  
+  rectangle "Routers (Thin Controllers)" #AliceBlue {
     component "EquiposRouter" as EquiposRouter
     component "LigasRouter" as LigasRouter
-    component "TemporadasRouter" as TemporadasRouter
+    component "UsuariosRouter" as UsuariosRouter
     component "MediaRouter" as MediaRouter
+    component "JugadoresRouter" as JugadoresRouter
+    component "TemporadasRouter" as TemporadasRouter
   }
-
-  package "Services (Business Logic)" as Services {
-    component "AuthService\n(JWT / Sesiones)" as Auth
-    component "UsuarioService\n(CRUD / Perfil / Desbloqueo)" as Users
-    component "EquipoService\n(Reglas por liga / Recomendaciones)" as EquipoSvc
-    component "LigaService\n(Listado / Consulta / Analytics)" as LigaSvc
-    component "TemporadaService\n(Gestión temporadas)" as TemporadaSvc
+  
+  rectangle "Services (Business Logic)" #LightGreen {
+    component "EquipoService\n(Reglas/Recomendaciones)" as EquipoSvc
+    component "LigaService\n(Listado/Analytics)" as LigaSvc
+    component "UsuarioService\n(CRUD/Perfil/Desbloqueo)" as UsuarioSvc
+    component "AuthService\n(JWT/Sesiones)" as AuthSvc
     component "MediaService\n(Imágenes CDN)" as MediaSvc
-    component "EmailService\n(Azure Communication Email)" as Notify
-    component "CDN Adapter\n(Almacenamiento imágenes)" as CDNAdapter
-    component "NFLService\n(API NFL tiempo real)" as NFLSvc
-    component "ChatGPTService\n(OpenAI / Recomendaciones IA)" as ChatGPTSvc
-    component "AnalyticsService\n(Métricas / BI / Reportes)" as AnalyticsSvc
+    component "EmailService\n(Azure Email)" as EmailSvc
+    component "JugadorService\n(CRUD/Bulk)" as JugadorSvc
+    component "TemporadaService\n(Gestión)" as TemporadaSvc
   }
-
-  package "Repositories (Data Access Layer)" as RepoLayer {
-    component "BaseRepository\n(Generic CRUD operations)" as BaseRepo
-    component "UsuarioRepository\n(User data access)" as UserRepo
-    component "LigaRepository\n(League data access)" as LigaRepo
-    component "EquipoRepository\n(Team data access)" as EquipoRepo
-    component "TemporadaRepository\n(Season data access)" as TemporadaRepo
-    component "MediaRepository\n(Media data access)" as MediaRepo
+  
+  rectangle "Supporting Services" #Lavender {
+    component "AnalyticsService\n(Métricas/BI/Reportes)" as AnalyticsSvc
+    component "NFLService\n(API tiempo real)" as NFLSvc
+    component "ChatGPTService\n(OpenAI/IA)" as ChatGPTSvc
+    component "CDN Adapter\n(Almacenamiento)" as CDNAdapter
   }
-
-  package "Models & Database" as DataLayer {
-    component "Pydantic Schemas\n(Request/Response models)" as Schemas
-    component "SQLAlchemy Models\n(UsuarioDB / LigaDB / EquipoDB / etc.)" as Models
-    component "Database Session\n(PostgreSQL)" as Repo
+  
+  rectangle "Validators (Business Rules)" #LightYellow {
+    component "UsuarioValidator" as UserValidator
+    component "LigaValidator" as LigaValidator
+    component "EquipoValidator" as EquipoValidator
+    component "JugadorValidator" as JugadorValidator
+    component "MediaValidator" as MediaValidator
+    component "TemporadaValidator" as TemporadaValidator
+  }
+  
+  rectangle "Repositories (Data Access)" #LightCoral {
+    component "UsuarioRepository" as UserRepo
+    component "LigaRepository" as LigaRepo
+    component "EquipoRepository" as EquipoRepo
+    component "JugadorRepository" as JugadorRepo
+    component "MediaRepository" as MediaRepo
+    component "TemporadaRepository" as TemporadaRepo
+  }
+  
+  rectangle "Datos" #LightPink {
+    component "Modelos SQLAlchemy\n(UsuarioDB/LigaDB/EquipoDB)" as Models
   }
 }
 
 rectangle "Servicios Externos" #HoneyDew {
-  component "API Oficial NFL\n(Datos tiempo real)" as NFL
-  component "ChatGPT API (OpenAI)\n(Análisis y recomendaciones)" as ChatGPT
-  component "Azure Communication Services\nEmail" as Mail
-  component "CDN / Almacenamiento de Imágenes" as CDN
+  component "ChatGPT API\n(OpenAI)" as ChatGPTAPI
+  component "API NFL\n(Datos real-time)" as NFLAPI
+  component "CDN Storage\n(Imágenes)" as CDNStorage
+  component "Azure Email\n(Comunicación)" as AzureEmail
 }
 
-' Interacciones principales - Actores a Frontend
-Usuario -[#Black]--> UIUser : Navega / juega / gestiona equipos
-Admin -[#Black]--> UIAdmin : Administra ligas y usuarios
+database "Repositorio de Datos\n(PostgreSQL)" as DB
 
-' Frontend interno
-UIUser -[#DarkGreen]--> UIAPI
-UIAdmin -[#DarkGreen]--> UIAPI
+' User interactions
+Usuario -down-> UIUser : "Navega/juega/\ngestiona equipos"
+Admin -down-> UIAdmin : "Administra ligas\ny usuarios"
 
-' Frontend a Backend (Routers)
-UIAPI -[#DarkGreen]--> UsuariosRouter : Usuarios
-UIAPI -[#DarkGreen]--> EquiposRouter : Equipos
-UIAPI -[#DarkGreen]--> LigasRouter  : Ligas
-UIAPI -[#DarkGreen]--> TemporadasRouter : Temporadas
-UIAPI -[#DarkGreen]--> MediaRouter  : Media
+' Frontend to Backend
+UIUser -down-> HTTPClient : "Equipos"
+UIAdmin -down-> HTTPClient : "Media"
+HTTPClient -down-> EquiposRouter : "Ligas"
+HTTPClient -down-> LigasRouter : "Usuarios"
+HTTPClient -down-> UsuariosRouter : "Backend API (Python / FastAPI)"
+HTTPClient -down-> MediaRouter
 
-' Routers -> Services
-UsuariosRouter -[#DarkGreen]--> Users
-EquiposRouter  -[#DarkGreen]--> EquipoSvc
-LigasRouter    -[#DarkGreen]--> LigaSvc
-TemporadasRouter -[#DarkGreen]--> TemporadaSvc
-MediaRouter    -[#DarkGreen]--> MediaSvc
-UsuariosRouter -[#DarkGreen]--> Auth
+' Routers to Services
+EquiposRouter -down-> EquipoSvc
+LigasRouter -down-> LigaSvc
+UsuariosRouter -down-> UsuarioSvc
+UsuariosRouter -down-> AuthSvc
+MediaRouter -down-> MediaSvc
+JugadoresRouter -down-> JugadorSvc
+TemporadasRouter -down-> TemporadaSvc
 
-' Services -> Repositories
-Auth -[#DarkGreen]--> UserRepo
-Users -[#DarkGreen]--> UserRepo
-EquipoSvc -[#DarkGreen]--> EquipoRepo
-LigaSvc -[#DarkGreen]--> LigaRepo
-TemporadaSvc -[#DarkGreen]--> TemporadaRepo
-MediaSvc -[#DarkGreen]--> MediaRepo
+' Services to Validators
+UsuarioSvc -down-> UserValidator : "Valida reglas"
+LigaSvc -down-> LigaValidator : "Valida datos"
+EquipoSvc -down-> EquipoValidator : "Valida reglas"
+JugadorSvc -down-> JugadorValidator
+MediaSvc -down-> MediaValidator
+TemporadaSvc -down-> TemporadaValidator
 
-' Repositories -> Models & Database
-BaseRepo -[#DarkGreen]--> Models
-UserRepo -[#DarkGreen]--> Models
-LigaRepo -[#DarkGreen]--> Models
-EquipoRepo -[#DarkGreen]--> Models
-TemporadaRepo -[#DarkGreen]--> Models
-MediaRepo -[#DarkGreen]--> Models
-Models -[#DarkGreen]--> Repo
+' Services to Supporting Services
+EquipoSvc -right-> AnalyticsSvc : "Análisis"
+LigaSvc -right-> AnalyticsSvc : "Estadísticas"
+EquipoSvc --> NFLSvc : "Datos NFL"
+EquipoSvc --> ChatGPTSvc : "Recomendaciones"
+LigaSvc --> NFLSvc : "Stats NFL"
+AnalyticsSvc --> ChatGPTSvc : "IA"
+MediaSvc --> CDNAdapter : "Imágenes"
+UsuarioSvc --> EmailSvc : "Correos"
 
-' Servicios a Adaptadores/Externos
-Users -[#DarkGreen]--> CDNAdapter : Manejo imágenes perfil
-Notify -[#DarkGreen]--> Mail : Envío de correos (desbloqueo)
-EquipoSvc -[#DarkGreen]--> NFLSvc : Datos equipos/jugadores tiempo real
-EquipoSvc -[#DarkGreen]--> ChatGPTSvc : Recomendaciones alineación
-LigaSvc -[#DarkGreen]--> NFLSvc : Calendario/estadísticas
-LigaSvc -[#DarkGreen]--> AnalyticsSvc : Métricas engagement
-EquipoSvc -[#DarkGreen]--> AnalyticsSvc : Análisis rendimiento
-AnalyticsSvc -[#DarkGreen]--> ChatGPTSvc : Insights avanzados IA
+' Supporting Services to External
+ChatGPTSvc -down-> ChatGPTAPI : "Análisis IA"
+NFLSvc -down-> NFLAPI : "API real-time"
+CDNAdapter -down-> CDNStorage
+EmailSvc -down-> AzureEmail : "Envío Email"
 
-' Adaptadores a Servicios Externos
-CDNAdapter -[#DarkGreen]--> CDN
-NFLSvc -[#DarkGreen]--> NFL : API tiempo real (estadísticas/proyecciones)
-ChatGPTSvc -[#DarkGreen]--> ChatGPT : Solicitudes análisis IA
+' Services to Repositories
+UsuarioSvc -down-> UserRepo : "CRUD"
+LigaSvc -down-> LigaRepo : "CRUD"
+EquipoSvc -down-> EquipoRepo : "CRUD"
+JugadorSvc -down-> JugadorRepo : "CRUD"
+MediaSvc -down-> MediaRepo : "CRUD"
+TemporadaSvc -down-> TemporadaRepo : "CRUD"
+AuthSvc -down-> UserRepo : "Auth queries"
 
-legend bottom
-  |Fondo celeste| **En alcance** – Componentes internos |
-  |Fondo verde claro| **Fuera de alcance** – Servicios externos |
-  | | **→** Flujo de información / REST |
-endlegend
+' Repositories to Models
+UserRepo -down-> Models : "ORM"
+LigaRepo -down-> Models : "ORM"
+EquipoRepo -down-> Models : "ORM"
+JugadorRepo -down-> Models : "ORM"
+MediaRepo -down-> Models : "ORM"
+TemporadaRepo -down-> Models : "ORM"
+
+' Models to Database
+Models -down-> DB : "SQL queries"
+
+note bottom of DB
+  <b>Celeste</b> = Componentes internos
+  <b>Verde</b> = Servicios externos
+  <b>-></b> Flujo REST
+end note
+
 @enduml

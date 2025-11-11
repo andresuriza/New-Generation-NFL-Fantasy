@@ -14,37 +14,26 @@ actor "Operaciones X-NFL\n(Admin / Soporte)" as Admin
 rectangle "NG NFL Fantasy\n(Sistema en la nube)" as Sistema #LightBlue {
   node "Frontend Web\n(React / Next.js)" as FRONT
   node "Backend API\n(Python / FastAPI)" as BACK {
-    frame "Routers (Thin Controllers)" as Routers {
-      component UsuariosRouter
-      component EquiposRouter
-      component LigasRouter
-      component TemporadasRouter
-      component MediaRouter
+    frame "API Layer" as APILayer {
+      component "REST Routers"
     }
-    frame "Services (Business Logic)" as Services {
-      component AuthService
-      component UsuarioService
-      component EquipoService
-      component LigaService
-      component TemporadaService
-      component MediaService
-      component NFLService
-      component ChatGPTService
-      component EmailService
-      component AnalyticsService
+    frame "Business Logic" as BusinessLayer {
+      component "Services"
     }
-    frame "Repositories (Data Access)" as Repositories {
-      component UsuarioRepository
-      component EquipoRepository
-      component LigaRepository
-      component TemporadaRepository
-      component MediaRepository
+    frame "Validation Layer" as ValidationLayer {
+      component "Validators"
     }
-    frame "Models & DB" as ModelsDB {
-      component SQLAlchemyModels
+    frame "Data Access" as DataLayer {
+      component "Repositories"
     }
   }
   database "PostgreSQL" as DB
+
+  FRONT -[#DarkGreen]-> APILayer : REST / HTTPS
+  APILayer -[#DarkGreen]-> BusinessLayer : Business operations
+  BusinessLayer -[#DarkGreen]-> ValidationLayer : Rule validation
+  BusinessLayer -[#DarkGreen]-> DataLayer : Data access
+  DataLayer -[#DarkGreen]-> DB : SQL queries
 
   FRONT -[#DarkGreen]-> UsuariosRouter : REST / HTTPS
   FRONT -[#DarkGreen]-> EquiposRouter
@@ -58,6 +47,13 @@ rectangle "NG NFL Fantasy\n(Sistema en la nube)" as Sistema #LightBlue {
   TemporadasRouter -[#DarkGreen]-> TemporadaService
   MediaRouter    -[#DarkGreen]-> MediaService
   UsuariosRouter -[#DarkGreen]-> AuthService
+
+  UsuarioService -[#DarkGreen]-> UsuarioValidator : Validación reglas negocio
+  EquipoService -[#DarkGreen]-> EquipoNFLValidator 
+  EquipoService -[#DarkGreen]-> EquipoFantasyValidator
+  LigaService -[#DarkGreen]-> LigaValidator
+  TemporadaService -[#DarkGreen]-> TemporadaValidator
+  MediaService -[#DarkGreen]-> MediaValidator
 
   AuthService -[#DarkGreen]-> UsuarioRepository
   UsuarioService -[#DarkGreen]-> UsuarioRepository

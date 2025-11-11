@@ -5,7 +5,7 @@ import LogoutButton from "./logoutButton";
 const linkClass = ({ isActive }) => `button ${isActive ? "" : "button--ghost"}`;
 
 export default function Navbar() {
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <nav className="navbar">
@@ -22,9 +22,6 @@ export default function Navbar() {
           <NavLink className={linkClass} to="/">
             Home
           </NavLink>
-          <NavLink className={linkClass} to="/players">
-            Jugadores
-          </NavLink>
           {!isAuthenticated ? (
             <>
               <NavLink className={linkClass} to="/register">
@@ -36,9 +33,12 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <NavLink className={linkClass} to="/season/create">
-                Temporada
-              </NavLink>
+              {user.rol == "administrador" ? (
+                <NavLink className={linkClass} to="/season/create">
+                  Temporada
+                </NavLink>
+              ) : null}
+
               <NavLink className={linkClass} to="/player/profile">
                 Perfil
               </NavLink>

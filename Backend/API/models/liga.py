@@ -46,7 +46,7 @@ class LigaBase(BaseModel):
 
 
 class LigaCreate(LigaBase):
-    pass
+    nombre_equipo_comisionado: str = Field(..., min_length=1, max_length=50, description="Nombre del equipo del comisionado")
 
 
 class LigaUpdate(BaseModel):
@@ -113,3 +113,10 @@ class LigaMiembroResponse(LigaMiembroInDB):
 
 class LigaConMiembros(LigaResponse):
     miembros: List[LigaMiembroResponse] = Field(default=[], description="Miembros de la liga")
+
+
+class LigaFilter(BaseModel):
+    """Filter for league search"""
+    nombre: Optional[str] = Field(None, description="Buscar por nombre (parcial)")
+    temporada_id: Optional[UUID] = Field(None, description="Filtrar por temporada")
+    estado: Optional[EstadoLiga] = Field(None, description="Filtrar por estado")

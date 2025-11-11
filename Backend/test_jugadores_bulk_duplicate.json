@@ -1,0 +1,17 @@
+{
+  "jugadores": [
+    {
+      "nombre": "Tom Brady",
+      "posicion": "QB",
+      "equipo_nfl": "Buffalo Bills",
+      "imagen": "https://example.com/players/tom_brady.jpg"
+    },
+    {
+      "nombre": "Tom Brady",
+      "posicion": "QB",
+      "equipo_nfl": "Buffalo Bills",
+      "imagen": "https://example.com/players/tom_brady_duplicate.jpg"
+    }
+  ],
+  "filename": "test_jugadores_bulk_duplicate.json"
+}

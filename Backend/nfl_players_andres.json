@@ -1,0 +1,26 @@
+[
+  {
+    "nombre": "Harrison Butker",
+    "posicion": "K",
+    "equipo_nfl": "Kansas City Chiefs",
+    "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Patrick_Mahomes_2023_%28cropped%29.jpg/960px-Patrick_Mahomes_2023_%28cropped%29.jpg"
+  },
+  {
+    "nombre": "Gus Edwards",
+    "posicion": "RB",
+    "equipo_nfl": "Baltimore Ravens",
+    "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Patrick_Mahomes_2023_%28cropped%29.jpg/960px-Patrick_Mahomes_2023_%28cropped%29.jpg"
+  },
+  {
+    "nombre": "Odell Beckham Jr.",
+    "posicion": "WR",
+    "equipo_nfl": "Baltimore Ravens",
+    "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Patrick_Mahomes_2023_%28cropped%29.jpg/960px-Patrick_Mahomes_2023_%28cropped%29.jpg"
+  },
+  {
+    "nombre": "Roquan Smith",
+    "posicion": "DEF",
+    "equipo_nfl": "Baltimore Ravens",
+    "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Patrick_Mahomes_2023_%28cropped%29.jpg/960px-Patrick_Mahomes_2023_%28cropped%29.jpg"
+  }
+]

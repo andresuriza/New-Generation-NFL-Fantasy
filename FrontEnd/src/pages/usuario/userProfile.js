@@ -4,6 +4,7 @@ import { useAuth } from "../../context/authContext";
 import { getProfile, getHistory, DEFAULTS } from "../../utils/profileData";
 import { list as apiListEquipos } from "../../utils/communicationModule/resources/equipos";
 import { list as apiListUsuarios } from "../../utils/communicationModule/resources/usuarios";
+import { getFantasyTeam } from "../../utils/communicationModule/resources/equipos";
 import { GetLigas as apiListLigas } from "../../utils/communicationModule/resources/ligas";
 
 const DEFAULT_AVATAR = DEFAULTS.DEFAULT_AVATAR;
@@ -55,6 +56,7 @@ function EmptyState({ title, subtitle, action }) {
 export default function UserProfile() {
   const { session, isAuthenticated, user } = useAuth();
   const [teams, setTeams] = useState([]);
+  const [fantasyTeams, setFantasyTeams] = useState([]);
   const [ligas, setLigas] = useState([]);
   const navigate = useNavigate();
 
@@ -76,13 +78,16 @@ export default function UserProfile() {
 
   useEffect(() => {
     let active = true;
+
     async function fetchTeams() {
       try {
-        const [equiposApi, usuariosApi, ligasApi] = await Promise.all([
-          apiListEquipos(),
-          apiListUsuarios(),
-          apiListLigas(),
-        ]);
+        const [equiposApi, usuariosApi, ligasApi, fantasyTeamApi] =
+          await Promise.all([
+            apiListEquipos(),
+            apiListUsuarios(),
+            apiListLigas(),
+            getFantasyTeam(),
+          ]);
         if (!active) return;
         const usuariosMap = (
           Array.isArray(usuariosApi) ? usuariosApi : []
@@ -111,8 +116,23 @@ export default function UserProfile() {
             "Sin Liga",
         }));
         setTeams(flat);
+
+        const fantasyList = Array.isArray(fantasyTeamApi) ? fantasyTeamApi : [];
+        const fantasyFlat = fantasyList.map((team) => ({
+          id: team.id,
+          name: team.nombre,
+          manager:
+            usuariosMap[String(team.usuario_id)] ||
+            (team.usuario_id || "").toString().slice(0, 8),
+          leagueName:
+            ligasMap[String(team.liga_id)] ||
+            String(team.liga_id) ||
+            "Sin Liga",
+        }));
+        setFantasyTeams(fantasyFlat);
       } catch (_) {
         setTeams([]);
+        setFantasyTeams([]);
       }
     }
 
@@ -172,9 +192,9 @@ export default function UserProfile() {
             }}
           />
           <div style={{ flex: 1, minWidth: 220 }}>
-            <h2 style={{ margin: 0 }}>{profile.name}</h2>
+            <h2 style={{ margin: 0 }}>{user.nombre}</h2>
             <div style={{ color: "var(--muted)", fontSize: 14 }}>
-              {profile.email}
+              {user.correo}
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -192,131 +212,174 @@ export default function UserProfile() {
           className="grid"
           style={{ gridTemplateColumns: "repeat(4, minmax(0,1fr))" }}
         >
-          <Field label="ID">
-            {(session?.user && session.user.id) || profile.id}
-          </Field>
-          <Field label="Alias">
-            {(session?.user && session.user.alias) || profile.alias}
-          </Field>
-          <Field label="Idioma">
-            {(profile.language || "en").toUpperCase()}
-          </Field>
-          <Field label="Rol">{profile.role}</Field>
-          <Field label="Estado">{profile.status}</Field>
+          <Field label="Alias">{user.alias}</Field>
+          <Field label="Idioma">{user.idioma}</Field>
+          <Field label="Rol">{user.rol}</Field>
+          <Field label="Estado">{user.estado}</Field>
           <Field label="Creado">
-            {new Date(profile.createdAt).toLocaleString()}
+            {new Date(user.creado_en).toLocaleString()}
           </Field>
-          <Field label="Correo">{profile.email}</Field>
-          <Field label="Nombre">{profile.name}</Field>
         </div>
       </div>
-
-      {/* Ligas como comisionado */}
-      <section style={{ marginTop: 24 }}>
-        <h3 style={{ margin: "0 0 12px 0" }}>Ligas donde soy comisionado</h3>
-        <button
-          className="liga-button"
-          onClick={() => navigate("/league/join")}
-        >
-          Unirme a liga
-        </button>
-        <button className="button" onClick={() => navigate("/league/create")}>
-          Crear liga
-        </button>
-        {ligas.length === 0 ? (
-          <EmptyState
-            title="Aún no eres comisionado en ninguna liga"
-            subtitle="Crea una liga o solicita el rol de comisionado a un administrador."
-          />
-        ) : (
-          <div className="grid grid-3">
-            {ligas.map((lg) => (
-              <div key={lg.id} className="card">
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "baseline",
-                  }}
-                >
-                  <h4 style={{ margin: 0 }}>{lg.nombre}</h4>
-                  {/*<span className="badge">{lg.season}</span>*/}
+      {user.rol === "administrador" ? (
+        <section style={{ marginTop: 24 }}>
+          <h3 style={{ margin: "0 0 12px 0" }}>Equipos NFL</h3>
+          {user.rol === "administrador" && (
+            <div
+              style={{
+                marginBottom: 22,
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <button
+                className="button"
+                onClick={() => navigate("/crear-equipo")}
+              >
+                Crear equipo NFL
+              </button>
+              <button
+                className="button "
+                onClick={() => navigate("/create-player")}
+              >
+                Crear jugador NFL
+              </button>
+            </div>
+          )}
+          {teams.length === 0 ? (
+            <EmptyState
+              title="No hay equipos NFL aun"
+              subtitle="Crea uno utilizando el botón de arriba."
+            />
+          ) : (
+            <div className="grid grid-3">
+              {teams.map((tm) => (
+                <div key={tm.id} className="card">
+                  <h4 style={{ margin: 0 }}>{tm.name}</h4>
+                  <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                    <button
+                      className="button"
+                      onClick={() => navigate(`/equipo/${tm.id}`)}
+                    >
+                      Ver equipo
+                    </button>
+                    <button
+                      className="button button--ghost"
+                      onClick={() => navigate(`/equipo/${tm.id}/edit`)}
+                    >
+                      Gestionar
+                    </button>
+                  </div>
                 </div>
-                <div style={{ marginTop: 8, color: "var(--muted)" }}>
-                  {/*{lg.teams} equipos • {lg.scoring}*/}
-                </div>
-                <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-                  <button
-                    className="button"
-                    onClick={() => navigate(`/league/${lg.id}`)}
-                  >
-                    Ver liga
-                  </button>
-
-                  <button
-                    className="button button--ghost"
-                    onClick={() => navigate(`/league/${lg.id}/admin/status`)}
-                  >
-                    Administrar estado
-                  </button>
-
-                  <button
-                    className="button button--ghost"
-                    onClick={() => navigate(`/league/${lg.id}/admin/config`)}
-                  >
-                    Configurar liga
-                  </button>
-                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      ) : (
+        <section style={{ marginTop: 24 }}>
+          <section style={{ marginTop: 24 }}>
+            <h3 style={{ margin: "0 0 12px 0" }}>Equipos Fantasy</h3>
+            {fantasyTeams.length === 0 ? (
+              <EmptyState
+                title="No hay equipos fantasy aun"
+                subtitle="Crea uno utilizando el botón de arriba."
+              />
+            ) : (
+              <div className="grid grid-3">
+                {fantasyTeams.map((tm) => (
+                  <div key={tm.id} className="card">
+                    <h4 style={{ margin: 0 }}>{tm.name}</h4>
+                    <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                      <button
+                        className="button"
+                        onClick={() => navigate(`/equipo/${tm.id}`)}
+                      >
+                        Ver equipo
+                      </button>
+                      <button
+                        className="button button--ghost"
+                        onClick={() => navigate(`/equipo/${tm.id}/edit`)}
+                      >
+                        Gestionar
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </section>
+            )}
+          </section>
+          <div>
+            <h3 style={{ margin: "20px 0 12px 0" }}>
+              Ligas donde soy comisionado
+            </h3>
+            <button
+              className="liga-button"
+              onClick={() => navigate("/league/join")}
+            >
+              Unirme a liga
+            </button>
+            <button
+              className="button"
+              onClick={() => navigate("/league/create")}
+            >
+              Crear liga
+            </button>
+            {ligas.length === 0 ? (
+              <EmptyState
+                title="Aún no eres comisionado en ninguna liga"
+                subtitle="Crea una liga o solicita el rol de comisionado a un administrador."
+              />
+            ) : (
+              <div className="grid grid-3">
+                {ligas.map((lg) => (
+                  <div key={lg.id} className="card">
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "baseline",
+                      }}
+                    >
+                      <h4 style={{ margin: 0 }}>{lg.nombre}</h4>
+                      {/*<span className="badge">{lg.season}</span>*/}
+                    </div>
+                    <div style={{ marginTop: 8, color: "var(--muted)" }}>
+                      {/*{lg.teams} equipos • {lg.scoring}*/}
+                    </div>
+                    <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                      <button
+                        className="button"
+                        onClick={() => navigate(`/league/${lg.id}`)}
+                      >
+                        Ver liga
+                      </button>
 
-      {/* Mis equipos por liga */}
-      <section style={{ marginTop: 24 }}>
-        <h3 style={{ margin: "0 0 12px 0" }}>Mis equipos</h3>
-        <div style={{ marginBottom: 22 }}>
-          <button className="button" onClick={() => navigate("/crear-equipo")}>
-            Crear equipo
-          </button>
-        </div>
-        {teams.length === 0 ? (
-          <EmptyState
-            title="No tienes equipos aún"
-            subtitle="Crea tu primer equipo utilizando el botón de arriba."
-          />
-        ) : (
-          <div className="grid grid-3">
-            {teams.map((tm) => (
-              <div key={tm.id} className="card">
-                <div style={{ marginBottom: 6, color: "var(--muted)" }}>
-                  Liga: <strong>{tm.leagueName}</strong>
-                </div>
-                <h4 style={{ margin: 0 }}>{tm.name}</h4>
-                <div style={{ marginTop: 6, color: "var(--muted)" }}>
-                  Manager: <strong>{tm.manager}</strong>
-                </div>
-                <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-                  <button
-                    className="button"
-                    onClick={() => navigate(`/equipo/${tm.id}`)}
-                  >
-                    Ver equipo
-                  </button>
-                  <button
-                    className="button button--ghost"
-                    onClick={() => navigate(`/equipo/${tm.id}/edit`)}
-                  >
-                    Gestionar
-                  </button>
-                </div>
+                      <button
+                        className="button button--ghost"
+                        onClick={() =>
+                          navigate(`/league/${lg.id}/admin/status`)
+                        }
+                      >
+                        Administrar estado
+                      </button>
+
+                      <button
+                        className="button button--ghost"
+                        onClick={() =>
+                          navigate(`/league/${lg.id}/admin/config`)
+                        }
+                      >
+                        Configurar liga
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-        )}
-      </section>
-
+        </section>
+      )}
       {/* Historial de cambios */}
       <section style={{ marginTop: 24 }}>
         <h3 style={{ margin: "0 0 12px 0" }}>Historial de cambios</h3>

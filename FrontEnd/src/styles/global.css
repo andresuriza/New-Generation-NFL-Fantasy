@@ -249,7 +249,8 @@ body {
 }
 
 /* Línea con label + contador a la derecha */
-.label-row {
+.label-row,
+select {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -534,4 +535,195 @@ fieldset legend {
   color: var(--muted);
   font-size: 12px;
   margin-top: 4px;
+}
+
+/* ============================
+   Formulario: Crear jugador NFL
+   ============================ */
+
+.nfl-player-form {
+  display: grid;
+  gap: 16px;
+}
+
+.nfl-player-form__title {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.nfl-player-form__subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.nfl-player-form__body {
+  display: grid;
+  gap: 16px;
+}
+
+/* Campos de formulario genéricos
+   (puedes reutilizarlos en otras pantallas) */
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.form-field--inline {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.required {
+  color: #e53935;
+  margin-left: 2px;
+}
+
+/* Inputs y selects */
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font: inherit;
+  background-color: var(--bg-elevated, #fff);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: var(--primary, #2563eb);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+}
+
+/* Checkbox */
+
+.form-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.form-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+/* Texto de ayuda */
+
+.form-help {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.form-help--required {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Acciones del formulario */
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* Thumbnail / vista previa de imagen */
+
+.nfl-player-form__thumbnail {
+  gap: 8px;
+}
+
+.nfl-player-form__thumbnail-box {
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  background: var(--bg-subtle, #f5f5f5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nfl-player-form__thumbnail-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Caja de notas / criterios de aceptación */
+
+.nfl-player-form__info-box {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #006d75;          /* color de fondo de la nota */
+  border: 1px solid #0099a8;    /* borde de la nota */
+  color: #e9f7fa;               /* color de texto por defecto dentro */
+}
+
+.nfl-player-form__info-title {
+  margin: 0 0 4px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;               /* título de la nota */
+}
+
+.nfl-player-form__info-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #e9f7fa;               /* texto de los bullets */
+}
+
+/* Responsive para pantallas pequeñas */
+
+@media (max-width: 640px) {
+  .form-field--inline {
+    align-items: flex-start;
+  }
+
+  .form-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}
+
+/* Centrar el formulario de creación de jugador dentro de la página */
+.nfl-player-form-wrapper {
+  max-width: 960px;   /* ancho máximo del formulario */
+  margin: 32px auto 0;  /* ⬅ bajamos el form 32px desde arriba */
+}
+
+/* Si quieres que se vea un poco más estrecho en pantallas grandes */
+@media (min-width: 1200px) {
+  .nfl-player-form-wrapper {
+    max-width: 800px; /* prueba con 720/800 según te guste */
+  }
+}
+
+/* (lo que ya teníamos) */
+.nfl-player-form__body {
+  display: grid;
+  gap: 16px;
+  padding: 24px;      /* padding interno de la card */
 }

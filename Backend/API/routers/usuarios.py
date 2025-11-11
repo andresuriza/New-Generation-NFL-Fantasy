@@ -18,6 +18,7 @@ from database import get_db
 from services.auth_service import auth_service
 from services.auth_service import get_current_user
 from services.usuario_service import usuario_service
+from exceptions.business_exceptions import ValidationError, ConflictError, NotFoundError
 from jose import JWTError
 import re
 
@@ -43,8 +44,12 @@ def convert_usuario_to_response(usuario_db: UsuarioDB) -> UsuarioResponse:
 @router.post("/", response_model=UsuarioResponse, status_code=status.HTTP_201_CREATED)
 async def crear_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
     """Crear un nuevo usuario"""
-    
-    return usuario_service.crear_usuario(db, usuario)
+    try:
+        return usuario_service.crear_usuario(db, usuario)
+    except ConflictError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
+    except ValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
 @router.get("/", response_model=List[UsuarioResponse])
 async def listar_usuarios(db: Session = Depends(get_db)):
@@ -54,7 +59,10 @@ async def listar_usuarios(db: Session = Depends(get_db)):
 @router.get("/{usuario_id}", response_model=UsuarioResponse)
 async def obtener_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
     """Obtener un usuario específico por ID"""
-    return usuario_service.obtener_usuario(db, usuario_id)
+    try:
+        return usuario_service.obtener_usuario(db, usuario_id)
+    except NotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
 
 @router.put("/{usuario_id}", response_model=UsuarioResponse)
 async def actualizar_usuario(
@@ -73,7 +81,15 @@ async def actualizar_usuario(
         requester_id = UUID(str(current.get("user_id")))
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")
-    return usuario_service.actualizar_usuario(db, usuario_id, updates, requester_id)
+    
+    try:
+        return usuario_service.actualizar_usuario(db, usuario_id, updates, requester_id)
+    except NotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    except ConflictError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
+    except ValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
 @router.post("/login", response_model=LoginResponse)
 async def login_usuario(credenciales: UsuarioLogin, request: Request, db: Session = Depends(get_db)):

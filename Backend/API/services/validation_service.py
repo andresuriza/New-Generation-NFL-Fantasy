@@ -1,129 +1,140 @@
 """
-Validation service for business rules
+Central validation service coordinator
+
+This service acts as a coordinator for all model-specific validators,
+providing a unified interface while delegating to specialized validators.
 """
 from typing import Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 
-from models.database_models import LigaDB, TemporadaDB, UsuarioDB, LigaMiembroDB, LigaCupoDB
+from validators import (
+    usuario_validator, temporada_validator, liga_validator, 
+    jugador_validator, equipo_nfl_validator, equipo_fantasy_validator,
+    media_validator
+)
+from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
+
+
 
 class ValidationService:
-    """Service for handling business rule validations"""
+    """Central validation service that coordinates model-specific validators"""
     
+    # Usuario validations
     @staticmethod
-    def validate_temporada_exists(db: Session, temporada_id: UUID) -> TemporadaDB:
-        """Validate that a season exists"""
-        temporada = db.query(TemporadaDB).filter(TemporadaDB.id == temporada_id).first()
-        if not temporada:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Temporada no encontrada"
-            )
-        return temporada
-    
-    @staticmethod
-    def validate_usuario_exists(db: Session, usuario_id: UUID) -> UsuarioDB:
+    def validate_usuario_exists(db: Session, usuario_id: UUID):
         """Validate that a user exists"""
-        usuario = db.query(UsuarioDB).filter(UsuarioDB.id == usuario_id).first()
-        if not usuario:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Usuario no encontrado"
-            )
-        return usuario
+        return usuario_validator.validate_exists(db, usuario_id)
     
     @staticmethod
-    def validate_liga_exists(db: Session, liga_id: UUID) -> LigaDB:
+    def validate_usuario_email(email: str, db: Session, exclude_id: Optional[UUID] = None):
+        """Validate user email format and uniqueness"""
+        usuario_validator.validate_email_format(email)
+        usuario_validator.validate_email_unique(db, email, exclude_id)
+    
+    @staticmethod
+    def validate_usuario_password(password: str):
+        """Validate user password strength"""
+        usuario_validator.validate_password_strength(password)
+    
+    # Temporada validations
+    @staticmethod 
+    def validate_temporada_exists(db: Session, temporada_id: UUID):
+        """Validate that a season exists"""
+        return temporada_validator.validate_exists(db, temporada_id)
+    
+    @staticmethod
+    def validate_temporada_dates(fecha_inicio, fecha_fin, db: Session, exclude_id: Optional[UUID] = None):
+        """Validate season dates"""
+        temporada_validator.validate_date_range(fecha_inicio, fecha_fin)
+        temporada_validator.validate_season_dates_not_overlap(db, fecha_inicio, fecha_fin, exclude_id)
+    
+    # Liga validations
+    @staticmethod
+    def validate_liga_exists(db: Session, liga_id: UUID):
         """Validate that a league exists"""
-        liga = db.query(LigaDB).filter(LigaDB.id == liga_id).first()
-        if not liga:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Liga no encontrada"
-            )
-        return liga
+        return liga_validator.validate_exists(db, liga_id)
     
     @staticmethod
-    def validate_liga_nombre_unique(db: Session, nombre: str, exclude_id: Optional[UUID] = None) -> None:
-        """Validate that a league name is unique"""
-        query = db.query(LigaDB).filter(LigaDB.nombre == nombre)
-        if exclude_id:
-            query = query.filter(LigaDB.id != exclude_id)
-        
-        if query.first():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Ya existe una liga con ese nombre"
-            )
+    def validate_liga_nombre_unique(db: Session, nombre: str, exclude_id: Optional[UUID] = None):
+        """Validate that league name is unique"""
+        liga_validator.validate_nombre_unique(db, nombre, exclude_id)
     
     @staticmethod
-    def validate_liga_editable(liga: LigaDB) -> None:
-        """Validate that a league can be edited (only in Pre_draft state)"""
-        if liga.estado.value != "Pre_draft":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Solo se pueden modificar ligas en estado Pre_draft"
-            )
+    def validate_liga_editable(liga):
+        """Validate that a league can be edited"""
+        liga_validator.validate_liga_editable(liga)
     
     @staticmethod
-    def validate_liga_has_cupos(db: Session, liga_id: UUID) -> None:
+    def validate_liga_has_cupos(db: Session, liga_id: UUID):
         """Validate that a league has available spots"""
-        from repositories.liga_repository import liga_repository, liga_miembro_repository
-        
-        # Get the league to check equipos_max
-        liga = liga_repository.get(db, liga_id)
-        if not liga:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Liga no encontrada"
-            )
-        
-        # Count current members in the league (excluding comisionado)
-        current_members_count = liga_miembro_repository.count_miembros_by_liga(db, liga_id)
-        
-        # Check if league is full (use equipos_max as the limit, comisionado doesn't count)
-        if current_members_count >= liga.equipos_max:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="La liga está llena"
-            )
+        liga_validator.validate_liga_has_cupos(db, liga_id)
     
+    @staticmethod
+    def validate_usuario_not_in_liga(db: Session, liga_id: UUID, usuario_id: UUID):
+        """Validate that a user is not already in the league"""
+        liga_validator.validate_usuario_not_in_liga(db, liga_id, usuario_id)
+    
+    @staticmethod
+    def validate_alias_unique_in_liga(db: Session, liga_id: UUID, alias: str, exclude_usuario_id: Optional[UUID] = None):
+        """Validate that an alias is unique within a league"""
+        liga_validator.validate_alias_unique_in_liga(db, liga_id, alias, exclude_usuario_id)
+    
+    # Jugador validations
+    @staticmethod
+    def validate_jugador_exists(db: Session, jugador_id: UUID):
+        """Validate that a player exists"""
+        return jugador_validator.validate_exists(db, jugador_id)
+    
+    @staticmethod
+    def validate_jugador_email(email: str, db: Session, exclude_id: Optional[UUID] = None):
+        """Validate player email"""
+        jugador_validator.validate_email_format(email)
+        jugador_validator.validate_email_unique(db, email, exclude_id)
+    
+    # Equipo NFL validations
+    @staticmethod
+    def validate_equipo_nfl_exists(db: Session, equipo_id: UUID):
+        """Validate that NFL team exists"""
+        return equipo_nfl_validator.validate_exists(db, equipo_id)
+    
+    # Equipo Fantasy validations
+    @staticmethod
+    def validate_equipo_fantasy_exists(db: Session, equipo_id: UUID):
+        """Validate that fantasy team exists"""
+        return equipo_fantasy_validator.validate_exists(db, equipo_id)
+    
+    # Media validations
+    @staticmethod
+    def validate_media_exists(db: Session, media_id: UUID):
+        """Validate that media exists"""
+        return media_validator.validate_exists(db, media_id)
+    
+    # Helper methods
     @staticmethod
     def get_liga_current_members_count(db: Session, liga_id: UUID) -> int:
         """Get the current number of members in a league"""
-        from repositories.liga_repository import liga_miembro_repository
-        return liga_miembro_repository.count_miembros_by_liga(db, liga_id)
+        return liga_validator.get_liga_current_members_count(db, liga_id)
+    
+    # Utility validation methods
+    @staticmethod
+    def is_valid_email(email: str) -> bool:
+        """Check if email format is valid"""
+        try:
+            usuario_validator.validate_email_format(email)
+            return True
+        except ValidationError:
+            return False
     
     @staticmethod
-    def validate_usuario_not_in_liga(db: Session, liga_id: UUID, usuario_id: UUID) -> None:
-        """Validate that a user is not already in the league"""
-        miembro_existente = db.query(LigaMiembroDB).filter(
-            LigaMiembroDB.liga_id == liga_id,
-            LigaMiembroDB.usuario_id == usuario_id
-        ).first()
-        
-        if miembro_existente:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Ya eres miembro de esta liga"
-            )
-    
-    @staticmethod
-    def validate_alias_unique_in_liga(db: Session, liga_id: UUID, alias: str, exclude_usuario_id: Optional[UUID] = None) -> None:
-        """Validate that an alias is unique within a league"""
-        query = db.query(LigaMiembroDB).filter(
-            LigaMiembroDB.liga_id == liga_id,
-            LigaMiembroDB.alias == alias
-        )
-        
-        if exclude_usuario_id:
-            query = query.filter(LigaMiembroDB.usuario_id != exclude_usuario_id)
-        
-        if query.first():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Ese alias ya está ocupado en esta liga"
-            )
+    def is_valid_url(url: str) -> bool:
+        """Check if URL format is valid"""
+        try:
+            media_validator.validate_url_format(url)
+            return True
+        except ValidationError:
+            return False
 
+
+# Create service instance
 validation_service = ValidationService()
