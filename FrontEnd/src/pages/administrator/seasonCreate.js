@@ -151,7 +151,7 @@ export default function SeasonCreate() {
                 className={`input ${errors.weeksCount ? "input--invalid" : ""}`}
                 type="number"
                 min={1}
-                max={30}
+                max={18}
                 value={form.weeksCount}
                 onChange={(e) => setField("weeksCount", Number(e.target.value))}
               />
