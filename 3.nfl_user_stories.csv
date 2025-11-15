@@ -1,0 +1,1255 @@
+﻿Work Item Type,Title,Description,Acceptance Criteria,Parent
+User Story,Registro de usuario,Yo como usuario quiero registrarme con mis datos para entonces poder crear una cuenta única en la plataforma y poder participar en una o más ligas.,"• El usuario puede registrarse ingresando nombre (1–50), contraseña (8–12, alfanumérica, al menos una minúscula y una mayúscula), confirmación de contraseña, correo (máx 50) y alias (máx 50).
+• El sistema autogenera un ID único, fecha de creación, asigna rol inicial de manager, estado de cuenta activo, imagen de perfil por defecto e idioma por defecto inglés.
+• El correo debe ser único en el sistema.
+• La cuenta queda activa inmediatamente (no se envía correo de confirmación).
+• Se muestran mensajes de error claros para: correo duplicado, formato inválido de correo, longitudes inválidas, contraseña fuera de reglas, confirmación distinta.
+Alternos:
+• Si falla la validación de campos, el registro se rechaza mostrando el mensaje de error correspondiente.",
+User Story,Inicio de sesión,Yo como usuario registrado quiero iniciar sesión para entonces acceder de forma segura a mis ligas y equipos en cualquier momento.,"• El usuario puede iniciar sesión con credenciales válidas.
+• La sesión global se mantiene activa hasta 12 horas de inactividad o cierre manual en todos los dispositivos.
+• Si el inicio de sesión es exitoso, el sistema redirige al perfil del jugador.
+• Después de 5 intentos fallidos consecutivos, la cuenta cambia su estado de activa a bloqueada.
+Alternos:
+• Intentos con credenciales inválidas muestran un mensaje de error genérico.",
+User Story,Cierre de sesión,Yo como usuario quiero cerrar sesión en cualquier momento para entonces proteger el acceso a mi cuenta y mantener mi información segura.,"• El usuario puede cerrar sesión en cualquier momento desde cualquier dispositivo.
+• Tras cerrar sesión, el acceso a la cuenta finaliza y se requiere autenticación para reingresar.
+• Después del cierre de sesión, el sistema redirige a la página de inicio.
+Alternos:
+• Si ocurre un fallo de red, se informa que la sesión podría no haberse cerrado correctamente y se solicita intentar de nuevo.",
+User Story,Desbloqueo de cuenta bloqueada,Yo como usuario registrado quiero desbloquear mi cuenta cuando esta se encuentre bloqueada para entonces poder restablecer el acceso y continuar participando en mis ligas.,"• El usuario puede solicitar el desbloqueo y restablecimiento de su contraseña cuando la cuenta está bloqueada.
+• El sistema envía un enlace temporal con expiración definida para restablecer la contraseña.
+• La nueva contraseña debe cumplir las reglas de complejidad establecidas.
+Alternos:
+• Enlace expirado o inválido muestra un mensaje claro y permite nueva solicitud.",
+User Story,Gestión de perfil de usuario,Yo como usuario quiero editar mi perfil para entonces mantener mi información personal y de juego actualizada en todas mis ligas y equipos.,"• El usuario puede editar todos los campos de su perfil excepto: fecha de creación, estado de cuenta, correo, ID y rol.
+• No se puede modificar la información de ligas o equipos desde el perfil.
+• El sistema mantiene historial de todos los cambios realizados en el perfil.
+• La validación de campos obligatorios y formatos se aplica antes de guardar cambios.
+Alternos:
+• Si algún campo obligatorio no cumple el formato, se rechaza la actualización con mensaje de error.
+• El usuario puede subir una imagen de perfil en formato JPEG o PNG, con tamaño máximo de 5 MB y dimensiones entre 300x300 y 1024x1024 píxeles.
+Alternos:
+• Si el archivo excede el tamaño o no está en un formato permitido, se muestra un mensaje de error y no se guarda el cambio.",
+User Story,Ver perfil de usuario,Yo como usuario quiero ver mi perfil para entonces consultar mi información básica y mis participaciones en ligas y equipos.,"• La vista de perfil muestra: ID, nombre, correo, alias, idioma, foto, fecha de creación, rol y estado de cuenta.
+• La vista incluye una sección con las ligas donde soy comisionado.
+• La vista incluye una sección con mis equipos en cada liga.
+Alternos:
+• Si el perfil no tiene foto configurada, se muestra la imagen por defecto.
+• Si no tengo ligas ni equipos, se muestran estados vacíos con mensajes informativos.",
+User Story,Crear liga,Yo como usuario quiero crear una liga para entonces poder organizar un entorno de juego con mis propias reglas y participantes.,"• El usuario puede crear una liga ingresando nombre (1–100 caracteres), descripción opcional y cantidad de equipos: 4, 6, 8, 10, 12, 14, 16, 18 o 20.
+• La liga requiere contraseña con el mismo formato de las cuentas: 8–12 caracteres, alfanumérica, al menos una minúscula y una mayúscula.
+• El usuario que crea la liga queda asignado automáticamente como comisionado principal.
+• Al crear la liga, el comisionado debe ingresar el nombre de su equipo y el sistema lo asigna a la liga.
+• El sistema calcula y muestra cuántos cupos disponibles quedan en la liga tras la asignación del primer equipo.
+• Al crear la liga se asigna el esquema de juego por defecto (ver formato abajo).
+• Al crear la liga se asigna el esquema de puntos por defecto.
+• Se autogeneran la fecha de creación y un identificador único de la liga.
+• La liga queda en estado Pre-Draft por defecto.
+• El sistema registra automáticamente la liga en la temporada marcada como 'actual' (solo una temporada puede estar activa a la vez; controlada por el administrador del sistema).
+• La configuración de fecha límite de intercambios queda inactiva por defecto.
+• Por defecto no existe límite máximo de cambios por temporada por equipo ni límite máximo de contrataciones de agentes libres por temporada por equipo.
+• Durante la creación se configura si los playoffs serán de 4 equipos (semanas 16 y 17) o de 6 equipos (semanas 16, 17 y 18).
+• La liga se crea por defecto permitiendo puntajes con decimales.
+Alternos:
+○ Si el nombre excede el límite o ya existe, se muestra un mensaje de error y no se crea la liga.
+○ Si la contraseña no cumple el formato, se muestra un mensaje de error y no se crea la liga.
+○ Si ocurre un fallo de red o base de datos, se informa y la liga no se crea parcialmente.
+Información adicional:
+○ Formato de posiciones por defecto: 1 QB, 2 RB, 1 K, 1 DEF, 2 WR, 1 RB/WR, 1 TE, 6 banca (cualquier posición) y 3 IR.
+○ Esquema de puntuación por defecto:
+  ○ Passing Yards: 1 punto cada 25 yds
+  ○ Passing Touchdowns: 4 puntos
+  ○ Interceptions Thrown: -2 puntos
+  ○ Rushing Yards: 1 punto cada 10 yds
+  ○ Receptions: 1 punto
+  ○ Receiving Yards: 1 punto cada 10 yds
+  ○ Rush/Recv Touchdowns: 6 puntos
+  ○ Sacks: 1 punto
+  ○ Interceptions: 2 puntos
+  ○ Fumbles Recovered: 2 puntos
+  ○ Safeties: 2 puntos
+  ○ Touchdowns: 6 puntos
+  ○ Team Def 2-point Return: 2 puntos
+  ○ PAT Made: 1 puntos
+  ○ FG Made 0-50 3 puntos
+  ○ FG Made 50+ 5 puntos
+  ○ Points Allowed <=10  5 puntos
+  ○ Points Allowed <=20  2 puntos
+  ○ Points Allowed <=30  0 puntos
+  ○ Points Allowed > 30  -2 puntos",
+User Story,Administrar estado de liga,Yo como comisionado de liga quiero activar o desactivar mi liga para entonces controlar su disponibilidad durante la temporada.,"• La liga puede desactivarse en cualquier momento por el comisionado.
+• Si la liga se desactiva, deja de sumar puntos durante la semana en curso y siguientes mientras permanezca inactiva.
+• Si se desactiva antes del draft, cualquier sesión de draft pendiente es eliminada.
+• Para desactivar, el sistema solicita confirmación explícita.
+• Solo el comisionado puede activar o desactivar la liga.
+• La liga solo puede activarse si está inactiva; si se activa antes del draft, la sesión de draft no se recrea automáticamente.
+• Si se activa durante la temporada, no se recalculan de forma retroactiva los puntos de las semanas en que estuvo inactiva.
+Alternos:
+○ Si un usuario sin permisos intenta activar/desactivar, el sistema rechaza la acción y muestra un mensaje de error.
+○ Si ocurre un fallo de red o base de datos, el estado no cambia y se muestra un mensaje de error.",
+User Story,Editar configuración de liga,Yo como comisionado de liga quiero editar la configuración de mi liga para entonces poder ajustar reglas y detalles antes del inicio de la temporada.,"• Cuando la liga está en estado Pre-Draft, el comisionado puede cambiar el esquema de juego.
+• Cuando la liga está en estado Pre-Draft, el comisionado puede cambiar la cantidad de equipos (4, 6, 8, 10, 12, 14, 16, 18 o 20) siempre que el número no sea menor al de equipos ya registrados.
+• Cuando la liga está en estado Pre-Draft, el comisionado puede cambiar el sistema de puntaje.
+• En estado Pre-Draft se puede modificar la configuración de los playoffs.
+• En estado Pre-Draft se puede habilitar o deshabilitar el uso de puntajes con decimales; si no se permiten, los valores con < 0.50 se redondean hacia abajo y ≥ 0.50 hacia arriba.
+• En estado Pre-Draft se puede cambiar la configuración de fecha límite de intercambios a activo (debe indicarse una fecha máxima dentro de la temporada) o inactivarla si ya estaba activa.
+• En cualquier momento se puede cambiar el límite máximo de cambios por temporada por equipo y el límite máximo de contrataciones de agentes libres por temporada por equipo; si están activos, deben ser enteros positivos entre 1 y 100; si están inactivos, se consideran sin límite.
+• En todo momento se puede modificar el nombre de la liga, siempre que cumpla las reglas de creación; si no cumple, se muestra un mensaje de error y no se guardan cambios.
+• Todas las ediciones válidas se registran con historial (quién, cuándo, qué campo).
+Alternos:
+○ Intentos de reducción de equipos por debajo del número ya registrado se rechazan con mensaje claro.
+○ Si se intenta editar fuera del estado Pre-Draft (para campos restringidos), el sistema rechaza y muestra mensaje claro.
+○ Si la fecha límite de intercambios no está dentro de la temporada, se rechaza con mensaje claro.
+○ Si ocurre un fallo de red o validación, se informa y no se aplican cambios parciales.
+Información adicional:
+○ Formatos de posiciones disponibles
+  ○ Default: 1 QB, 2 RB, 1 K, 1 DEF, 2 WR, 1 RB/WR, 1 TE, 6 banca (cualquier posición) y 3 IR.
+  ○ Extremo:  1 QB, 2 RB, 1 K, 1 DEF, 2 WR, 1 RB/WR, 1 TE, 4 banca (cualquier posición).
+  ○ Detallado: 1 QB, 2 RB, 1 K, 1 (DL), 1 LB, 1 CB , 2 WR, 1 RB/WR, 1 TE, 6 banca (cualquier posición).
+  ○ Ofensivo: 2 QB, 3 RB, 1 K, 1 DEF , 3 WR, 1 RB/WR, 2 TE, 6 banca (cualquier posición).
+○ Formatos de Puntacion disponibles 
+  ○ Esquema de puntuación por defecto:
+    ○ Passing Yards: 1 punto cada 25 yds
+    ○ Passing Touchdowns: 4 puntos
+    ○ Interceptions Thrown: -2 puntos
+    ○ Rushing Yards: 1 punto cada 10 yds
+    ○ Receptions: 1 punto
+    ○ Receiving Yards: 1 punto cada 10 yds
+    ○ Rush/Recv Touchdowns: 6 puntos
+    ○ 2-Point Conversions 2 puntos
+    ○ Sacks: 1 punto
+    ○ Interceptions: 2 puntos
+    ○ Fumbles Recovered: 2 puntos
+    ○ Safeties: 2 puntos
+    ○ Touchdowns: 6 puntos
+    ○ Team Def 2-point Return: 2 puntos
+    ○ PAT Made: 1 puntos
+    ○ FG Made 0-50 3 puntos
+    ○ FG Made 50+ 5 puntos
+    ○ Points Allowed <=10  5 puntos
+    ○ Points Allowed <=20  2 puntos
+    ○ Points Allowed <=30  0 puntos
+    ○ Points Allowed > 30  -2 puntos
+  ○ Esquema de puntuación prioridad carrera
+    ○ Passing Yards: 1 punto cada 30 yds 
+    ○ Passing Touchdowns: 4 puntos
+    ○ Interceptions Thrown: -2 puntos
+    ○ Rushing Yards: 1 punto cada 5 yds 
+    ○ Receptions: 0 punto 
+    ○ Receiving Yards: 1 punto cada 10 yds
+    ○ Rush/Recv Touchdowns: 6 puntos
+    ○ 2-Point Conversions 2 puntos
+    ○ Sacks: 1 punto
+    ○ Interceptions: 2 puntos
+    ○ Fumbles Recovered: 2 puntos
+    ○ Safeties: 2 puntos
+    ○ Touchdowns: 6 puntos
+    ○ Team Def 2-point Return: 2 puntos
+    ○ PAT Made: 1 puntos
+    ○ FG Made 0-50 3 puntos
+    ○ FG Made 50+ 5 puntos
+    ○ Points Allowed <=20  5 puntos
+  ○ Esquema de puntuación Max Puntos:
+    ○ Passing Yards: 1 punto cada 20 yds 
+    ○ Passing Touchdowns: 7 puntos 
+    ○ Interceptions Thrown: -5 puntos 
+    ○ Rushing Yards: 1 punto cada 5 yds 
+    ○ Receptions: 2 punto 
+    ○ Receiving Yards: 1 punto cada 5 yds 
+    ○ Rush/Recv Touchdowns: 6 puntos
+    ○ 2-Point Conversions 4 puntos
+    ○ Sacks: 1 punto
+    ○ Interceptions: 2 puntos
+    ○ Fumbles Recovered: 2 puntos
+    ○ Safeties: 2 puntos
+    ○ Touchdowns: 6 puntos
+    ○ Team Def 2-point Return: 2 puntos
+    ○ PAT Made: 1 puntos
+    ○ FG Made 0-30 3 puntos
+    ○ FG Made 31-50 4 puntos
+    ○ FG Made 50+ 5 puntos
+    ○ Points Allowed <=20  5 puntos
+  ○ Esquema de puntuación prioridad defensa
+    ○ Passing Yards: 1 punto cada 30 yds 
+    ○ Passing Touchdowns: 4 puntos
+    ○ Interceptions Thrown: -2 puntos
+    ○ Rushing Yards: 1 punto cada 5 yds 
+    ○ Receptions: 0 punto 
+    ○ Receiving Yards: 1 punto cada 10 yds
+    ○ Rush/Recv Touchdowns: 6 puntos
+    ○ 2-Point Conversions 2 puntos
+    ○ Sacks: 10 punto 
+    ○ Interceptions: 10 puntos 
+    ○ Fumbles Recovered: 10 puntos 
+    ○ Safeties: 4 puntos 
+    ○ Blocked Kick 2 puntos
+    ○ Points Allowed <=10 10 puntos
+    ○ Points Allowed <=20 y >10 5 puntos
+    ○ Points Allowed <=25 y >20 2 puntos
+    ○ Touchdowns: 6 puntos
+    ○ Team Def 2-point Return: 2 puntos
+    ○ PAT Made: 1 puntos
+    ○ FG Made 0-50 3 puntos
+    ○ FG Made 50+ 5 puntos",
+User Story,Crear temporada,"Yo como administrador del sistema quiero crear una temporada para entonces definir fechas, semanas y parámetros básicos que soporten las ligas.","• El administrador puede crear una temporada ingresando nombre (1–100), cantidad de semanas, fecha de inicio y fecha de fin.
+• Cada semana debe tener una fecha de inicio y de fin dentro del rango de la temporada y cumplir las reglas de validación de fechas.
+• El sistema valida que las fechas de fin sean posteriores a las de inicio, que no estén en el pasado y que no se traslapen con otra temporada existente.
+• El sistema autogenera identificador único y fecha de creación.
+• Se puede marcar la temporada como “actual”; solo una temporada puede tener este estado a la vez.
+• Las fechas de las semanas no pueden traslaparse entre sí.
+Alternos:
+• Si el nombre ya existe o las fechas se traslapan con otra temporada, se muestra error y no se guarda.
+• Si se intenta marcar más de una temporada como actual, se rechaza la operación con mensaje claro.",
+User Story,Editar temporada,Yo como administrador del sistema quiero editar una temporada para entonces actualizar fechas y semanas según cambios en el calendario de la NFL.,"• Se pueden editar nombre, cantidad de semanas, fecha de inicio y fecha de fin de una temporada existente, excepto su identificador y fecha de creación.
+• El cambio de temporada actual requiere confirmación explícita y desmarca automáticamente la previamente marcada.
+• Se aplican las mismas validaciones de fechas que en la creación.
+Alternos:
+• Si las nuevas fechas se traslapan con otra temporada, se muestra error y no se guarda.
+• Si ocurre un fallo de red o base de datos, no se aplican cambios parciales.",
+User Story,Desactivar temporada,Yo como administrador del sistema quiero desactivar una temporada para entonces moverla a históricos y que deje de estar visible para los usuarios.,"• Se puede desactivar una temporada solo si no está marcada como actual y sus fechas de inicio y fin no están en el futuro.
+• Al desactivarse, la temporada se mueve a históricos para control administrativo y deja de ser visible para usuarios finales.
+• La desactivación requiere confirmación explícita.
+Alternos:
+• Si se intenta desactivar una temporada actual o con fechas futuras, se rechaza la operación con mensaje claro.",
+User Story,Eliminar temporada,Yo como administrador del sistema quiero eliminar una temporada para entonces retirar datos obsoletos del sistema.,"• Solo se puede eliminar una temporada que no tenga ligas activas asociadas y que no esté marcada como temporada actual.
+• Se solicita confirmación explícita antes de borrar.
+Alternos:
+• Si hay ligas activas vinculadas o la temporada está marcada como actual, se bloquea la eliminación y se informa el motivo.",
+User Story,Crear esquema de puntuación base,Yo como administrador del sistema quiero crear un esquema de puntuación base para entonces ofrecer nuevos modelos de scoring a las ligas.,"• Se pueden ingresar nombre, descripción y reglas de puntos detalladas.
+• El sistema autogenera identificador único y fecha de creación.
+• Se valida que el nombre sea único.
+Alternos:
+• Si el nombre ya existe, se rechaza con mensaje claro.",
+User Story,Editar esquema de puntuación base,Yo como administrador del sistema quiero editar un esquema de puntuación base para entonces ajustar sus puntos o descripción.,"• Se pueden editar nombre, descripción y reglas de puntos de un esquema existente, excepto su identificador y fecha de creación.
+• Cambios se versionan con historial (quién, cuándo, qué campo).
+Alternos:
+• Si el esquema está en uso en ligas activas, los cambios solo afectan ligas futuras y no alteran las vigentes.",
+User Story,Desactivar esquema de puntuación base,Yo como administrador del sistema quiero desactivar un esquema de puntuación base para entonces evitar que se use en nuevas ligas.,"• Solo se pueden desactivar esquemas que no sean utilizados en ligas en Pre-Draft.
+• La desactivación requiere confirmación explícita.
+Alternos:
+• Si el esquema está en uso en una liga en Pre-Draft, se rechaza con mensaje claro.",
+User Story,Crear esquema de posiciones,Yo como administrador del sistema quiero crear un esquema de posiciones para entonces ofrecer nuevas configuraciones a las ligas.,"• Se pueden ingresar nombre, descripción y listado de posiciones con cantidades mínimas y máximas.
+• El sistema valida unicidad del nombre y autogenera identificador único y fecha de creación.
+Alternos:
+• Si el nombre ya existe, se rechaza con mensaje claro.",
+User Story,Editar esquema de posiciones,Yo como administrador del sistema quiero editar un esquema de posiciones para entonces ajustar su configuración de roles.,"• Se pueden editar posiciones y cantidades, manteniendo identificador y fecha de creación.
+• Cambios se versionan con historial de edición.
+Alternos:
+• Si el esquema está en uso en una liga en Pre-Draft, solo se permiten cambios compatibles (p.ej. descripciones).",
+User Story,Desactivar esquema de posiciones,Yo como administrador del sistema quiero desactivar un esquema de posiciones para entonces evitar su uso en nuevas ligas.,"• Se pueden desactivar esquemas no usados en ligas en Pre-Draft.
+• La desactivación requiere confirmación explícita.
+Alternos:
+• Si el esquema está en uso en una liga en Pre-Draft, se rechaza la operación con mensaje claro.",
+User Story,Editar modalidad de draft,Yo como administrador del sistema quiero editar una modalidad de draft para entonces ajustar su descripción o reglas.,"• Se pueden editar nombre, descripción y reglas de una modalidad existente, excepto su identificador y fecha de creación.
+• Cambios se versionan con historial de edición.
+Alternos:
+• Si la modalidad está en uso en una liga en Pre-Draft, los cambios solo afectan ligas futuras.",
+User Story,Desactivar modalidad de draft,Yo como administrador del sistema quiero desactivar una modalidad de draft para entonces evitar su uso en nuevas ligas.,"• Se pueden desactivar modalidades no usadas en ligas en Pre-Draft.
+• La desactivación requiere confirmación explícita.
+Alternos:
+• Si la modalidad está en uso en una liga en Pre-Draft, se rechaza la operación con mensaje claro.",
+User Story,Modalidad de draft Estándar,Yo como administrador del sistema quiero poner a disposición el formato de draft Estándar por turnos para entonces permitir un formato intuitivo de selección.,"• Creación del draft: el usuario puede crear un draft especificando nombre, descripción, cantidad de equipos y total de espacios del roster.
+• El sistema asigna un ID único y estado “Activo”.
+• Ejecución Estándar: el sistema genera el orden de turnos 1→N en cada ronda (reinicia en 1 cada vez) y cada equipo obtiene exactamente un turno por ronda.
+• Tiempo por pick: valor por defecto 30 s; al expirar sin selección se asigna en automático el jugador disponible con mayor ranking y se pasa el turno.
+• Estados del draft: Configurado → En_Progreso → Cerrado.
+• Solo puede existir un draft activo por liga.
+• Un jugador no puede ser elegido dos veces; no se permiten rondas con menos de dos equipos.
+• Cierre del draft: se cierra al completar todas las rondas previstas para todos los equipos (no se exige cubrir posiciones específicas).",
+User Story,Modalidad de draft Snake,Yo como administrador del sistema quiero poner a disposición el formato de draft Snake por turnos para entonces habilitar a los comisionados a balancear la asignación de jugadores alternando el orden natural.,"• Creación del draft: el usuario puede crear un draft especificando nombre, descripción, cantidad de equipos y total de espacios del roster.
+• El sistema asigna un ID único y estado “Activo”.
+• Ejecución Snake: el sistema genera el orden de turnos 1→N, N→1, 1→N, … y cada equipo obtiene exactamente un turno por ronda.
+• Tiempo por pick: valor por defecto 30 s; al expirar sin selección se asigna en automático el jugador disponible con mayor ranking y se pasa el turno.
+• Estados del draft: Configurado → En_Progreso → Cerrado.
+• Solo puede existir un draft activo por liga.
+• Un jugador no puede ser elegido dos veces; no se permiten rondas con menos de dos equipos.
+• Cierre del draft: se cierra al completar todas las rondas previstas para todos los equipos (no se exige cubrir posiciones específicas).",
+User Story,Modalidad de draft Subasta,Yo como administrador del sistema quiero habilitar la modalidad de draft por Subasta para entonces permitir pujas con presupuesto limitado hasta completar los rosters.,"• Creación de subasta: el comisionado crea el draft tipo subasta indicando nombre, descripción, presupuesto por equipo, cantidad de espacios por roster y liga asociada.
+• El sistema asigna un ID único y estado inicial Configurado.
+• Presentación de jugadores: el sistema muestra jugadores uno a uno según su ranking.
+• Tiempo de puja: cada jugador abre una ventana de puja de 30 s por defecto.
+• Proceso de puja: los equipos pueden pujar mientras tengan presupuesto y espacios disponibles; cada nueva puja debe superar en ≥1 unidad monetaria la puja vigente.
+• Actualización en tiempo real: la plataforma muestra la puja más alta y el tiempo restante.
+• Ganador y asignación: al terminar el tiempo, el mayor postor obtiene al jugador y su presupuesto disminuye por el importe de la puja.
+• Sin pujas: si nadie puja, el jugador no se asigna y se pasa al siguiente.
+• Restricciones: equipos sin presupuesto o con roster completo no pueden ofertar.
+• Cierre de subasta: continúa hasta que cada equipo complete su número de espacios o se quede sin presupuesto.
+• Asignación automática final: al concluir, los equipos con espacios vacíos reciben jugadores de menor costo en orden inverso de ranking hasta completar su roster.
+• Estados del draft: Configurado → En_Progreso → Cerrado.",
+User Story,Invitar participante por correo y enlace seguro,Yo como comisionado de liga quiero invitar participantes ingresando su correo para entonces enviarles un enlace seguro 1:1 que permita unirse sin compartir la contraseña de la liga.,"• El comisionado ingresa un correo y el sistema genera un enlace de invitación único y seguro 1:1 para ese correo.
+• El enlace permite unirse a la liga sin requerir la contraseña de la liga.
+• Cada enlace solo puede usarse una única vez.
+• No se maneja expiración del enlace.
+• El sistema valida que la liga exista, esté activa y tenga cupos disponibles.
+• Se registra auditoría de quién generó el enlace y su estado de uso (pendiente/usado).
+• Al enviar la invitación por correo, el destinatario recibe el enlace para unirse.
+Alternos:
+• Si la liga no existe, está inactiva o no hay cupos, no se genera el enlace y se muestra un mensaje claro.
+• Si el correo ya tiene una invitación generada y no usada, se informa y no se crea un duplicado.
+• Si el usuario ya pertenece a la liga, se informa y no se genera el enlace.
+• Si el usuario ya pertenece a la liga, se informa y no se agrega.",
+User Story,Aceptar invitación por enlace,Yo como usuario invitado quiero aceptar una invitación mediante un enlace para entonces unirme a la liga de forma rápida y segura.,"• Al abrir el enlace, el sistema valida que sea válido, no usado, que exista la liga, que esté activa y que existan cupos.
+• Si el usuario no ha iniciado sesión, se le solicita autenticarse o registrarse antes de unirse.
+• Para unirse, el usuario debe definir alias y nombre de equipo; ambos deben ser únicos dentro de la liga.
+• Tras la aceptación, el usuario queda registrado en la liga y se actualiza el contador de cupos disponibles.
+• El sistema marca el enlace como usado e inhabilita su reutilización.
+• Se registra auditoría de la incorporación (usuario, fecha/hora).
+Alternos:
+• Si el enlace no es válido o ya fue usado, se informa y se ofrece solicitar una nueva invitación.
+• Si no hay cupos, se rechaza la incorporación con mensaje claro.
+• Si alias o nombre de equipo ya existen en la liga, se solicita elegir otros valores antes de continuar.",
+User Story,Buscar liga y unirse con contraseña,Yo como usuario quiero buscar una liga por nombre y unirme ingresando la contraseña para entonces participar cuando ya conozco sus datos.,"• El usuario puede buscar ligas por nombre con filtros de temporada y estado.
+• Para unirse, el sistema solicita la contraseña de la liga.
+• El sistema valida liga existente, activa, contraseña correcta y cupos disponibles.
+• Para unirse, el usuario debe definir alias y nombre de equipo; ambos deben ser únicos dentro de la liga.
+• Al unirse, se reduce el cupo disponible y se registra auditoría de la incorporación (usuario, fecha/hora).
+Alternos:
+• Si la contraseña es incorrecta, se muestra error genérico sin revelar detalles.
+• Si la liga no existe, está inactiva o no hay cupos, se rechaza con mensaje claro.
+• Si alias o nombre de equipo ya existen en la liga, se solicita elegir otros valores antes de continuar.
+• Si el usuario ya pertenece a la liga, se informa y no se agrega.",
+User Story,Abandonar liga,Yo como manager quiero abandonar una liga para entonces dejar de participar con mi equipo.,"• El usuario puede abandonar la liga únicamente cuando la liga está en estado Pre-Draft.
+• La acción solicita confirmación e indica impactos (pérdida de equipo en la liga).
+• Tras abandonar, aumenta el cupo disponible de la liga.
+• Se registra auditoría (usuario, fecha/hora).
+Alternos:
+• Si la liga no está en estado Pre-Draft, se rechaza con mensaje claro.
+• Si el usuario es el único comisionado, se debe traspasar el rol antes de abandonar.
+• Si el usuario no pertenece a la liga, se informa y no se realizan cambios.",
+User Story,Traspasar rol de comisionado,Yo como comisionado de liga quiero traspasar mi rol a otro miembro para entonces asegurar continuidad operativa con un único comisionado.,"• El comisionado puede seleccionar a un miembro existente para traspasar el rol.
+• El sistema solicita confirmación del traspaso.
+• Tras confirmarse, el destinatario queda como comisionado y el emisor pierde ese rol.
+• El sistema asegura que solo exista un comisionado al finalizar el proceso.
+• Se registra auditoría (emisor, receptor, fecha/hora).
+Alternos:
+• Si el destinatario no es miembro vigente de la liga, se rechaza con mensaje claro.
+• Si ocurre un fallo durante el traspaso, no se aplican cambios parciales.",
+User Story,Gestionar invitaciones pendientes,Yo como comisionado de liga quiero ver y revocar invitaciones pendientes para entonces mantener control sobre quién puede unirse.,"• El comisionado puede listar invitaciones activas con estado, email, expiración y usos restantes.
+• Puede revocar una invitación; tras revocarse el enlace queda inválido.
+• Se registra auditoría de revocaciones.
+Alternos:
+• Si la invitación ya expiró o fue usada, no se puede revocar y se informa el estado.",
+User Story,Crear sesión de draft en tiempo real,"Yo como comisionado de liga quiero planear una sesión de draft en tiempo real para entonces definir fecha, hora, modalidad y reglas de selección antes del evento.","• Se puede crear la sesión indicando liga, modalidad (Estándar, Snake, Subasta u otra habilitada), fecha y hora de inicio, cantidad de equipos, rondas totales, duración por pick configurable entre 30 s y 3 min, y nombre de la sesión.
+• El comisionado define el orden de selección como: Manual (arrastrar/ordenar equipos), Aleatorio, Ranking temporada anterior o Ranking inverso temporada anterior; quienes no tengan ranking previo se ordenan aleatoriamente.
+• La sesión inicia en estado Configurado y queda asociada a una única liga (solo una sesión activa por liga).
+• El sistema valida que la liga esté en estado Pre-Draft y que el conteo de equipos coincida con la configuración.
+• Se autogeneran un identificador único y fecha/hora de creación.
+Alternos:
+• Si la liga no está en Pre-Draft o la cantidad de equipos no coincide, se rechaza la creación con mensaje claro.
+• Si ya existe una sesión activa para la liga, se rechaza la creación y se informa el conflicto.",
+User Story,Iniciar sesión de draft,Yo como comisionado de liga quiero que la sesión de draft se abra automáticamente cerca del inicio para entonces comenzar puntualmente con el conjunto correcto de jugadores.,"• Cinco minutos antes de la fecha y hora configuradas, la sesión cambia automáticamente a estado Abierta y notifica a los participantes.
+• Al llegar la hora configurada de inicio, la sesión pasa a En_Progreso y se publica el orden de turnos y el formato de draft seleccionado (Estándar, Snake, Subasta, etc.).
+• Desde el inicio, se muestran las posiciones de roster configuradas para la liga.
+• Antes de pasar a En_Progreso, el sistema carga todos los jugadores activos de la NFL que correspondan a las posiciones configuradas de la liga.
+• Por defecto, todos los equipos entran en modo Autopick; al unirse a la sesión cambian a modo Manual.
+• El sistema verifica que todos los equipos requeridos estén registrados.
+• Estados del draft: Agendado → Abierta → En_Progreso → Cerrado (Finalizado).
+Alternos:
+• Si faltan equipos o hay inconsistencias de configuración, el inicio se bloquea con mensaje claro.
+• Si la sesión ya está En_Progreso o Cerrado, no puede volver a iniciarse.",
+User Story,Orquestación de turnos y control de orden,Yo como participante quiero que el sistema orqueste los turnos y el orden del draft para entonces tener una secuencia transparente y justa de selecciones.,"• El sistema determina y sigue el orden por ronda conforme al formato configurado en la sesión (Estándar, Snake u otro).
+• Cada equipo recibe exactamente un turno por ronda; solo el equipo en turno puede confirmar su pick.
+• El cambio de turno se propaga en tiempo real a todos los participantes.
+• Las solicitudes de pick fuera de turno se rechazan con mensaje claro.
+Alternos:
+• Si dos solicitudes válidas llegan casi simultáneamente, se acepta la primera validada y se rechaza la posterior con mensaje de conflicto.",
+User Story,Cronómetro por pick,Yo como participante quiero ver un cronómetro sincronizado por pick para entonces conocer el tiempo restante de mi turno.,"• Cada turno inicia un cronómetro con la duración configurada al inicio de la sesión.
+• El cronómetro se ejecuta siempre que el equipo esté en modo Manual; si está en Autopick, no se ejecuta.
+• Todos los clientes visualizan el mismo tiempo restante para el pick en curso.
+• Al finalizar el tiempo sin pick confirmado, el sistema cambia al equipo a estado Autopick y dispara el flujo correspondiente.
+Alternos:
+• Si el cronómetro no puede sincronizarse temporalmente, se muestra tiempo estimado y se corrige automáticamente al recibirse el estado autoritativo.",
+User Story,Autopick,Yo como participante quiero que el sistema ejecute autopick cuando corresponda para entonces garantizar que el draft avance sin bloqueos.,"• El sistema selecciona automáticamente un jugador de la NFL disponible siempre por mayor ranking disponible.
+• La asignación de autopick se completa y persiste antes de mover el turno al siguiente equipo.
+• La asignación respeta las validaciones de unicidad de jugador.
+• Se notifica al equipo afectado y al resto de participantes la ejecución del autopick.
+Alternos:
+• Si no hay jugadores que cumplan las reglas, se asigna el mejor disponible global y se documenta en auditoría.",
+User Story,Realizar pick,Yo como manager en turno quiero realizar mi pick desde la lista de disponibles para entonces asignar el jugador a mi equipo dentro del tiempo establecido.,"• Durante el turno, se habilita la selección desde la lista de jugadores disponibles (filtrable y ordenada por ranking).
+• El cronómetro corre durante el turno con el tiempo configurado.
+• La interfaz indica claramente qué equipo está en turno y cuál jugador está siendo seleccionado si ya se inició la elección.
+• Al seleccionar un jugador, el sistema valida disponibilidad, asigna el jugador al equipo del turno y avanza al siguiente turno.
+• La acción se refleja en la vista del estado del draft.
+Alternos:
+• Si el jugador ya fue tomado por otra confirmación, se rechaza la solicitud con mensaje claro y se mantiene el tiempo restante para elegir otro.",
+User Story,Soporte de reconexión de participantes,Yo como participante quiero poder reconectarme a la sesión de draft para entonces recuperar el estado actual y continuar sin perder mi turno.,"• Ante una reconexión, el cliente recibe el estado autoritativo: ronda, turno, tiempo restante, picks confirmados y disponibilidad.
+• Si el equipo se reconecta estando en turno y el tiempo sigue vigente, puede confirmar su pick.
+• Si el tiempo expiró durante la desconexión, se aplica el resultado correspondiente (autopick o pérdida del turno según reglas).
+• No se permiten acciones duplicadas al reintentar operaciones previas; el sistema debe ser idempotente.
+Alternos:
+• Si el usuario pierde permisos o su sesión expira, la reconexión se rechaza con mensaje claro.",
+User Story,Recuperación ante fallos de sesión,Yo como comisionado de liga quiero que la sesión se recupere ante fallos para entonces continuar el draft sin inconsistencias.,"• Ante un reinicio del servicio, la sesión restaura su último estado consistente (ronda, turno, tiempo restante aproximado y picks confirmados).
+• No se generan picks duplicados; las operaciones parcialmente aplicadas se reconcilian al estado autoritativo.
+• Se registra auditoría de la recuperación.
+Alternos:
+• Si el estado previo no es recuperable, la sesión se bloquea en modo seguro y solo el comisionado puede reanudar desde un punto consistente.",
+User Story,Notificaciones en tiempo real del draft,Yo como participante quiero recibir notificaciones en tiempo real del draft en el canal de Discord de mi liga para entonces mantenerme sincronizado con el avance.,"• Al confirmarse un pick o cambiar de turno, se envía una notificación al canal de Discord configurado para la liga y a los clientes conectados.
+• El equipo en turno recibe una notificación destacada al iniciar su pick.
+• Las notificaciones incluyen jugador seleccionado, equipo asignado, ronda y turno.
+Alternos:
+• Si el canal de Discord no está configurado (otro US), se notifica solo a los clientes conectados y se registra advertencia.",
+User Story,Cerrar sesión de draft,Yo como comisionado de liga quiero que el cierre del draft ocurra automáticamente para entonces garantizar la finalización en cuanto todos los picks estén completos.,"• La sesión se cierra automáticamente al completarse todas las rondas para todos los equipos; el estado pasa a Cerrado y no se aceptan más picks.
+• Se guarda el registro final de picks y orden de selección.
+Alternos:
+• Si se requiere un cierre manual por contingencia, el sistema solicita confirmación y documenta la excepción en auditoría.",
+User Story,Ver estado de draft,Yo como participante quiero ver el estado del draft para entonces conocer picks por ronda y la lista de jugadores disponibles por posición.,"• La vista de estado muestra, por ronda y por posición, qué jugadores han sido seleccionados y por qué equipo.
+• La lista de jugadores disponibles se muestra ordenada por ranking y paginada de 20 en 20.
+• Se puede filtrar por posición y buscar por nombre.
+• La vista se actualiza en tiempo real con cada pick confirmado.
+Alternos:
+• Si se pierde la conexión, al reconectar se muestra el estado autoritativo más reciente.",
+User Story,Lobby de pre-inicio del draft,Yo como participante quiero unirme a un lobby de pre-inicio para entonces confirmar mi presencia antes de que comience el draft.,"• El lobby se abre automáticamente cuando el draft entra en estado Abierta (5 minutos antes de la hora programada).
+• Los participantes pueden entrar para verificar su conexión y confirmar su disponibilidad.
+• La vista de lobby muestra el listado de equipos conectados, su estado de presencia y el tiempo restante para el inicio.
+• El sistema registra la presencia de cada equipo para fines de auditoría y posibles ajustes de autopick.
+Alternos:
+• Si un equipo no entra al lobby antes del inicio, puede unirse durante En_Progreso, pero aparecerá como ausente en el registro de presencia.",
+User Story,Desconectar manualmente del draft,Yo como participante quiero desconectarme manualmente de la sesión de draft para entonces dejar de participar y que el sistema continúe con Autopick en mi lugar.,"• El participante puede elegir desconectarse de la sesión de draft en cualquier momento.
+• Al desconectarse, su estado cambia automáticamente a Autopick para los turnos restantes.
+• La vista del estado del draft refleja la desconexión y el cambio de estado a Autopick.
+Alternos:
+• Si el participante se reconecta después de una desconexión manual, puede volver a cambiar su estado a Manual.",
+User Story,Realizar turno en formato Subasta,Yo como participante quiero realizar un turno en formato Subasta para entonces ofertar por jugadores con presupuesto limitado y avanzar la selección de manera competitiva.,"• Durante el turno de subasta, todos los equipos pueden ofertar como máximo una vez por turno.
+• No se permiten empates: ante dos ofertas del mismo valor, se toma la primera oferta recibida y validadamente registrada por el sistema.
+• Las ofertas deben ser estrictamente mayores a la oferta vigente y no pueden exceder el presupuesto disponible del equipo.
+• Al finalizar el tiempo del turno de subasta, el jugador se asigna al equipo con la oferta válida más alta.
+• Tras la asignación, el presupuesto del equipo ganador se reduce por el monto ofertado y la cantidad de espacios en su equipo disponible y el proceso avanza al siguiente jugador en subasta.
+• Si un equipo está en estado Autopick, su puja por defecto es el precio mínimo del jugador en todas las rondas mientras permanezca en Autopick.
+• La asignación del jugador es persistida antes de avanzar al siguiente jugador para evitar inconsistencias.
+• La vista del estado del draft refleja en tiempo real la puja vigente, el tiempo restante y el resultado del turno.
+Alternos:
+• Si una oferta llega fuera de tiempo, se rechaza con mensaje claro sin afectar el resultado.
+• Si dos ofertas válidas llegan prácticamente simultáneas con distinto valor, se toma la más alta; si el valor es igual, se toma la primera validada y la otra se rechaza por empate.
+• Si el equipo no tiene presupuesto suficiente para su oferta, se rechaza con mensaje claro.
+• Si nadie oferta (ni autopick), el jugador queda sin asignar y se avanza al siguiente jugador en subasta.",
+User Story,Ver resumen post‑draft por ronda,Yo como participante quiero ver un resumen readonly del draft para entonces consultar los jugadores escogidos por ronda y por equipo.,"• El resumen está disponible cuando el draft cambia a Cerrado (Finalizado).
+• La vista muestra por cada ronda y turno: equipo, jugador asignado, posición y marca temporal.
+• Incluye filtros por equipo y posición, y paginación de 20 ítems por página.
+• El contenido es de solo lectura y no permite ediciones ni reversión de picks.
+• Se consolida el roster completo por equipo, con conteo por posición.
+Alternos:
+• Si el estado del draft no es Cerrado (Finalizado), se muestra una alerta indicando que el resumen estará disponible al finalizar.
+• Si la carga de datos falla, se ofrece reintento y se registra el incidente en auditoría.",
+User Story,Enviar análisis de temporada por correo,Yo como manager quiero recibir por correo un análisis de fortalezas y debilidades de mi equipo para entonces conocer una nota del draft y una predicción de victorias/derrotas.,"• Al cerrar el draft, el sistema compila para cada equipo su listado de picks, posiciones y métricas básicas.
+• El sistema invoca el servicio de análisis  ChatGPT API, con la información del draft para generar: fortalezas, debilidades, nota del draft y predicción de victorias/derrotas.
+• Cada informe se envía únicamente al correo del manager del equipo correspondiente (privacidad por equipo).
+• El correo incluye fecha, liga, resumen del roster y el análisis generado.
+• Queda registro de envío (equipo, correo de destino, estado, timestamp).
+Alternos:
+• Si el servicio de análisis no responde, se reintenta con backoff; si persiste, se envía un correo indicando que el análisis estará disponible más tarde.
+• Si el envío de correo falla (rebote), se registra en auditoría y se notifica al comisionado.",
+User Story,Publicar resumen post‑draft en Discord,Yo como comisionado quiero publicar un resumen readonly del draft en el canal de Discord de la liga para entonces socializar los resultados con los participantes.,"• Al cerrar el draft, se publica un resumen con: orden de rondas, picks por equipo y métricas clave (p.ej., número de jugadores por posición).
+• El contenido se envía al canal de Discord configurado para la liga.
+• Se registra auditoría del intento de publicación y su resultado.
+Alternos:
+• Si el canal de Discord no está configurado, se omite el envío y se notifica al comisionado.
+• Si la publicación falla, se reintenta con backoff y, si persiste, se deja constancia y se avisa al comisionado.",
+User Story,Exportar resultados post‑draft,Yo como comisionado quiero exportar los resultados del draft para entonces compartir o analizar los datos fuera de la plataforma.,"• Se puede exportar el resumen post‑draft en formatos CSV y JSON; opcionalmente PDF con tabla por rondas y roster por equipo.
+• La exportación incluye: orden de rondas, equipo, jugador, posición, timestamp y método de selección (manual/autopick/subasta).
+Alternos:
+• Si la exportación excede límites de tamaño, se genera un archivo segmentado y se informa al usuario.
+• Si ocurre un error, se muestra mensaje claro y se permite reintento.",
+User Story,Editar branding de equipo,Yo como manager de equipo quiero editar el branding de mi equipo para entonces mantener mi equipo personalizado.,"• Se pueden editar: nombre del equipo e imagen del equipo.
+• El nombre del equipo debe ser único dentro de la liga (1–100 caracteres).
+• No se permiten co‑managers; solo existe un manager por equipo.
+• La imagen acepta formatos JPEG o PNG, tamaño máximo 5 MB y dimensiones entre 300x300 y 1024x1024 píxeles.
+• El sistema genera automáticamente un thumbnail a partir de la imagen cargada.
+• Se registra auditoría de cambios (quién, qué, cuándo).
+Alternos:
+• Si el nombre ya existe en la liga o no cumple el formato, se rechaza con mensaje claro.
+• Si la imagen excede tamaño/dimensiones o formato no permitido, se muestra error y no se guardan cambios.",
+User Story,Ver mi equipo,Yo como manager de equipo quiero ver la información completa de mi equipo  para entonces saber el estado actual de mi equipo.,"• La vista muestra: nombre del equipo, manager, imagen (thumbnail), estado y liga.
+• La vista lista los jugadores asignados al equipo por posición, mostrando: nombre, foto (thumbnail), posición, equipo NFL y designación de lesión (si aplica).
+• La vista permite filtrar por posición y buscar por nombre de jugador.
+• El contenido es de solo lectura y refleja el estado actual del roster.
+• Se muestra un gráfico con la distribucion porcentual de jugadores por forma de ser agregado (draft, cambio, agente libre)
+Alternos:
+• Si no hay jugadores asignados, se muestran secciones vacías con mensajes informativos.
+• Si la imagen no está configurada, se muestra una imagen por defecto.",
+User Story,Ver historial del equipo por temporada,Yo como manager de equipo quiero ver el historial del equipo en temporadas finalizadas parapoder ver mis resultados y rendimiento en cada temporada.,"• La vista muestra para cada temporada finalizada: nombre de la liga, posición final en la tabla, victorias, derrotas y empates.
+• La vista indica premios o reconocimientos obtenidos (p. ej., campeón de liga, mayor puntuación semanal).
+• Se puede ver lado a lado el roster post‑draft con el roster final de la temporada.
+• Se permite navegar a la ficha de cada jugador desde cualquiera de los dos rosters.
+Alternos:
+• Si la temporada aún no está finalizada, se informa que los datos de historial estarán disponibles al cierre.
+• Si no hay temporadas previas, se muestra un estado vacío con mensaje informativo.",
+User Story,Listar jugadores activos de la NFL,Yo como manager de equipo quiero ver el listado de jugadores activos de la NFL para entonces explorar el pool completo disponible en la temporada.,"• El listado muestra a todos los jugadores activos de la temporada vigente.
+• Por cada jugador se visualiza: nombre, posición, foto (thumbnail), equipo NFL, Equipo de mi liga fantasy (si existe), próximo rival (o BYE si aplica) y designación de lesión (si existe).
+• El estado del jugador indica si está libre o asignado a un equipo de la liga.
+• La vista soporta paginación de 20 resultados por página por defecto.
+Alternos:
+• Si no hay datos disponibles temporalmente, se muestra estado vacío y opción de reintentar.",
+User Story,Filtrar y ordenar jugadores,Yo como manager de equipo  quiero filtrar y ordenar jugadores para entonces encontrar rápidamente perfiles relevantes a mi estrategia.,"• Filtros por posición (QB, RB, WR, TE, K, DEF, etc.) y por estado de disponibilidad (libre o en un equipo de la liga).
+• Filtro por designación de lesión (O, D, Q, P/FP, IR, PUP, SUS).
+• Ordenar por nombre (A–Z/Z–A) y por puntos fantasy acumulados en la temporada (ascendente/descendente).
+• Los filtros y el orden se pueden combinar y persisten mientras el usuario navega.
+• La paginación respeta los filtros y el orden seleccionados.
+Alternos:
+• Si la combinación de filtros no devuelve resultados, se muestra estado vacío con opción de limpiar filtros.",
+User Story,Buscar jugadores por nombre,Yo como manager de equipo  quiero buscar jugadores por nombre para entonces localizar rápidamente perfiles específicos sin recorrer todo el listado.,"• La búsqueda por nombre funciona con coincidencia parcial e ignora mayúsculas/minúsculas.
+• La búsqueda se puede combinar con filtros de posición, disponibilidad y designación de lesión.
+• Los resultados mantienen paginación y orden configurados.
+Alternos:
+• Si no hay coincidencias, se muestra estado vacío y opción de limpiar búsqueda.",
+User Story,Ver perfil detallado de jugador,"Yo como manager de equipo quiero ver el perfil detallado de un jugador para entonces consultar su información, noticias y desempeño reciente.","• El perfil muestra: nombre, equipo NFL, posición y foto en tamaño completo.
+• Se muestra la información de lesiones; si no hay, se indica explícitamente que no existen lesiones registradas.
+• Las noticias del jugador se muestran en orden cronológico inverso (recientes primero).
+• La navegación permite volver al listado conservando filtros, orden y búsqueda previos.
+• Para la temporada actual se muestra, por semana: rival, fecha, puntos fantasy totales y desglose por categorías de puntuación configuradas en la liga.
+• Las semanas se ordenan cronológicamente y pueden expandirse/contraerse.
+• Si el equipo del jugador tiene descanso, la semana aparece con marca BYE y 0 puntos.
+Alternos:
+• Si faltan datos de alguna semana, se indica como pendiente y no afecta el resto del historial.
+• Si el jugador no tiene noticias, se muestra un estado informativo de sin noticias para no afectar el resto del perfil.
+Información adicional – designaciones de lesión:
+• Fuera (O): no jugarán.
+• Dudoso (D): muy poco probable que jueguen (~25%).
+• Cuestionable (Q): probabilidad ~50%, suele definirse el día del partido.
+• Probable (P) / Participación Plena (FP): casi seguro que juega (usado en reportes de práctica).
+• Reserva de Lesionados (IR): fuera por periodo extendido según reglas de la liga/NFL.
+• Incapaz Físicamente de Jugar (PUP): no habilitado para jugar hasta cumplir requisitos médicos/reglamentarios.
+• Suspendido (SUS): no elegible por sanción.
+• Estas noticias y designaciones son agregadas por administradores del sistema.",
+User Story,Agregar noticia de jugador,Yo como administrador del sistema quiero agregar una noticia a un jugador para entonces mantener informados a los usuarios sobre novedades y lesiones.,"• El formulario acepta un texto entre 10 y 300 caracteres y un indicador de si la noticia es de lesión.
+• La fecha/hora de creación se autogenera al momento de guardar.
+• Si la noticia es de lesión, además se requiere un resumen de hasta 30 caracteres y una designación: O, D, Q, P/FP, IR, PUP o SUS.
+• Tras guardarse, la noticia aparece en el perfil del jugador en orden cronológico inverso y se actualiza la designación visible del jugador con la nueva categoría indicada.
+• Se registra auditoría (autor, fecha/hora, cambios).
+Alternos:
+• Si el texto no cumple los límites o falta la designación en una noticia de lesión, se rechaza con mensaje claro.
+• Si el jugador no existe o está inactivo, se rechaza con mensaje claro.
+Información adicional – designaciones de lesión:
+• Fuera (O): no jugarán.
+• Dudoso (D): muy poco probable que jueguen (~25%).
+• Cuestionable (Q): probabilidad ~50%, suele definirse el día del partido.
+• Probable (P) / Participación Plena (FP): casi seguro que juega (usado en reportes de práctica).
+• Reserva de Lesionados (IR): fuera por periodo extendido según reglas de la liga/NFL.
+• Incapaz Físicamente de Jugar (PUP): no habilitado para jugar hasta cumplir requisitos médicos/reglamentarios.
+• Suspendido (SUS): no elegible por sanción.
+• Estas noticias y designaciones son agregadas por administradores del sistema.",
+User Story,Eliminar noticia de jugador y revertir designación,Yo como administrador del sistema quiero eliminar una noticia de un jugador para entonces corregir o retirar información y restaurar su designación previa cuando aplique.,"• Se puede eliminar una noticia específica del jugador.
+• Si la noticia eliminada modificaba la designación de lesión, el sistema revierte la designación al estado previo a esa noticia (según historial).
+• El historial conserva un registro de eliminación (quién, cuándo, noticia afectada).
+Alternos:
+• Si la noticia no existe o ya fue eliminada, se informa y no se aplican cambios.
+• Si no hay designación previa a la noticia eliminada, la designación del jugador queda como 'sin designación'.",
+User Story,Editar plantilla semanal del equipo,Yo como manager quiero editar mi plantilla semanal para entonces poder mover jugadores entre banca y titulares antes de guardar los cambios.,"• El usuario puede mover un jugador desde la banca a una posición titular siempre y cuando el jugador tenga esa posición. El jugador que ocupaba esa posición pasará a la banca.
+• Los movimientos son ilimitados hasta que se presione Guardar.
+• Al presionar Guardar, la plantilla queda actualizada y se refleja en el sistema.
+• La validación garantiza que todas las posiciones titulares requeridas de la liga queden ocupadas o explícitamente vacías.
+Alternos:
+• Si un jugador no cumple la posición, se rechaza el movimiento con mensaje de error.
+• Los cambios en la plantilla solo pueden realizarse entre el final de la semana anterior (o el draft en la primera semana) y la fecha/hora de inicio de la siguiente semana de competencia definida en el calendario.
+• Después de ese momento, los equipos quedan en modo partida read-only.",
+User Story,Reset de plantilla semanal,Yo como manager quiero restablecer mi plantilla a su último estado guardado para entonces descartar todos los cambios no guardados.,"• Opción de Reset disponible mientras se edita la plantilla semanal.
+• Al usar Reset, todos los movimientos vuelven al estado del último guardado.
+Alternos:
+• Si no hay cambios pendientes, la opción Reset está deshabilitada.",
+User Story,Mover jugadores a IR,"Yo como manager quiero mover jugadores designados como IR, PUP o SUS a las posiciones especiales de IR para entonces liberar espacio en mi banca o titulares.","• Solo jugadores con designación IR, PUP o SUS pueden ser movidos a los slots de IR.
+• Si los slots IR están llenos según configuración de la liga, no se permiten más movimientos a estas casillas hasta que algún jugador deje una libre.
+• Los jugadores en IR no suman puntos y no cuentan como titulares ni banca.
+• Los jugadores en IR pueden ser despedidos (waived) en cualquier momento, quedando disponibles como agentes libres.
+Alternos:
+• Si se intenta mover un jugador sin designación válida, el sistema lo rechaza con mensaje de error.
+• Si se intenta mover un jugador con IR lleno, el sistema muestra mensaje indicando límite alcanzado.",
+User Story,Retorno de jugadores desde IR,Yo como manager quiero regresar a un jugador desde IR a mi plantilla activa para entonces reintegrarlo a mi equipo.,"• El jugador solo puede volver si existe espacio libre en banca o titulares de acuerdo con su posición.
+• Al ser reintegrado, deja libre el slot de IR.
+Alternos:
+• Si no existe espacio libre, el sistema rechaza el movimiento con mensaje de error.",
+User Story,Validación de plantilla inválida por cambio de designación,Yo como manager quiero saber cuando mi equipo está en un estado inválido para entonces cumplir siempre con las reglas de elegibilidad.,"• Si un jugador en IR recibe una actualización que le remueve estado IR, PUP o SUS, el equipo pasa a estado Inválido.
+• Mientras esté inválido, el equipo no suma puntos.
+• El estado se refleja claramente en la interfaz de la plantilla del equipo.
+Alternos:
+• Si el jugador vuelve a obtener designación IR, PUP o SUS y aún tiene casilla en IR, el equipo vuelve a estado válido. Esto puede suceder por la eliminación de una noticia errónea o cualquier otro cambio realizado por un administrador.",
+User Story,Liberar jugador de mi equipo,Yo como manager quiero liberar un jugador de mi equipo para entonces abrir un cupo de roster y ponerlo disponible para otros en mi liga.,"• Al liberar un jugador, este abandona mi equipo y pasa al pool de agentes libres de la liga.
+• Inmediatamente se libera un cupo en mi equipo.
+• En ligas de formato Subasta, al liberar se acredita a mi saldo el precio vigente del jugador en ese momento.
+• La acción queda registrada en auditoría con fecha/hora, equipo y manager.
+Alternos:
+• Solo puedo liberar jugadores que estén en mi equipo actualmente.",
+User Story,Buscar y listar agentes libres,Yo como manager quiero buscar y listar jugadores agentes libres para entonces identificar candidatos para mi equipo.,"• El listado muestra solo jugadores sin equipo en mi liga.
+• Se puede buscar por nombre, por posición, equipo NFL y designación de lesión.
+• El listado se debe ordenar por puntos fantasy acumulados en la temproada actual hasta el momento (descendente por defecto).
+• Por cada jugador se muestran: foto (thumbnail), nombre, equipo NFL, próximo partido (o BYE), puntos acumulados, posición y designación de lesión.
+Alternos:
+• Si no hay resultados para los filtros/búsqueda, se muestra estado vacío y opción de limpiar filtros.",
+User Story,Reclamar jugador con asignación inmediata (Agencia Libre),Yo como manager quiero reclamar un agente libre con asignación inmediata para entonces completar mi plantilla cuando tengo cupos disponibles.,"• Puedo reclamar un jugador libre si mi equipo tiene cupos disponibles.
+• En modalidad Estándar de reclamo de jugadores, la asignación es inmediata siguiendo esquema FIFO (primer reclamo válido, primero en asignarse).
+• En modalidad Subasta, la asignación inmediata descuenta de mi saldo el precio vigente del jugador; si no tengo saldo suficiente, el reclamo es rechazado.
+• Tras la asignación, el jugador se agrega a mi casilla de equipo y disminuye la cantidad de cupos disponibles.
+• La operación queda registrada en auditoría con fecha/hora, equipo y manager.
+Alternos:
+• Si el jugador fue tomado por otro equipo durante el proceso, se informa conflicto y no se asigna.
+• Si no tengo cupos disponibles, se rechaza con mensaje claro.",
+User Story,Registrar reclamo con prioridad (Waivers),Yo como manager quiero registrar un reclamo de waivers para entonces competir por un jugador cuando hay múltiples interesados.,"• Si la liga está configurada con prioridad de waivers, el reclamo no asigna de inmediato sino que crea una solicitud para adjudicación al final del día.
+• En ligas no‑Subasta, la prioridad de adjudicación favorece al equipo con peor posición actual en la tabla de esa liga.
+• En ligas Subasta, debo indicar mi puja en el momento del reclamo; la puja no puede ser menor que el precio vigente del jugador.
+• En ligas Subasta, las pujas son ocultas hasta la adjudicación; gana la puja más alta y, en caso de empate, el equipo peor posicionado en la tabla.
+• El sistema valida que tenga cupo disponible al momento de registrar el reclamo.
+• En caso de subasta el sistema valida que tenga el monto de dinero disponible.
+• Cada reclamo queda registrado en auditoría con fecha/hora, equipo, manager y parámetros del reclamo y resultado.
+Alternos:
+• Si ya existe un reclamo activo mío por ese jugador, se evita duplicidad y se informa el estado.
+• Si al momento de la adjudicacion el manager ya no cuenta con las posiciones o dinero disponible se pasa al siguiente manager  que solicitara agregar al jugador, si no otros  el jugador sigue como agente libre
+• Si el jugador dejó de ser agente libre antes de registrar el reclamo, se rechaza con mensaje claro.",
+User Story,Adjudicar waivers al final del día,Yo como sistema quiero ejecutar la adjudicación diaria de waivers para entonces asignar jugadores según prioridad.,"• La adjudicación se ejecuta al final del día según la configuración de la liga.
+• En ligas no‑Subasta, el jugador se asigna al equipo con peor posición entre los que lo solicitaron; si solo hay un solicitante, se asigna a ese equipo.
+• En ligas Subasta, se asigna al equipo con la puja más alta; en empate, al peor posicionado en la tabla.
+• En ligas Subasta, al asignar se descuenta del saldo del equipo ganador el monto de su puja; si al momento de adjudicar no hay saldo suficiente, el reclamo se rechaza y se evalúa el siguiente.
+• La asignación actualiza cupos y estado del jugador; los reclamos perdedores se marcan como no adjudicados.
+• Se generan eventos de notificación y registros de auditoría de todas las adjudicaciones.
+Alternos:
+• Si ya existe un reclamo activo mío por ese jugador, se evita duplicidad y se informa el estado.
+• Si al momento de la adjudicacion el manager ya no cuenta con las posiciones o dinero disponible se pasa al siguiente manager  que solicitara agregar al jugador, si no otros  el jugador sigue como agente libre
+• Si ocurre un error parcial, se aplica consistencia transaccional: sin asignaciones a medias.",
+User Story,Notificar movimientos en Discord,Yo como participante quiero que los movimientos de altas y bajas se notifiquen en el canal de Discord de la liga para entonces mantener transparencia en tiempo real.,"• Si el canal de Discord está configurado en la liga, al liberar un jugador se envía notificación con jugador, equipo fantasy, manager, fecha/hora y tipo de movimiento.
+• Si el canal de Discord está configurado, al asignarse un jugador (inmediato o por waivers) se envía notificación con los mismos datos (y, si aplica, puja ganadora).
+• Si la liga no tiene canal configurado, se romite esta notificacion
+• Todos los envíos quedan registrados en auditoría con estado de entrega.
+Alternos:
+• Si la creación de la noticia falla se omite sublicación y se registra en la auditoría de publicaciones para Discord. ",
+User Story,Publicar movimientos en noticias de la liga,Yo como participante quiero que las altas y bajas se publiquen como noticias dentro de la liga para entonces mantener a todos informados desde la aplicación.,"• Al liberar un jugador, se crea una noticia en la sección de noticias de la liga con jugador, equipo fantasy, manager, fecha/hora y tipo de movimiento.
+• Al asignarse un jugador (inmediato o por waivers), se crea una noticia con los mismos datos (y, si aplica, la puja ganadora o el orden de prioridad).
+• Las noticias se ordenan por fecha/hora (más reciente primero) y enlazan al detalle del movimiento cuando corresponda.
+• Se registra auditoría de publicaciones.
+Alternos:
+• Si la creación de la noticia falla se omite sublicación y se registra en la auditoría de publicaciones. ",
+User Story,Selección de liga y roles independientes,Yo como manager que participa en múltiples ligas quiero poder seleccionar cuál liga visualizar y gestionar mi participación según los roles que tenga en cada liga para entonces administrar correctamente la información y responsabilidades sin mezclarlas.,"• El sistema muestra un listado de todas las ligas en las que participo.
+• Solo se puede tener un equipo por liga.
+• Al seleccionar una liga, toda la navegación y datos corresponden únicamente a esa liga.
+• Siempre se muestra en pantalla cuál liga está activa.
+• El sistema gestiona roles de manera independiente en cada liga (ejemplo: comisionado en una liga, manager en otra) y habilita las opciones de menú según el rol que tenga en esa liga.
+• Los permisos se aplican únicamente dentro de la liga seleccionada.
+• Si el usuario participa en una sola liga, no se muestra el selector y se abre directamente esa liga.",
+User Story,Selección obligatoria post‑login,Yo como manager que pertenezco a múltiples ligas quiero seleccionar la liga que deseo ver inmediatamente después de iniciar sesión para entonces trabajar directamente en el contexto correcto.,"• Si el usuario pertenece a más de una liga, el sistema siempre solicita selección de liga tras el login.
+• La liga elegida se carga como contexto activo y se mantiene durante toda la sesión.
+• Si el usuario pertenece a una sola liga, el sistema la abre directamente sin mostrar el selector.",
+User Story,Publicar noticia del comisionado,Yo como comisionado de liga quiero crear una noticia con información relevante para los managers y entonces mantener a los participantes informados sobre los eventos de la liga.,"• La noticia incluye título, contenido (máx. 1000 caracteres), creador (autogenerado), liga asociada (autogenerada) y fecha de creación (autogenerada).
+• La noticia  será agregada al historial de noticias de la liga en la temporada actual. Estas noticias serán mostradas en el panel principal de la liga.
+• La noticia se incluye como parte del historial auditable de la liga.
+Alternativos
+• Si no se cumple con la información requerida se debe mostrar un mensaje mostrando el fallo.
+• Si no se puede agregar la noticia por algún fallo de sistema se debe notificar con un mensaje.",
+User Story,Eliminar noticia del comisionado,Yo como comisionado de liga quiero poder eliminar una noticia publicada por error para entonces asegurar que la información disponible en la aplicación sea siempre correcta y actualizada.,"• Solo el comisionado que creó la noticia puede eliminarla.
+• Al eliminar, la noticia ya no se muestra en la aplicación.
+• El evento de eliminación queda registrado en la auditoría del sistema.
+• Si la noticia ya fue enviada a Discord, no se elimina de Discord.",
+User Story,Crear temporada con calendario oficial NFL (transaccional),"Yo como administrador del sistema quiero crear una temporada junto con su calendario oficial NFL en un solo flujo para entonces asegurar que toda temporada tenga inmediatamente sus partidos, bye weeks y semanas definidas correctamente.","• La creación solicita: nombre, fecha de inicio, fecha de fin, indicador de temporada actual (sí/no), cantidad de semanas y, para cada semana, fecha de inicio y fin.
+• En el mismo flujo se carga el archivo JSON de calendario oficial (NFL-Calendario) con: semana (1–18), equipo casa, equipo visita, fecha/hora, y equipos en BYE.
+• Para cada partido importado, el marcador se precarga 0–0.
+• Validaciones: fin > inicio; semanas dentro del rango; semanas sin traslapes; equipos válidos; semanas válidas; sin duplicados de partido.
+• La operación es transaccional: si falla temporada o calendario, no se crea nada.
+• Errores del archivo se listan en pantalla con detalle y no se crean registros (sin parciales).
+• Todo archivo procesado se mueve a históricos con prefijo Procesado_<éxito|fallo>_<fecha>_<nombre-archivo>.json.
+• Auditoría: registro de autor, fecha/hora y resultado.
+Alternos:
+• Si el JSON no cumple el esquema esperado o referencias, se rechaza con mensaje claro.
+• Si hay fechas que están en conflicto con otra temporada en el mismo rango, se rechaza.",
+User Story,Editar datos de temporada,Yo como administrador del sistema quiero editar el nombre de una temporada y marcarla como actual para entonces reflejar el estado vigente del sistema.,"• Se puede modificar el nombre de la temporada.
+• Se puede marcar una temporada como 'actual'; al hacerlo, cualquier otra temporada que estuviera como 'actual' deja de estarlo automáticamente (solo una a la vez).
+• La acción es auditable (quién, cuándo, valores previos y nuevos).
+Alternos:
+• Si la temporada ya está marcada como actual, no se realizan cambios redundantes.",
+User Story,Ver calendario y bye weeks por temporada,Yo como usuario de la liga quiero consultar el calendario y las bye weeks por temporada para entonces planificar mis alineaciones con base en los partidos oficiales.,"• La vista muestra, por semana: partidos (equipo casa vs equipo visita, fecha/hora) y equipos en BYE.
+• Se puede filtrar por equipo NFL y por semana.
+• Los equipos en BYE se muestran claramente; esos jugadores no suman puntos en esa semana (referencial).
+• La vista es de solo lectura sobre datos oficiales de la temporada.
+Alternos:
+• Si no hay calendario cargado para la temporada, se muestra estado informativo y se ocultan listados.",
+User Story,Archivar temporada,Yo como administrador del sistema quiero archivar una temporada antigua para entonces reducir datos históricos sin relevancia manteniendo la integridad del sistema.,"• Al archivar, todos los datos de la temporada (incl. puntajes y registros de ligas) se mueven a almacenamiento histórico y dejan de ser accesibles en la aplicación.
+• El archivado es auditable y atómico (sin estados parciales).
+• No afecta temporadas activas ni la temporada actual.
+Alternos:
+• Si la temporada es la actual, se bloquea el archivado hasta que otra temporada sea marcada como actual.",
+User Story,Reimportar calendario antes del inicio,Yo como administrador del sistema quiero reimportar el calendario de una temporada antes de que comience para entonces corregir errores detectados en el archivo original.,"• Solo es posible reimportar calendario si la temporada no ha iniciado (antes de la semana 1).
+• La reimportación sigue validaciones y atomicidad de la importación inicial.
+• El archivo reemplaza completamente al calendario anterior; sin cargas parciales.
+• El archivo previo se mueve a históricos con prefijo correspondiente.
+Alternos:
+• Si la temporada ya comenzó, se rechaza la reimportación con mensaje claro.",
+User Story,Generar calendario de temporada fantasy al cerrar el draft,Yo como sistema quiero generar el calendario de enfrentamientos Head-to-Head al finalizar el draft para entonces activar la temporada y asegurar juegos semanales para todos los equipos.,"• Al cambiar la liga de Pre‑Draft a Activa (al cerrar el draft), se genera el calendario completo de la fase regular.
+• Todas las semanas previas a playoffs cada equipo tiene exactamente un enfrentamiento y ningún equipo se enfrenta a sí mismo.
+• El número de rondas se calcula como (semanas previas a playoffs) ÷ (total de equipos); se programan rondas completas (todos contra todos) y la fracción residual se asigna con emparejamientos aleatorios válidos, evitando repeticiones innecesarias.
+• El algoritmo de emparejamientos es agnóstico de implementación, pero debe garantizar que todas las semanas juegan todos los equipos.
+• El calendario queda persistido y auditable (fecha/hora de generación, usuario/sistema).
+Alternos:
+• Si por configuración no hay suficientes semanas para rondas completas, se llenan con emparejamientos aleatorios válidos.
+• Si ocurre un error de generación, no se publican parciales y se registra el incidente para reintentar.",
+User Story,Ver calendario semanal en el Home de la liga,Yo como participante quiero ver el calendario de enfrentamientos de la semana vigente en el Home de la liga para entonces acceder rápidamente a los juegos.,"• El Home de la liga muestra la semana vigente según el calendario y la fecha/hora actuales.
+• Se listan todos los enfrentamientos de la liga para esa semana.
+• Desde cada tarjeta se puede navegar al detalle del enfrentamiento.
+• Siempre se muestra la siguiente semana
+Alternos:
+• Si la temporada aún no inicia, se muestra un estado informativo con la fecha de inicio.
+• Si la temporada terminó, se muestra que no hay próximos partidos.",
+User Story,Ver detalle de enfrentamiento semanal,"Yo como participante quiero ver el detalle de un enfrentamiento semanal para entonces conocer alineaciones, estados y contexto de ambos equipos.","• El detalle muestra: Equipo A vs Equipo B, nombres, thumbnails, récord W‑L‑T previo a la semana, y la lista de jugadores por posición para cada equipo.
+• Las posiciones sin jugador se muestran claramente como vacías.
+• Se indican estados relevantes (por ejemplo, equipo inválido por alineación, casillas IR, jugadores en BYE).
+• Se muestra la semana y fecha/hora del enfrentamiento.
+Alternos:
+• Si el enfrentamiento pertenece a una semana pasada, se muestran también los puntos finales por equipo.",
+User Story,Navegar entre semanas y consultar históricos de enfrentamientos,Yo como participante quiero cambiar la semana visible para entonces revisar los enfrentamientos y resultados de semanas anteriores o próximas (una semana a la vez).,"• El usuario puede seleccionar una semana específica; la vista carga solo los enfrentamientos de esa semana.
+• Para semanas pasadas, se muestran resultados finales; para futuras, se muestra el calendario programado.
+• La navegación respeta el contexto de liga y se mantiene el filtro de semana hasta que el usuario lo cambie.
+Alternos:
+• Si la semana seleccionada no tiene enfrentamientos (error de datos), se muestra estado informativo y se registra el incidente.",
+User Story,Re‑generar calendario de temporada antes del inicio,Yo como comisionado de la liga quiero re‑generar el calendario de enfrentamientos antes de que inicie la temporada para entonces ajustar emparejamientos manteniendo las reglas H2H.,"• Solo el comisionado puede ejecutar la re‑generación y únicamente si la temporada aún no ha iniciado (antes de la semana 1).
+• La operación reemplaza íntegramente el calendario de fase regular, sin estados parciales (transaccional).
+• El nuevo calendario se genera con las mismas reglas: rondas completas según (semanas previas a playoffs ÷ total de equipos), fracción residual con emparejamientos aleatorios válidos, sin enfrentamientos contra uno mismo y todos los equipos juegan cada semana.
+• Se respetan el número de semanas previas a playoffs y la cantidad actual de equipos confirmados en la liga.
+• Se registra auditoría (quién, cuándo) y se archiva el calendario anterior para referencia.
+• Se notifica a todos los managers que el calendario fue re‑generado; si la liga tiene Discord configurado, también se publica en su canal.
+Alternos:
+• Si la temporada ya inició o existe algún resultado publicado, la acción se bloquea con mensaje claro y no se realizan cambios.
+• Si ocurre un error durante la generación, se conserva el calendario vigente y se registra el incidente para reintento.",
+User Story,Registrar estadísticas en partido NFL en tiempo real,Yo como administrador del sistema quiero registrar en tiempo real las estadísticas de un partido NFL para entonces reflejar las acciones oficiales en el puntaje de las ligas fantasy.,"• Se selecciona el partido real de la NFL del calendario de partidos y se listan los jugadores de ambos equipos y las acciones disponibles (p. ej., acarreo, recepción, pase de TD, intercepción, gol de campo, etc.).
+• Cuando se abre el partido se crea una registro en el historial de acciones del partido
+• Al registrar una acción, se actualizan los acumulados del jugador y del partido.
+• Cada registro se audita con: usuario, acción, jugador, equipo, valor y marca temporal.
+• Solo un administrador puede editar un partido a la vez pero pueden haber varios administradores haciendo este trabajo en diferentes partidos.
+• Se muestra un historial cronológico de acciones del partido.
+Alternos:
+• Si falla el guardado, no se alteran acumulados y se informa para reintentar.",
+User Story,Deshacer acción mediante contra‑acción,Yo como administrador del sistema quiero deshacer una acción desde el historial para entonces corregir errores manteniendo trazabilidad completa.,"• Al deshacer, el sistema genera automáticamente una contra‑acción que anula el efecto de la acción original (mismos campos con signo/valor inverso según corresponda).
+• El historial no borra entradas: conserva acción original y contra‑acción con referencias cruzadas.
+• Los acumulados del jugador y del partido se recalculan tras la contra‑acción.
+• La auditoría registra autor, hora y motivo de la corrección.
+Alternos:
+• Si la acción original ya fue anulada, se impide una anulación duplicada con mensaje claro.",
+User Story,Terminar partido y bloquear edición,Yo como administrador del sistema quiero terminar un partido para entonces cerrar el registro de acciones y consolidar resultados en modo de solo lectura.,"• Al terminar, el partido pasa a estado Finalizado (solo lectura).
+• El cierre se registra en el historial como un evento con usuario y marca temporal.
+• Tras finalizar, ya no pueden registrarse nuevas acciones ni deshacer existentes.
+• Se dispara el cálculo de puntos de fantasy para todos los jugadores involucrados.
+Alternos:
+• Si el partido ya estaba Finalizado, no se aplican cambios y se informa al usuario.",
+User Story,Reabrir partido dentro de la semana vigente,Yo como administrador del sistema quiero reabrir un partido finalizado dentro de la semana vigente para entonces corregir errores y actualizar los cómputos.,"• Solo se puede reabrir un partido Finalizado si pertenece a la semana actual del calendario NFL (no ha pasado la fecha de fin de la semana).
+• La reapertura queda registrada en el historial con usuario y marca temporal.
+• Tras reabrir, se habilita nuevamente el registro de acciones y deshacer.
+• Al volver a finalizar, se recalculan puntos y se actualizan impactos en fantasy.
+Alternos:
+• Si la semana ya cerró, se bloquea la reapertura con mensaje claro.",
+User Story,Sincronizar impactos en equipos fantasy,Yo como sistema quiero actualizar automáticamente los puntos de los equipos fantasy afectados para entonces mantener standings y box scores consistentes.,"• Cuando cambian puntos de un jugador (registro, deshacer, reapertura/cierre), se recalculan los totales del equipo fantasy para la semana en curso.
+• Se actualizan los box scores de enfrentamientos H2H y, si aplica, los standings.
+• Se generan eventos de notificación internos para refrescar vistas de usuarios.
+Alternos:
+• Si un equipo está en estado inválido para la semana, no suma puntos hasta que regularice su alineación.",
+User Story,Bloqueo de edición por partido,Yo como sistema quiero asegurar exclusividad de edición por partido para entonces evitar conflictos cuando hay múltiples administradores concurrentes.,"• Al iniciar edición, el sistema toma un bloqueo exclusivo sobre el partido para ese administrador.
+• Otros administradores ven el partido en modo solo lectura con indicación de quién está editando.
+• El bloqueo expira automáticamente tras liberar la edición.
+• La toma y liberación del bloqueo quedan registradas en auditoría con la apertura y cierre de partido.
+Alternos:
+• Si el administrador que edita pierde conexión, el bloqueo se libera tras el timeout configurado.",
+User Story,Propagar acciones a puntos en todas las ligas,Yo como sistema quiero convertir cada acción registrada en un partido NFL en puntos para todas las ligas según su escala de puntuación para entonces mantener los totales consistentes por jugador y por equipo fantasy.,"• Cada acción registrada en el partido (p. ej., acarreo, recepción, TD, INT, FG, PAT, sack) se convierte en puntos aplicando el esquema de puntuación activo de cada liga.
+• La conversión actualiza los puntos del jugador tanto si pertenece a un equipo fantasy como si está en agentes libres (necesitamos los puntos obtenidos de los agentes libres también).
+• Se actualizan en tiempo real, los totales del equipo fantasy y los box scores H‑to‑H afectados.
+• La operación es transaccional por evento: o se aplican todos los efectos o ninguno.
+• Se llevan acumulados por jugador a nivel de temporada y por semana, aun cuando el jugador no esté en ningún equipo fantasy.
+• Los acumulados se usan por los módulos de consulta de jugadores (búsqueda/orden por puntos) y por reportes.
+• Los acumulados se recalculan automáticamente si se anula o corrige una acción del partido.
+Alternos:
+• Si falla la conversión en alguna liga, se revierte el evento completo y se registra el incidente para reintento.",
+User Story,Revertir puntos al cancelar o anular acciones,Yo como sistema quiero revertir los puntos derivados de una acción cuando esta sea cancelada para entonces mantener la consistencia en todas las ligas y acumulados.,"• Cuando se deshace/contrarresta una acción en el partido, se generan los ajustes inversos de puntos en todas las ligas afectadas.
+• Se actualizan los puntos del jugador (globales y por liga), box scores y standings impactados.
+Alternos:
+• Si parte del ajuste falla, se revierte la operación completa y se marca para reintento.",
+User Story,Ver log de conversión de acciones a puntos por liga,Yo como administrador del sistema quiero ver un log por liga de la conversión de acciones a puntos para entonces realizar control de calidad y trazabilidad.,"• Permite seleccionar una liga y un rango de fechas/semana para consultar.
+• Cada entrada del log muestra: partido real, jugador, acción, cantidad/unidad, puntos obtenidos por la acción según la configuración de la liga, fecha/hora y origen del evento.
+• Soporta filtros por partido, jugador y tipo de acción, y exportación a CSV/JSON.
+• La vista es de solo lectura y auditable (quién consultó y cuándo).
+Alternos:
+• Si no existen datos en el rango seleccionado, se muestra estado informativo sin errores.",
+User Story,Actualizar tablero Head-to-Head en vivo,Yo como manager quiero ver el tablero Head-to-Head actualizarse casi en vivo para entonces monitorear el total de puntos acumulados de cada equipo durante el partido.,"• El tablero refleja el total acumulado por jugador de mi equipo conforme se registran acciones por los administradores (casi en tiempo real).
+• La actualización es incremental: cada nueva acción modifica el total del jugador y del equipo fantasy correspondiente.
+• Se muestra el total por equipo para la semana activa del enfrentamiento hasta el momento.
+• La vista indica la semana y el estado del enfrentamiento (programado, en juego, finalizado).
+Alternos:
+• Si la conexión del cliente se interrumpe, al reconectar se cargan los totales más recientes sin inconsistencias.
+• Si hay un ajuste (deshacer) en el partido, los totales se recalculan y actualizan de inmediato.",
+User Story,Reflejar puntos por jugador en ficha en vivo,Yo como manager quiero ver en la ficha de cada jugador los puntos que lleva en la semana para entonces entender su contribución en tiempo casi real.,"• La ficha del jugador muestra los puntos fantasy acumulados de la semana activa, actualizados conforme se registran acciones.
+• Se presenta el desglose por categorías de puntuación configuradas en la liga (p. ej., yardas, TD, recepciones, etc.) para la semana activa.
+• Las semanas anteriores se muestran como snapshots inmutables sin cambios posteriores.
+• El componente indica la semana y el equipo NFL/partido real asociado.
+Alternos:
+• Si ocurre un ajuste (deshacer o corrección), el total y el desglose de la semana activa se actualizan en consecuencia.
+• Si no existen acciones registradas aún, se muestra 0 y desglose vacío para la semana.",
+User Story,Manejo de conexiones de actualización en vivo,Yo como manager quiero actualizar el tablero y las fichas de forma consistente ante reconexiones o latencias para entonces asegurar que los usuarios siempre vean datos correctos.,"• Si el cliente pierde la conexión, al reconectar se sincroniza con el estado más reciente (totales y desglose).
+• Las actualizaciones en vivo son idempotentes: no se duplican puntos ante reintentos o mensajes fuera de orden.
+• Ante alta carga, la UI puede agrupar actualizaciones sin perder eventos (consistencia sobre frecuencia).
+Alternos:
+• Si el servicio en vivo no está disponible temporalmente, se indica en pantalla que los datos pueden estar fuera de sincronización.",
+User Story,Mostrar tabla de posiciones de temporada en Home,Yo como manager quiero ver la tabla de posiciones de la temporada en el Home de la liga para entonces conocer rápidamente el rendimiento de todos los equipos.,"• La tabla muestra en orden ascendente por posición: posición, thumbnail de imagen del equipo, nombre de equipo, alias del manager, victorias (W), derrotas (L), puntos anotados (PF) acumulados y puntos recibidos (PA) acumulados.
+• La posición reflejada corresponde a la clasificación vigente de la liga.
+• La tabla es de solo lectura y se actualiza tras el cierre de cada jornada.
+Alternos:
+• Si la temporada aún no tiene resultados, la tabla muestra estado informativo sin filas.",
+User Story,Mostrar ranking de orden de draft en Home,Yo como manager quiero ver el ranking del orden de selección del draft en el Home de la liga para entonces recordar cómo se estableció el turno de cada equipo.,"• El ranking se llena inmediatamente después de finalizar el draft.
+• La tabla muestra: posición de draft, thumbnail de imagen del equipo, nombre de equipo y alias del manager.
+• El ranking es estático durante toda la temporada (no cambia después de publicado).
+• El ranking se muestra en una sección independiente de la tabla de posiciones de temporada.
+Alternos:
+• Si el draft aún no finaliza, se muestra estado informativo indicando que el ranking estará disponible al cierre del draft.",
+User Story,Mostrar leaderboard de rachas en Home,Yo como manager quiero ver el leaderboard de rachas en el Home de la liga para entonces identificar equipos con victorias o derrotas consecutivas.,"• La tabla muestra en orden ascendente por posición: posición, thumbnail de imagen del equipo, nombre de equipo, alias del manager y la racha (victorias seguidas si es positiva o derrotas seguidas si es negativa).
+• El ordenamiento prioriza mayor racha positiva arriba y mayor racha negativa abajo; los empates se resuelven por orden alfabético del nombre de equipo.
+• La vista es de solo lectura y está disponible en el Home de la liga.
+• La racha se resetea cuando cambia la secuencia (una derrota rompe racha de victorias, y viceversa).
+Alternos:
+• Si aún no hay suficientes jornadas para calcular rachas, se muestra estado informativo sin filas.",
+User Story,Solicitar recomendación de alineación semanal,Yo como manager quiero solicitar una recomendación (chat GPT API) de alineación para entonces optimizar mi plantilla de la semana respetando las reglas de mi liga.,"• Desde la visualizacion de mi plantilla puedo pedir una recomendación una vez por semana (restablece al iniciar una nueva semana).
+• El sistema envía a un motor de recomendación el estado de mi equipo (titulares/bench/IR), desempeño semanal histórico por jugador y el pool de agentes libres visibles para mi liga.
+• La propuesta resultante cumple con las posiciones mínimas requeridas y reglas de elegibilidad (posiciones válidas, BYE, IR/PUP/SUS).
+• La recomendación incluye un resumen de cambios sugeridos (mover entre titulares/bench/IR y, si aplica, sugerencia de contratación/liberación).
+• La interfaz muestra la semana objetivo y el timestamp de generación y se descuenta el tiquete de uso semanal.
+• Se muestra una explicación que resume factores usados: desempeño reciente, promedios por semana, estado de lesión, BYE, y comparativas con agentes libres disponibles.
+• Se presenta de forma legible y agnóstica a la implementación del motor.
+• Se indica la fecha y los datos de entrada considerados.
+Alternos:
+• Si la explicación no puede generarse, la recomendación sigue disponible sin explicación, con nota informativa.
+• Si el motor no está disponible, se muestra mensaje y se ofrece reintentar más tarde y no se descuenta el tiquete semanal.
+• Si no hay suficiente información para recomendar, se indica que la alineación actual ya es óptima bajo las reglas conocidas.",
+User Story,Recomendaciones de picks durante el draft,Yo como participante del draft quiero recibir sugerencias de picks en mi turno para entonces seleccionar jugadores alineados a mis necesidades y reglas de la liga.,"• En mi turno, la vista muestra hasta N (N igual al número de rondas del draft) sugerencias ordenadas por prioridad, considerando plantilla objetivo, posiciones faltantes y esquema de puntuación de la liga.
+• Las sugerencias respetan unicidad de jugador y disponibilidad en tiempo real.
+• La función es compatible con los formatos estándar y snake, y no interfiere con el cronómetro por pick.
+Alternos:
+• Si estoy en modo autopick, las sugerencias no se realizan.
+• Si el motor de sugerencias no está disponible se muestra un mensaje de que no se puede mostrar la sugerencia.",
+User Story,Cerrar semana automáticamente y determinar resultados,"Yo como administrador de sistema quiero cerrar automáticamente la semana en la hora definida en el calendario para entonces determinar ganadores, perdedores o empates y preparar la siguiente semana.","• A la hora de fin de la semana de competencia, el sistema consolida los totales de cada enfrentamiento y determina ganador, perdedor o empate.
+• Todos los partidos de la semana pasan a modo solo lectura; no se admiten nuevas acciones ni ediciones.
+•  Los equipos con identificados como inválidos siempre pierden sin importar los puntos.
+• Los cambios se reflejan en la tabla de posiciones (W‑L‑T, PF, PA) y en el leaderboard de rachas.
+• El proceso es irreversible; no existe reapertura de semana desde la aplicación.
+• La ejecución debe ser consistente a nivel de liga: si todos los enfrentamientos cierran correctamente, la liga queda en estado Cerrada para la semana.
+• Si al menos un enfrentamiento no puede cerrarse, la liga queda marcada en estado Pendiente.
+• Se registra auditoría del cierre: fecha/hora de corte, liga, semana, totales y estado final.
+• Se suman los puntos obtenidos para cada equipo al total de puntos obtenidos de la temporada.
+• Se suman los puntos del rival al total de puntos recibidos de la temporada.
+Alternos:
+• Si el servicio de cálculo está degradado, el sistema reintenta hasta el corte duro; ante persistencia de fallos, deja la liga en Pendiente.",
+User Story,Marcar ligas con incidencias como Pendiente,Yo como administrador de sistemo quiero marcar una liga como Pendiente cuando al menos un enfrentamiento no puede cerrarse para entonces visibilizar acciones que requieren mi atención.,"• Si uno o más enfrentamientos fallan en el cierre (datos faltantes, inconsistencias), la liga se etiqueta como Pendiente para esa semana.
+• El estado Pendiente bloquea la apertura automática de la semana siguiente para esa liga.
+• Se listan las razones del fallo por enfrentamiento (p. ej., puntajes faltantes, validaciones de alineación, errores de consolidación).
+• La información queda disponible en un panel administrativo de cierres de semana.
+Alternos:
+• Si durante reintentos automáticos se logra completar todos los cierres, la liga cambia a Cerrada y se remueve la marca Pendiente.",
+User Story,Resolver manualmente ligas en estado Pendiente,Yo como administrador quiero ver y resolver manualmente las ligas en estado Pendiente para entonces completar el cierre de la semana y actualizar récords.,"• El panel muestra las ligas Pendientes, la semana afectada y el detalle de fallos por enfrentamiento.
+• Puedo aplicar un ajuste manual por enfrentamiento (p. ej., confirmar totales) para completar el cierre.
+• Tras la resolución, se recalculan clasificación y rachas y la liga pasa a estado Cerrada.
+• Todas las acciones quedan auditadas (quién, qué, cuándo, motivo) y no pueden deshacerse desde la aplicación.
+Alternos:
+• Si persisten inconsistencias al validar los ajustes, el sistema bloquea la confirmación y mantiene la liga en Pendiente con mensaje claro.",
+User Story,Generar proyecciones semanales al inicio de la semana,Yo como administrador  quiero dar proyecciones de puntos por jugador al inicio de cada semana para entonces ofrecer una estimación informativa basada en estadísticas y oponentes.,"• La proyección se calcula al inicio de la semana definida en el calendario de la liga.
+• El motor estadístico considera: desempeño típico de la posición contra el oponente NFL y el percentil del jugador frente a sus pares para esa posición.
+• Jugadores en BYE, SUS, PUP o con designación de lesión activa reciben proyección de 0 puntos.
+• Las proyecciones son de solo lectura y no alteran los puntos reales ni los resultados.
+• Se registra auditoría de generación (fecha/hora, semana, versión del modelo).
+Alternos:
+• Si el motor estadístico no está disponible, se dejan las proyecciones en estado no disponible para la semana con mensaje informativo.",
+User Story,Ver proyección por jugador en su ficha,Yo como manager quiero ver la proyección semanal de un jugador en su ficha para entonces entender su expectativa de puntos frente al rival de esta semana.,"• La ficha del jugador muestra la proyección de la semana actual y el oponente NFL correspondiente.
+• Se incluye un desglose breve de factores: posición vs. defensa rival y percentil del jugador.
+• Si el jugador está en BYE, SUS, PUP o lesión activa, la proyección se muestra como 0 con la causa.
+• Las semanas anteriores muestran la proyección histórica (snapshot) sin cambios posteriores.
+Alternos:
+• Si no existe proyección para la semana (p. ej., falla de motor), se muestra estado informativo sin afectar otras vistas.",
+User Story,Ver proyección agregada en Head‑to‑Head,Yo como participante quiero ver las proyecciones agregadas de mi equipo y el rival en el Head‑to‑Head para entonces anticipar quién está proyectado a ganar.,"• La vista Head‑to‑Head muestra el total proyectado por equipo considerando únicamente titulares válidos (excluye banca e IR).
+• Se muestra el total proyectado del contrincante y un indicador de quién está proyectado a ganar.
+• Los valores se corresponden con las proyecciones por jugador de la semana vigente.
+• La vista es de solo lectura y no afecta decisiones automáticas del juego.
+Alternos:
+• Si faltan proyecciones de uno o más jugadores, el total se calcula con los disponibles y se muestra una advertencia.",
+User Story,Proponer trade entre equipos de la misma liga,Yo como manager quiero proponer un intercambio de jugadores a otro equipo de mi misma liga para entonces negociar mejoras en mi plantilla.,"• La propuesta permite seleccionar de 1 a 3 jugadores de mi equipo y de 1 a 3 jugadores del equipo destino.
+• Solo se puede proponer a equipos dentro de la misma liga.
+• La propuesta incluye fecha y hora de creación y un campo opcional de descripción (máximo 300 caracteres).
+• La propuesta queda con estado ‘Enviada’ y visible para el equipo destino.
+• Se registra auditoría (quién propone, cuándo, detalle de jugadores y equipos involucrados).
+Alternos:
+• Si alguno de los jugadores ya no está disponible (cambio de equipo, lesión que afecte elegibilidad, etc.) al momento de enviar, la propuesta se bloquea con mensaje claro.",
+User Story,Ver lista de propuestas de trade en mi equipo,"Yo como manager quiero ver las propuestas de trade asociadas a mi equipo para entonces evaluar, aceptar o rechazar con contexto suficiente.","• En el Home de mi equipo se muestra una lista de propuestas recibidas y enviadas.
+• Cada propuesta muestra: nombre de equipo contraparte, alias del manager, récord W‑L‑T de la contraparte, jugadores a enviar y jugadores a recibir.
+• Se puede abrir el detalle de la propuesta para ver la descripción y la fecha/hora.
+• Las propuestas expiradas o eliminadas no se muestran en la lista.
+Alternos:
+• Si no hay propuestas, se muestra estado informativo sin filas.",
+User Story,Rechazar propuesta de trade,Yo como manager que recibe una propuesta quiero poder rechazarla para entonces cerrar la negociación sin cambios en las plantillas.,"• Al rechazar, la propuesta cambia a estado ‘Rechazada’.
+• Se notifica al equipo que envió la propuesta del rechazo.
+• La propuesta rechazada se elimina automáticamente de las listas visibles al día siguiente.
+• Se registra auditoría de la acción (quién, cuándo, propuesta afectada).
+Alternos:
+• Si la propuesta ya fue aceptada o rechazada previamente, la acción se bloquea con mensaje informativo.",
+User Story,Aceptar propuesta de trade,Yo como manager que recibe una propuesta quiero poder aceptarla para entonces ejecutar el intercambio de jugadores entre equipos.,"• Al aceptar, los jugadores del equipo A pasan al equipo B y viceversa.
+• Por defecto, todos los jugadores intercambiados quedan en la banca de sus nuevos equipos.
+• Si alguno de los equipos queda en estado inválido (p. ej., excede cantidad máxima permitida), se marca el estado y se informa al manager.
+• La propuesta cambia a estado ‘Aceptada’ y se remueve de la lista de pendientes.
+• Se registra auditoría completa del intercambio (jugadores, equipos, hora).
+Alternos:
+• Si algún jugador involucrado cambió de estado/propiedad antes de la aceptación, se bloquea la ejecución y se solicita reenviar la propuesta.",
+User Story,Notificaciones en el buzón del equipo por eventos de trade,Yo como manager quiero recibir notificaciones en mi buzón del equipo sobre propuestas y decisiones de trade para entonces estar al tanto de la negociación.,"• Al enviarse un trade, el equipo destino recibe una notificación en su buzón.
+• Al aceptarse o rechazarse un trade, ambos equipos reciben notificaciones con el resultado.
+• Las notificaciones enlazan al detalle de la propuesta o del intercambio ejecutado.
+• Las notificaciones siguen la política de retención definida por la liga/sistema.
+Alternos:
+• Si el buzón no está disponible temporalmente, las notificaciones se omiten.",
+User Story,Publicar noticia de liga por eventos de trade,"Yo como sistema quiero publicar una noticia en la liga ante el envío, aceptación o rechazo de un trade para entonces mantener informada a la comunidad.","• Se crea una noticia en la sección de noticias de la liga con el detalle del evento (equipos, jugadores, acción y fecha/hora).
+• La noticia es de solo lectura y queda en orden cronológico en la sección.
+• Se registra auditoría de la publicación.
+Alternos:
+• Si la publicación falla, se omite.",
+User Story,Notificar en Discord los eventos de trade (si está configurado),Yo como sistema quiero enviar una notificación al servidor de Discord de la liga cuando ocurra un evento de trade para entonces informar en el canal social.,"• Si la liga tiene configurado el canal de Discord, se publica un mensaje ante envío, aceptación o rechazo de un trade.
+• El mensaje incluye equipos, jugadores involucrados, acción y fecha/hora.
+• La publicación en Discord no se elimina automáticamente si luego se elimina la noticia en la app.
+Alternos:
+• Si Discord no está configurado, no se envía nada y no se considera error.
+• Si Discord no está disponible, la publicación se omite.",
+User Story,Notificar eventos clave en la app en tiempo casi real,Yo como manager quiero recibir notificaciones en la aplicación sobre eventos clave para entonces enterarme a tiempo de cambios importantes en mi liga.,"• Eventos a notificar: picks de draft, resultados de jornada, trade recibido, trade aprobado, trade rechazado, cambio de estado de uno de mis jugadores (lesión/BYE/PUP/SUS).
+• La entrega es en tiempo casi real y en orden cronológico.
+• Cada notificación incluye: tipo de evento, liga/equipo involucrado, timestamp y enlace al detalle.
+• Al reabrir la app, se recuperan notificaciones pendientes sin duplicados.
+• Las notificaciones se muestran en una bandeja de notificaciones.
+• Cada notificación se identifica de forma única para prevenir duplicados en reintentos.
+• Las notificaciones se entregan en orden cronológico por canal.
+• En fallos temporales se utiliza cola de reintentos con backoff.
+• Al reconectar, el cliente recupera las notificaciones faltantes desde el último checkpoint.
+Alternos:
+• Si el servicio de notificaciones está temporalmente no disponible, se encola el evento para reintento sin perder información.",
+User Story,Bandeja de notificaciones en el juego,Yo como manager quiero consultar una bandeja de notificaciones dentro del juego para entonces revisar y gestionar mis avisos pendientes.,"• La bandeja lista notificaciones con: tipo, resumen, timestamp, liga, y estado leído/no leído.
+• Se pueden marcar notificaciones como leídas y limpiar todas las leídas.
+• Filtros mínimos: por tipo de evento (resultado, trade, cambios de estado), por liga y por fecha.
+• Las notificaciones se muestran en orden cronológico descendente.
+Alternos:
+• Si no hay notificaciones, se muestra un estado informativo.",
+User Story,Notificaciones por correo electrónico,Yo como manager quiero recibir por correo las mismas notificaciones clave que aparecen in‑app para entonces mantenerme informado aun fuera del juego.,"• Se envía un correo por cada evento clave (picks, resultados, trade recibido/aprobado/rechazado, cambio de estado de mis jugadores).
+• El correo incluye: asunto identificable por tipo de evento, resumen, liga/equipos involucrados, fecha y enlace al detalle en la app.
+• Los correos se envían a la dirección registrada del usuario y respetan su zona horaria en los timestamps mostrados.
+• La entrega de correo no depende de que el usuario esté conectado a la app.
+Alternos:
+• Si la entrega del correo falla, se reintenta; tras múltiples fallos, se registra el incidente sin bloquear la notificación in‑app.",
+User Story,Alertas de no jugador no disponible,Yo como manager quiero que el home muestre una alerta cuando un jugador de mi roster tenga estado de lesión (OUT/DOUBTFUL/QUESTIONABLE) para ajustar la alineación.,"• Dado un cambio de estado de lesión del feed oficial, cuando el jugador esté en mi roster, entonces se muestra una alerta en el home con el nombre del jugador y su estado.
+• Al hacer seleccionar  la alerta, navego a la pantalla de alineación con el jugador enfocado.
+•  Se registra timestamp de generación y última actualización de la alerta.
+• La alerta muestra ETA/hora de cierre de alineación si aplica para realizar el cambio.
+Alternos:
+• Si hay un error en la creación de la alerta, no se envía.",
+User Story,Alerta equipo inválido,Yo como manager quiero una alerta  cuando mi equipo esté en estado inválido para corregir y asegurar puntaje.,"•  Dado que mi alineación incumpla reglas de la liga veo una alerta si mi equipo está en ese estado
+• Se soportan múltiples razones y se muestran de forma legible.
+• Se registra timestamp de primera detección y resolución.
+• La alerta muestra ETA/hora de cierre de alineación si aplica para realizar el cambio.
+Alternos:
+• Si hay un error en la creación de la alerta, no se envía.",
+User Story,Alerta jugador en semana de descanso,Yo como manager quiero alertas cuando tenga jugadores titulare con actividad en semana y evitar jugadores en semana de descanso que no puntuen.,"• Dado el calendario NFL, cuando alguno de mis titulares esté en BYE en la semana actual, entonces veo una alerta con el conteo de titulares afectados y una lista desplegable con nombres y posiciones.
+ • La alerta debe indicar para que semana es
+• La alerta muestra ETA/hora de cierre de alineación si aplica para realizar el cambio.
+Alternos:
+• Si hay un error en la creación de la alerta, no se envía.",
+User Story,Manejo de alertas,"Yo como manager quiero poder marcar alertas como leídas/dismiss y que reaparezcan automáticamente si la condición persiste o reaparece, para no perder señales críticas.","• Puede marcarse una alerta como 'leída'.
+•  Si la condición reaparece luego de haberse resuelto, se genera una nueva alerta con nuevo timestamp.
+Alternos
+• Si hay un error en el procesamiento de la alerta y no se puede marcar como leída, se debe indicar en pantall.",
+User Story, Cierre de temporada regular y generación de bracket,"Como comisionado, quiero que al finalizar la última semana regular se cambie el estado a 'Playoffs' y se genere el bracket acorde al formato de la liga (4 o 6 equipos) con siembras por posición.","• Dado que se complete la última semana regular, cuando se ejecute el cierre, entonces la temporada cambia a estado 'Playoffs'.
+• Se seleccionan equipos según posiciones finales de la liga.
+• Desempates aplicados en orden: (1) más puntos anotados temporada, (2) head•to•head, (3) aleatorio.
+• Se persiste el bracket con identificadores de llaves y semana de cada ronda.
+• Los equipos que no clasifican quedan eliminados y no reciben calendario en semanas de playoffs
+.• Se registran métricas utilizadas y resultado del desempate.
+• El aleatorio es reproducible (seeded) y se almacena la semilla utilizada. 
+• Se auditan las acciones de e desempates por equipo.",
+User Story,"Formato 4 equipos: siembra y progresión (1v4, 2v3, Final)","Como manager, necesito que el formato de 4 equipos esté configurado en mi liga para poder jugar los playoff.","• Dado el formato 4 equipos, cuando se genere el bracket, entonces se crean llaves A: 1v4 y B: 2v3 en la primera semana de playoffs.• Los ganadores de A y B avanzan a la Final; los perdedores quedan eliminados y no reciben calendario en la semana siguiente.• Ranking final: Campeón=1 (ganador Final), Subcampeón=2 (perdedor Final).• Puestos 3 y 4 definidos por puntos anotados en la primera semana de playoffs (mayor puntaje ocupa 3°).",
+User Story,"Formato 6 equipos: wildcard, byes, semifinales y Final","Como manager, necesito que el formato de 6 equipos esté configurado en mi liga para poder jugar los playoff.","• Dado el formato 6 equipos, cuando se genere el bracket, entonces semana 1: A=3v6, B=4v5; seeds 1 y 2 descansan.
+• Semana 2: C=1vGanadorB y D=2vGanadorA.
+• Semana Final: GanadorC vs GanadorD.
+• Los equipos eliminados en cualquier ronda no reciben calendario en semanas posteriores.
+• Ranking 1° y 2° según Final; 3° y 4° por puntos anotados en la PRIMERA semana de playoffs.
+• Persistencia de rutas de avance y resultados por llave.",
+User Story,Congelamiento de posiciones y asignación de trofeos al finalizar,"Como comisionado, quiero que al coronar campeón la temporada pase a estado 'Finalizada', se congelen posiciones y se asignen trofeos a los equipos correspondientes.","• Al finalizar la Final, la temporada cambia a estado 'Finalizada' y se congelan posiciones.
+• Trofeos: Campeón (ganador de la Final), Participación Playoffs (todos los clasificados), Más Victorias Regular (mayor número de victorias), Máximo Anotador Regular (más puntos anotados).
+• Los trofeos se reflejan en el salón de trofeos de la liga.
+• Los trofeos se guardan con el nombre de equipo y alias que estaban configurados al momento de terminar la temporada.",
+User Story,Bloqueo de calendario para eliminados y validación de semana,"Como sistema, debo garantizar que equipos eliminados no reciban partidos en semanas posteriores del playoff y que el generador de calendario valide el estado de cada equipo.","• Tras marcarse un equipo como eliminado, no se crean nuevos encuentros para este en semanas siguientes.
+• El motor de calendario valida estado=activo/en•playoff antes de programar.
+• Se agregan pruebas automatizadas que cubren 4 y 6 equipos.",
+User Story,Exposición de bracket y posiciones en UI/Reporte,"Como manager, quiero visualizar el bracket con siembras, resultados por semana y posiciones finales para transparencia y experiencia de usuario.","• Vista de bracket con llaves A/B/C/D y rutas de avance. Accesible para todos en la liga
+• Muestra seeds (posiciones de liga) y resultados por semana.
+",
+User Story,Reporte de jugadores más buscados,Yo como encargado de marca de la NFL quiero un reporte de los jugadores más buscados para entender tendencias de popularidad en las ligas.,"• El reporte muestra: nombre del jugador, posición, equipo NFL, thumbnail de foto, porcentaje de ligas en las que está en un equipo.
+• Orden descendente por porcentaje de uso.
+• Paginación en bloques de 50.
+• Filtros: Nombre, Posición, Equipo NFL.",
+User Story,Reporte de jugadores mejor puntuados,Yo como encargado de marca de la NFL  quiero un reporte de los jugadores con mayor puntaje acumulado en la temporada para identificar desempeño y potenciales figuras a destacar.,"• El reporte muestra: nombre del jugador, posición, equipo NFL, thumbnail de foto, total de puntos acumulados en la temporada actual.
+• Orden descendente por total de puntos.
+• Paginación en bloques de 50.
+• Filtros: Nombre, Posición, Equipo NFL.",
+User Story,Reporte de jugadores mejor drafteados,Yo como encargado de marca de la NFL quiero un reporte de los jugadores con mejor promedio de posición en el draft para analizar expectativas iniciales de los usuarios.,"• El reporte muestra: nombre del jugador, posición, equipo NFL, thumbnail de foto, promedio de posición de selección en el draft.
+• Orden descendente por promedio de posición.
+• Paginación en bloques de 50.
+• Filtros: Nombre, Posición, Equipo NFL, Cantidad mínima de drafts (para excluir jugadores con pocas selecciones).",
+User Story,Reporte de uso de la aplicación,Yo como encargado de marca de la NFL quiero un informe del uso de la aplicación para entender el nivel de interacción y actividad de los usuarios.,"• El reporte incluye métricas de sesiones, tiempo promedio de uso, frecuencia de acceso.• Datos agregados por semana y mes.• Exportable en formato CSV/PDF.• Filtro por rango de fechas.",
+User Story,Reporte de cantidad de ligas activas,Yo como encargado de marca de la NFL quiero un informe de la cantidad de ligas activas para evaluar el crecimiento de la plataforma.,"• El reporte muestra el número total de ligas activas por semana y mes.
+• Tendencia histórica de creación de ligas.
+• Exportable en formato CSV/PDF.
+• Filtro por rango de fechas.",
+User Story,Reporte de cantidad de equipos activos,Yo como encargado de marca de la NFL quiero un informe de la cantidad de equipos activos para analizar el nivel de participación en las ligas.,"• El reporte muestra el número total de equipos activos por semana y mes.
+• Tendencia histórica de creación de equipos
+.• Exportable en formato CSV/PDF.
+• Filtro por rango de fechas.",
+User Story,Reporte de cantidad de usuarios activos,Yo como encargado de marca de la NFL quiero un informe de los usuarios activos para medir la adopción y retención de la aplicación.,"• El reporte muestra número de usuarios activos diarios, semanales y mensuales.
+• Se diferencia entre usuarios nuevos y recurrentes.
+• Exportable en formato CSV/PDF.
+• Filtro por rango de fechas.",
+User Story,Reporte de cantidad de trades,Yo como encargado de marca de la NFL quiero un informe de la cantidad de trades realizados para evaluar el nivel de interacción de los jugadores.,"• El reporte muestra número total de trades por semana y mes.
+• Se indica promedio de trades por liga.
+• Exportable en formato CSV/PDF.
+• Filtro por rango de fechas.",
+User Story,Reporte de cantidad de movimientos,"Yo como encargado de marca de la NFL quiero un informe de la cantidad de movimientos (agencias libres, drops) para analizar la dinámica de los equipos.","• El reporte muestra número total de movimientos por semana y mes.
+• Clasificación por tipo de movimiento (agencia libre, waiver, drop).
+• Exportable en formato CSV/PDF.
+• Filtro por rango de fechas.",
+User Story,Otorgar trofeos al cierre de temporada,Yo como comisionado quiero que se asignen automaticamente los trofeos oficiales al cerrar la temporada para entonces consolidar el Salón de la Fama con información inmutable.,"• Al cierre de temporada, el sistema otorga automáticamente los trofeos definidos: Campeón (ganador de la Final), Participación Playoffs (todos los clasificados), Más Victorias Regular (mayor número de victorias), Máximo Anotador Regular (más puntos anotados).
+• Cada trofeo se almacena como snapshot inmutable con: temporada, liga, equipo ganador, manager al cierre, métricas base (W‑L‑T, PF, PA), fecha/hora de otorgamiento y tipo de trofeo.
+• Las reglas de desempate siguen las reglas vigentes de la liga para clasificación y puntos.
+• No se permite edición ni eliminación de trofeos una vez otorgados.
+• La operación de otorgamiento es transaccional por liga y auditable (quién dispara el cierre, cuándo, resultados).
+Alternos:
+• Si falta algún resultado de la última semana, la liga queda en estado Pendiente y no se otorgan trofeos hasta resolver.",
+User Story,Ver mi Salón de la Fama por temporada,Yo como manager quiero ver el historial de trofeos de mi equipo por temporada para entonces reconocer mis logros dentro de cada liga.,"• La vista lista, por temporada, los trofeos ganados por mi equipo en cada liga en la que participé.
+• Puedo ver una temporada a la vez seleccionando el nombre de temporada
+• Para cada trofeo se muestra: tipo de trofeo, temporada, liga, fecha de otorgamiento, y métricas base (W‑L‑T, PF, PA al cierre).
+• La vista es de solo lectura y respeta la inmutabilidad de los trofeos.
+Alternos:
+• Si mi equipo no tiene trofeos, se muestra un mensaje.",
+User Story,Ver Salón de la Fama de la liga por temporada,Yo como manager de una liga quiero ver el Salón de la Fama de la liga por temporada para entonces conocer a los ganadores de cada trofeo.,"• La vista muestra, por temporada, los ganadores de cada trofeo: Campeón, Participación Playoffs, Más Victorias Regular, Máximo Anotador Regular.
+• Puedo ver una temporada a la vez seleccionando el nombre de temporada.
+• Los nombres se muestran por los usados por el equipo en el momento que se otroga el trofeo.
+• Para cada trofeo se muestran: equipo ganador, alias del manager al cierre, y métricas base (W‑L‑T, PF, PA).
+• La vista es de solo lectura y se ordena por temporada (desc) y tipo de trofeo.
+• Se puede navegar a la ficha del equipo/temporada para más contexto.
+Alternos:
+• Si una temporada no tiene trofeos (p. ej., no cerrada), se indica estado informativo.
+• Si un equipo ganador de un trofeo ya no está en la liga, igual se muestra.",
+User Story,Reporte de auditoría para comisionado de liga,Como comisionado de liga quiero un reporte de auditoría que registre los movimientos de la liga y cambios en configuraciones para tener trazabilidad de las acciones.,"• El reporte muestra todos los movimientos de jugadores (trades, waivers, drops, altas).
+• Incluye cambios en configuraciones de la liga (reglas de puntuación, calendario de partidos, número de equipos).
+• Cada evento contiene: fecha y hora, usuario que realizó la acción, descripción del cambio.
+• El reporte es exportable en CSV/PDF.
+• Filtro por rango de fechas y tipo de acción.",
+User Story,Reporte de auditoría para administrador del sistema,Como administrador del sistemaquiero un reporte de auditoría que registre configuraciones globales y acciones críticas para monitorear la integridad de la plataforma.,"• El reporte incluye: cambios en configuraciones globales, actualizaciones de calendarios NFL, noticias de jugadores, modificaciones en reglas de puntaje, carga masiva de información de jugadores.
+• Cada evento contiene: fecha y hora, usuario que realizó la acción, descripción detallada del cambio.
+• Exportable en CSV/PDF.
+• Filtro por rango de fechas y categoría de acción.",
+User Story,Reporte de drafts agendados por día,Yo como administrador del sistema quiero ver un reporte con la cantidad de drafts agendados por día para entonces monitorear la planificación y la carga operativa.,"• El reporte muestra el número total de drafts por fecha (día calendario).
+• Incluye filtros por liga, temporada y rango de fechas.
+• Permite exportar a CSV/JSON manteniendo los filtros aplicados.
+• La vista es de solo lectura y no modifica datos del sistema.
+• Cuando no hay resultados en el rango, se muestra un estado informativo de 'sin datos'.
+• La generación registra auditoría (usuario, fecha/hora, filtros usados).
+Alternos:
+• Si hay filtros inválidos (rango invertido o temporada inexistente), se muestra un mensaje claro y no se genera el reporte.
+• Si el servicio de datos está temporalmente no disponible, se informa y se permite reintentar.",
+User Story,Reporte de drafts completados,Yo como administrador del sistema quiero consultar un reporte de drafts completados para entonces analizar el cumplimiento y la ejecución de las sesiones de draft.,"• El reporte lista drafts en estado Finalizado por fecha y liga.
+• Muestra por draft: participantes registrados vs. participantes conectados, duración total y estado final (exitoso / con incidencias).
+• Incluye filtros por temporada, liga y rango de fechas.
+• Permite exportar a CSV/JSON con los campos visibles.
+• La vista es de solo lectura y registra auditoría de generación (usuario, fecha/hora, filtros).
+Alternos:
+• Si un draft no alcanzó el mínimo de participantes, se etiqueta como 'incompleto' en la columna de estado.
+• Si no hay drafts finalizados en el rango, se muestra estado informativo de 'sin datos'.",
+User Story,Reporte de partidos por semana,Yo como administrador del sistema quiero consultar un reporte de la cantidad de partidos por semana para entonces evaluar la carga de calendario y el seguimiento de resultados.,"• El reporte muestra el número total de partidos por semana para cada liga activa.
+• Incluye filtros por temporada, liga y semana (intervalos o selección múltiple).
+• Muestra por semana: cantidad de partidos programados, cantidad de partidos finalizados y acumulado de puntos fantasy generados.
+• Permite exportar a CSV/JSON con los filtros aplicados.
+• La vista es de solo lectura y registra auditoría (usuario, fecha/hora, filtros).
+Alternos:
+• Si la semana aún no ha iniciado, se marca como 'pendiente' y no muestra acumulado de puntos.
+• Si no hay ligas activas para la temporada seleccionada, se muestra estado informativo de 'sin datos'.",
+User Story,Reportar jugador problemático,"Yo como manager quiero poder reportar a otro jugador indicando la persona y la razón, para escalar incidentes de comportamiento.","• Desde la vista de la liga, se puede seleccionar un jugador y registrar un reporte con razón.
+• El reporte se guarda con fecha, hora, autor y jugador reportado.
+• Estado inicial del reporte: pendiente.
+• El reporte es visible en el panel de administración.",
+User Story,Revisión de reportes y solicitudes de suspensión,"Yo como administrador del sistema quiero ver todos los reportes de jugadores y decidir si suspender o rechazar, para gestionar incidentes de comportamiento.","• El administrador accede a la lista de reportes pendientes.
+• Puede aprobar suspensión o rechazarla.
+• Si rechaza, se marca estado rechazado y se registra razón.
+• Si aprueba, el manager cambia a estado suspendido y se define duración (1 partido o toda la temporada).",
+User Story,Notificación de suspensión al manager,Yo como manager  quiero recibir una notificación cuando se aprueba mi suspensión para conocer las consecuencias en mi equipo.,"• Al aprobarse suspensión, el sistema envía notificación con detalles (duración, motivo).
+• El equipo del manager suspendido queda en estado inválido durante la suspensión.
+• La notificación llega vía in-app",
+User Story,Consecuencias de suspensión en partidos,Como sistema debo garantizar que los managers suspendidos siempre pierdan sus partidos mientras dure la suspensión.,"• Al simular o calcular resultados, si un manager está suspendido, su equipo automáticamente pierde.
+• Se registran los resultados como derrota en el historial del equipo suspendido.
+• La suspensión se levanta automáticamente al cumplirse el plazo definido.",
+User Story,Ver dashboard unificado de participación y engagement,"Yo como encargado de marca de la NFL quiero ver un dashboard único con las métrricas de usuarios activos, retención, sesiones de draft y actividad para entonces monitorear la salud del ecosistema en un solo lugar.","• El dashboard expone secciones/gráficos para: Usuarios Activos (DAU/WAU/MAU), Retención por temporadas, Sesiones de Draft (agendadas/iniciadas/finalizadas/tiempo promedio), y Actividad (alineaciones, pickups/waivers, trades, notificaciones vistas).
+• La vista es de solo lectura; no permite modificar datos operativos.
+• Muestra leyendas, unidades y fecha/hora del último refresco.
+• Todos los gráficos comparten el mismo rango de fechas y filtros seleccionados.
+Alternos:
+• Si no hay datos en el rango seleccionado, cada gráfico muestra estado informativo de 'sin datos'.",
+User Story,Configurar filtros globales del dashboard,"Yo como encargado de marca de la NFL quiero aplicar filtros globales por temporada, liga y rango de fechas para entonces alinear todos los gráficos del dashboard al mismo contexto.","• Filtros disponibles: temporada, liga (opcional 'todas'), rango de fechas (inicio/fin) y granularidad (día/semana/mes).
+• Al cambiar filtros, todos los gráficos se actualizan de manera consistente.
+• Los filtros seleccionados son visibles y persistentes durante la sesión.
+Alternos:
+• Si el rango es inválido o excede límites soportados, se muestra un mensaje claro sin ejecutar consulta.",
+User Story,Usuarios activos (DAU/WAU/MAU),"Yo como encargado de marca de la NFL del sistema quiero visualizar DAU, WAU y MAU para entonces entender el pulso de uso y su tendencia.","• Se muestran series temporales para DAU, WAU y MAU con opción de promedio móvil y comparación interanual (YoY) si aplica al rango.
+• Definiciones: DAU (usuarios únicos por día), WAU (usuarios únicos últimos 7 días), MAU (usuarios únicos últimos 30 días).
+• Tooltip por punto con cifra exacta y fecha.
+Alternos:
+• Si alguna serie no aplica por el rango, se deshabilita con explicación.",
+User Story,Sesiones de draft y desempeño operativo,Yo como encargado de marca de la NFL  quiero ver métricas de sesiones de draft para entonces medir ejecución y carga.,"• Gráfico de series: drafts agendados, iniciados y finalizados por periodo, y tiempo promedio de sesión.
+• Indicadores de calidad: % drafts iniciados vs. agendados, % finalizados sin incidencias.
+• Tabla de apoyo con breakdown por liga cuando se aplica filtro de liga='todas'.
+Alternos:
+• Si no hay drafts en el periodo, se muestra estado 'sin datos' y no se renderiza la tabla de apoyo.",
+User Story,Actividad de usuarios en temporada,Yo como encargado de marca de la NFL quiero ver actividad clave para entonces dimensionar engagement transaccional.,"• Gráfico de barras apiladas con conteos por día/semana de: cambios de alineación confirmados, pickups/waivers exitosos, trades aceptados, notificaciones vistas/clicadas.
+• Muestra tasa de clic de notificaciones (CTR) y tasa de apertura de correos si aplica.
+• Tooltips y totales por categoría.
+Alternos:
+• Si algún evento no está habilitado en la liga (p. ej., sin Discord/push), se muestra con valor 0 y nota explicativa.",
+User Story,Exportación y compartición del dashboard,Yo como encargado de marca de la NFL quiero exportar visualizaciones y datos del dashboard para entonces compartir con equipos internos.,"• Exportación de imágenes (PNG) por gráfico y exportación de datos (CSV/JSON) respetando filtros.
+• Posibilidad de generar un reporte PDF con las vistas actuales.
+• Las exportaciones incluyen metadatos: rango de fechas, filtros y timestamp.
+Alternos:
+• Si la exportación falla, se informa el error y se sugiere reintentar.",
+User Story,Creación manual de equipo NFL,Yo como administrador quiero crear equipos NFL manualmente para gestionar sus datos en la plataforma.,"• El formulario de creación permite: nombre, imagen, thumbnail generado, ciudad.
+• El sistema genera automáticamente un id único y registra fecha de creación. 
+• El equipo queda activo por defecto.
+• Validación de datos requeridos antes de guardar.
+Alternos: 
+• Si el nombre de equipo ya existe, no se crea el equipo y se notifica con un mensaje.
+• Si no se presentan todos los campos requeridos, no se crea el equipo y se notifica con un mensaje.",
+User Story,Creación batch de equipos NFL por archivo JSON,Yo como administrador quiero cargar un archivo JSON con datos de equipos para agilizar la creación en lote.,"• El archivo JSON incluye: nombre, imagen, ciudad.
+• El sistema genera id y fecha de creación automáticamente.
+• thumbnail se autogenera de la imagen.
+• Todos los equipos creados quedan activos por defecto.
+• Validación de formato y datos antes de procesar.
+• Al final de la carga se genera un Reporte de éxito y errores al finalizar la carga.
+• Si existe al menos un error no se crea ninguno de los equipos.
+• El archivo debe ser movido a un folder de archivos procesados con el formato <Resultado exito o fallo>_<fecha y hora>_<nombre del archivo>.json
+Alternos: 
+• Si el nombre de equipo ya existe, no se crea el equipo y se notifica con un mensaje.
+• Si no se presentan todos los campos requeridos, no se crea el equipo y se notifica con un mensaje.",
+User Story,Ver listado de equipos NFL,Yo como administrador quiero visualizar el listado de equipos NFL para gestionarlos fácilmente.,"• La vista muestra: nombre, ciudad, imagen, estado, fecha de creación.
+• Paginación de 50 en 50.
+• Opciones de búsqueda y filtros por nombre, ciudad y estado.
+• Acceso a acciones de edición o desactivación.",
+User Story,Modificar equipo NFL,Yo como administrador quiero editar los datos de un equipo NFL para mantener información actualizada.,"• Se pueden editar: nombre, imagen, thumbnail, ciudad.
+• No se permite modificar id ni fecha de creación.
+• Cambios guardados quedan registrados con fecha y usuario que realizó la acción.",
+User Story,Desactivar equipo NFL,Yo como administrador quiero poder desactivar equipos NFL en lugar de eliminarlos para preservar historial.,"• La opción de desactivar cambia el estado del equipo a inactivo.
+• No se permite desactivar equipos con partidos en la temporada actual.
+• El equipo desactivado no puede ser asignado a nuevas ligas ni partidos.
+• Puede reactivarse manualmente si es necesario.
+Alternos
+• Si el equipo tiene partidos agendados para esta temporada se indica con un mensaje de error.",
+User Story,Visualización de KPIs clave en el dashboard,Yo como encargado de marca de la NFL quiero ver KPIs clave  en la parte superior del dashboard para entonces tener una visión rápida del estado del sistema.,"• El dashboard muestra un bloque de KPIs con métricas agregadas: DAU/WAU/MAU, Retención % a 7/30 días, Tiempo promedio de sesión de draft, Engagement (% usuarios que realizan movimientos), CTR de notificaciones.
+• Los KPIs se actualizan conforme a los filtros globales aplicados (temporada, liga, rango).
+• Cada KPI incluye tendencia (flecha ↑↓) respecto al periodo anterior.
+Alternos:
+• Si un KPI no tiene datos suficientes (p.ej., temporada recién creada), se muestra estado informativo de 'sin datos'.",
+User Story,Visualización de KPIs clave en el dashboard,Yo como encargado de marca de la NFL quiero definir en el sistema los KPIs clave para que entoncessean usados dashboard de KPI.,"• Epuedo definir el nombre del KPI, la métrica y el periodo que suma.
+Puedo definir el periodo contra el que quiero comparar",
+User Story,Generar reportes ad-hoc de participación y actividad,"Yo como encargado de marca de la NFL ad-hoc combinando dimensiones (liga, temporada, semana, usuario, acción) y aplicando sumarizaciones para entonces realizar análisis tipo BI sin depender de ingeniería.","• El sistema permite seleccionar dimensiones y métricas a incluir (ej. usuarios activos por liga y semana; trades aceptados por temporada).
+• Se pueden aplicar operaciones de agregación: sumatoria, promedio, conteo, máximo, mínimo.
+• Los reportes son exportables en CSV/JSON respetando filtros y agregaciones aplicadas.
+• Los resultados se muestran en tablas dinámicas con opción de gráfico asociado (línea, barra, pastel).
+Alternos:
+• Si la combinación de dimensiones genera dataset vacío, se muestra estado 'sin datos'.
+• Si el volumen supera límite de filas permitido, se muestra advertencia y se sugiere refinar filtros.",
+User Story,Creación manual de jugador NFL,Yo como administrador quiero crear jugadores NFL manualmente para gestionar sus datos en la plataforma.,"• El formulario de creación permite: nombre, posición, equipo NFL (de los equipos existentes), imagen, thumbnail generado.
+• El sistema genera automáticamente un id único y registra fecha de creación.
+• El jugador queda activo por defecto.
+• Validación de datos requeridos antes de guardar.
+Alternos:
+• Si el nombre del jugador ya existe para el mismo equipo NFL, no se crea el jugador y se notifica con un mensaje.
+• Si no se presentan todos los campos requeridos, no se crea el jugador y se notifica con un mensaje.",
+User Story,Creación batch de jugadores NFL por archivo JSON,Yo como administrador quiero cargar un archivo JSON con datos de jugadores para agilizar la creación en lote.,"• El archivo JSON incluye: nombre, posición, equipo NFL, imagen, ID.
+• El thumbnail se autogenera de la imagen.
+• Todos los jugadores creados quedan activos por defecto.
+• Validación de formato y datos antes de procesar.
+• Al final de la carga se genera un reporte de éxito y errores.•
+ Si existe al menos un error no se crea ninguno de los jugadores (operación todo-o-nada).
+• El archivo debe ser movido a un folder de archivos procesados con el formato <Resultado exito o fallo>_<fecha y hora>_<nombre del archivo>.json
+Alternos:
+• Si el nombre del jugador ya existe para el mismo equipo NFL, no se crea el jugador y se notifica con un mensaje.
+• Si no se presentan todos los campos requeridos, no se crea el jugador y se notifica con un mensaje.",
+User Story,Ver listado de jugadores NFL,Yo como administrador quiero visualizar el listado de jugadores NFL para gestionarlos fácilmente.,"• La vista muestra: nombre, posición, equipo NFL, imagen/thumbnail, estado, fecha de creación, ID.
+• Paginación de 50 en 50.
+• Opciones de búsqueda y filtros por nombre, posición, equipo NFL y estado.
+• Acceso a acciones de edición o desactivación.",
+User Story,Modificar jugador NFL,Yo como administrador quiero editar los datos de un jugador NFL para mantener información actualizada.,"• Se pueden editar: nombre, posición, equipo NFL, imagen, thumbnail.
+• No se permite modificar id ni fecha de creación.
+• Cambios guardados quedan registrados con fecha y usuario que realizó la acción.",
+User Story,Desactivar jugador NFL,Yo como administrador quiero poder desactivar jugadores NFL en lugar de eliminarlos para preservar historial.,"• La opción de desactivar cambia el estado del jugador a inactivo.
+• No se permite desactivar jugadores que estén en la titular o banca de equipos activos durante la temporada actual.
+• El jugador desactivado no puede ser agregado a nuevas plantillas ni alineaciones.
+• Puede reactivarse manualmente si es necesario
+.Alternos:
+• Si el jugador está asignado a un equipo activo en la temporada actual, se indica con un mensaje de error.",
+User Story,Vista global de salud del sistema,Yo como administrador quiero ver un panel con indicadores clave para entender rápidamente el estado de la plataforma.,"• El panel muestra métricas de disponibilidad, tiempos de respuesta promedio y percentiles, tasa de errores y advertencias.
+• Las métricas se presentan por servicio y en un agregado general.
+• Se puede seleccionar rango de fechas y granularidad.
+• Las tarjetas del panel incluyen estado actual y tendencia.Alternos:
+• Si no hay datos para un servicio, se muestra un placeholder informativo.",
+User Story,Integración con sistema externo de monitoreo,Yo como administrador quiero integrar un sistema externo de monitoreo para recolectar métricas y eventos.,"• Se configuran endpoints de recolección y credenciales de acceso de forma segura.
+• Se ingieren métricas de latencia, errores, uso de recursos y eventos de capacidad.
+• Reintentos y backoff cuando el sistema externo no responde.
+• Registro de fallas de integración para auditoría.",
+User Story,Monitoreo de colas y jobs,Yo como administrador quiero visualizar el estado de colas y jobs para detectar cuellos de botella.,"• Se muestran por cola: tamaño actual, tiempo en cola, tasa de procesamiento y número de fallos.
+• Para jobs: últimos estados, reintentos y errores recientes.
+• Alertas configurables por umbrales (tamaño en cola, tiempo en cola, fallos).
+• Exportación de resumen a CSV.",
+User Story,Alertas y umbrales de capacidad,Yo como administrador quiero configurar alertas de capacidad para prevenir degradación del servicio.,"• Se pueden definir umbrales por servicio para CPU, memoria, almacenamiento y conexiones.
+• Al superarse un umbral se genera alerta con severidad y recomendaciones.
+• Las alertas se pueden enviar por correo y mostrarse en el panel.
+• Historial de alertas con estado (abierta, investigando, resuelta).",
+User Story,Reportes de rendimiento y niveles de servicio,Yo como administrador quiero reportes de rendimiento y cumplimiento de niveles de servicio para seguimiento ejecutivo.,"• Reporte de latencia por percentiles y tasa de errores por servicio.
+• Cálculo de disponibilidad para comparar con objetivos.
+• Segmentación por entorno (producción, prueba) y servicio.
+• Exportación a PDF y CSV.",
+User Story,Auditoría y eventos críticos en el panel,Yo como administrador quiero consultar un resumen de auditorías y eventos críticos para correlacionar incidentes.,"• Se listan cambios de configuración relevantes y eventos críticos por rango de fechas.
+• Búsqueda por usuario, servicio y tipo de evento.
+• Enlaces a detalle del evento y bitácora relacionada.
+• Conservación mínima configurada para retención.",
+User Story,Control de acceso y seguridad del panel,Yo como administrador quiero controlar quién accede al panel para proteger información sensible.,"• Acceso restringido a roles autorizados.
+• Registro de accesos y acciones dentro del panel.
+• Soporte de autenticación y autorización centralizada.
+• Sesiones expiran tras periodo configurable de inactividad.",
+User Story,Ver configuraciones existentes de roles y permisos,Yo como usuario autorizado quiero consultar la configuración vigente de roles y permisos para entonces entender qué acciones permite cada rol en el sistema.,"• El sistema muestra los 4 roles existentes: Comisionado, Manager, Administrador de sistema y Encargado de marca.
+• Para cada rol se listan los permisos por acción/entidad (p. ej., ver/crear/editar/eliminar/administrar sobre ligas, equipos, jugadores, calendario, configuraciones, reportes, integraciones).
+• Se evidencia la regla de unicidad: una persona solo puede tener un rol vigente a la vez y únicamente puede realizar las acciones de ese rol.
+• Las asignaciones de rol a usuario se muestran en modo lectura (para roles de liga se indica la liga asociada).
+• Se presenta historial/auditoría de cambios de permisos y de asignaciones de rol.
+Alternos:
+• Si no existen configuraciones, se muestra estado informativo de sin datos.
+• Si el solicitante no tiene permiso de lectura de seguridad, se bloquea la vista y se registra el intento en auditoría.",
+User Story,Editar permisos por rol (agregar o quitar funciones),Yo como administrador del sistema quiero editar los permisos de los roles para entonces alinear las acciones permitidas por entidad con las políticas vigentes.,"• Puedo agregar o quitar permisos por rol, por acción (crear, leer, actualizar, eliminar, administrar).
+• Los cambios requieren confirmación y muestran un resumen del impacto antes de aplicarse; surten efecto de forma prospectiva.
+• Validaciones: no se permite dejar a todos los roles sin capacidad de administrar seguridad; se previene el auto‑bloqueo del editor.
+• Todos los cambios quedan auditados con detalle (quién, qué permiso, antes/después, fecha/hora) y permiten reversión mediante acción de rollback.
+• La edición no crea nuevos roles; solo modifica permisos de los 4 roles existentes.
+• Para permisos de Comisionado/Manager se respeta el alcance por liga (scoped).
+Alternos:
+• Si existe conflicto o dependencia que impida el cambio, la operación se cancela con explicación clara.
+• Si el editor perdería acceso por el propio cambio, su sesión actual permanece válida pero los nuevos permisos aplican desde el siguiente inicio de sesión.",
+User Story,Elevar permisos de una cuenta a roles administrativos,Yo como administrador del sistema quiero elevar una cuenta a Administrador de sistema o Encargado de marca para entonces habilitar capacidades administrativas según necesidad.,"• Solo un Administrador de sistema puede elevar roles tomando una cuenta y pasándola a administrador o encargado de marca.
+• La elevación reemplaza el rol previo del usuario (regla de rol único).
+• La operación requiere doble confirmación e ingreso de un motivo que quedará en auditoría.
+• Al completar, se notifica al usuario afectado y se registra auditoría con fecha/hora y autor.
+Alternos:
+• No se permite que un usuario eleve su propia cuenta.
+• Si el usuario objetivo ya tiene el rol solicitado, la operación se bloquea con mensaje informativo.",
+User Story,Vincular cuenta de la plataforma con usuario de Discord,Yo como comisionado quiero vincular mi cuenta con mi usuario de Discord para recibir notificaciones y usar comandos en los canales de mi liga.,"• La vinculación se realiza iniciando sesión y autorizando al bot mediante OAuth.
+• La plataforma registra el identificador de Discord del usuario vinculado.
+• Se valida que el usuario pertenezca al servidor y canal de su liga.
+• La desvinculación puede realizarse desde el perfil.
+Importante
+Se deben hacer las configuraciones del lado de disscord para poder leer los mensajes",
+User Story,Validación de Trades,Como administrador de sistema quiero que el sistema analice los patrones de trades entre equipos de una misma liga para detectar posibles acuerdos desbalanceados que beneficien de manera injusta a un equipo.,"Criterios de aceptación:
+• El sistema identifica trades con diferencias extremas de valor entre jugadores según ranking y puntos acumulados.
+• Se marcan como “sospechosos” aquellos intercambios que repetidamente beneficien al mismo equipo.
+• Se genera un log visible solo para administradores, con fecha, equipos involucrados y detalle del trade.
+• No se bloquea automáticamente el trade, pero se requiere confirmación del administrador de la liga para completarse.
+Criterios adicionales:
+•  El sistema puede usar métricas de diferencia de puntos promedio en la temporada como referencia para marcar trades sospechosos.
+• Alertas de colusión deben enviarse al canal de noticias de la liga si el comisionado lo habilita.",
+User Story,Control de tiempo de transacciones,"Como administrador de sistema quiero que todas las acciones relevantes se registren con timestamp exacto (fecha, hora, minuto y zona horaria) para poder detectar fraudes, controlar ventanas válidas de operaciones y auditar comportamientos sospechosos.","Criterios de aceptación:
+• Todas las acciones clave (trades, waivers/claims, liberaciones, picks, invitaciones) registran timestamp con zona horaria del sistema.
+• Validaciones temporales: bloqueo de trades cuando faltan X horas para el inicio de partidos; ventanas de waiver y resolución configurables por liga.
+• Detección de patrones anómalos: movimientos sincronizados en segundos/minutos entre cuentas relacionadas en la misma liga.
+• Historial auditable accesible a administradores con filtros por liga, usuario, acción y ventana temporal.
+
+Criterios adicionales:
+•  Ante detección temporal de riesgo, el sistema marca los equipos involucrados como 'pendiente de revisión' y restringe trades hasta revisión.
+• Los umbrales de tiempo (X horas, ventanas) son configurables por liga y quedan registrados en auditoría cuando cambian.",

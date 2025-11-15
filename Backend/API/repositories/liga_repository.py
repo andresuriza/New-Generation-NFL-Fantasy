@@ -1,7 +1,7 @@
 """
 Repository for Liga entity operations
 """
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 from uuid import UUID
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_
@@ -9,6 +9,9 @@ from sqlalchemy import and_
 from repositories.base import BaseRepository
 from models.database_models import LigaDB, LigaMiembroDB, LigaCupoDB
 from models.liga import LigaCreate, LigaUpdate
+
+if TYPE_CHECKING:
+    from models.liga import LigaFilter
 
 class LigaRepository(BaseRepository[LigaDB, LigaCreate, LigaUpdate]):
     """Repository for League operations"""
@@ -26,6 +29,20 @@ class LigaRepository(BaseRepository[LigaDB, LigaCreate, LigaUpdate]):
             joinedload(self.model.miembros)
         ).filter(self.model.id == liga_id).first()
     
+    def search_with_filter(self, db: Session, filtros: 'LigaFilter', skip: int = 0, limit: int = 100) -> List[LigaDB]:
+        """Search leagues with filters"""
+        query = db.query(self.model)
+        
+        if filtros.nombre:
+            query = query.filter(self.model.nombre.ilike(f"%{filtros.nombre}%"))
+        
+        if filtros.temporada_id:
+            query = query.filter(self.model.temporada_id == filtros.temporada_id)
+        
+        if filtros.estado:
+            query = query.filter(self.model.estado == filtros.estado)
+        
+        return query.offset(skip).limit(limit).all()
 
     
     def has_associated_ligas(self, db: Session, temporada_id: UUID) -> bool:

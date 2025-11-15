@@ -1,0 +1,39 @@
+{
+  "jugadores": [
+    {
+      "nombre": "Valid Player",
+      "posicion": "QB",
+      "equipo_nfl": "Buffalo Bills",
+      "imagen": "https://example.com/players/valid_player.jpg"
+    },
+    {
+      "nombre": "",
+      "posicion": "RB",
+      "equipo_nfl": "Tennessee Titans",
+      "imagen": "https://example.com/players/invalid_name.jpg"
+    },
+    {
+      "nombre": "Missing Position Player",
+      "equipo_nfl": "Kansas City Chiefs",
+      "imagen": "https://example.com/players/missing_position.jpg"
+    },
+    {
+      "nombre": "Invalid Team Player",
+      "posicion": "WR",
+      "equipo_nfl": "NonExistent Team",
+      "imagen": "https://example.com/players/invalid_team.jpg"
+    },
+    {
+      "nombre": "Missing Image Player",
+      "posicion": "TE",
+      "equipo_nfl": "Baltimore Ravens"
+    },
+    {
+      "nombre": "Invalid Position Player",
+      "posicion": "INVALID_POS",
+      "equipo_nfl": "Green Bay Packers",
+      "imagen": "https://example.com/players/invalid_position.jpg"
+    }
+  ],
+  "filename": "test_jugadores_bulk_errors.json"
+}

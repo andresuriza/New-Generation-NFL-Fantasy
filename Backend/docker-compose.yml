@@ -17,3 +17,9 @@ services:
     restart: unless-stopped
     volumes:
       - ./API:/app/API # Mount for development
+      - imgs-data:/app/imgs # Persistent storage for images
+      - processed-files:/app/processed_files # Persistent storage for processed files
+
+volumes:
+  imgs-data:
+  processed-files:

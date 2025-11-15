@@ -5,7 +5,7 @@ from sqlalchemy.sql import func
 from database import Base
 import enum
 import uuid
-
+#TODO  -- include campo de equipo fantasy en ligas_miembros
 # Enums for user roles and states
 class RolUsuarioEnum(enum.Enum):
     manager = "manager"
@@ -23,7 +23,14 @@ class EstadoLigaEnum(enum.Enum):
 class RolMembresiaEnum(enum.Enum):
     Comisionado = "Comisionado"
     Manager = "Manager"
-
+class PosicionJugadorEnum(enum.Enum):
+    QB = "QB"
+    RB = "RB"
+    WR = "WR"
+    TE = "TE"
+    K = "K"
+    DEF = "DEF"
+    IR = "IR"
 class UsuarioDB(Base):
     __tablename__ = "usuarios"
     
@@ -40,7 +47,7 @@ class UsuarioDB(Base):
     creado_en = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
-    equipos = relationship("EquipoDB", back_populates="usuario")
+    equipos_fantasy = relationship("EquipoFantasyDB", back_populates="usuario")
     ligas_miembros = relationship("LigaMiembroDB", back_populates="usuario")
     ligas_miembros_aud = relationship("LigaMiembroAudDB", back_populates="usuario")
 
@@ -60,7 +67,7 @@ class TemporadaDB(Base):
     temporadas_semanas = relationship("TemporadaSemanaDB", back_populates="temporada", cascade="all, delete-orphan")
 
     __table_args__ = (
-        CheckConstraint('semanas >= 1 AND semanas <= 17', name='check_semanas'),
+        CheckConstraint('semanas >= 1 AND semanas <= 18', name='check_semanas'),
         CheckConstraint('fecha_fin > fecha_inicio', name='ck_temp_rango'),
         Index('uq_temporada_actual', 'es_actual', unique=True, postgresql_where=text('es_actual = true'))
     )
@@ -116,11 +123,10 @@ class LigaDB(Base):
     
     # Relationships
     temporada = relationship("TemporadaDB", back_populates="ligas")
-    equipos = relationship("EquipoDB", back_populates="liga", cascade="all, delete-orphan")
+    equipos_fantasy = relationship("EquipoFantasyDB", back_populates="liga", cascade="all, delete-orphan")
     miembros = relationship("LigaMiembroDB", back_populates="liga", cascade="all, delete-orphan")
     miembros_aud = relationship("LigaMiembroAudDB", back_populates="liga", cascade="all, delete-orphan")
     cupos = relationship("LigaCupoDB", back_populates="liga", uselist=False, cascade="all, delete-orphan")
-    ligas_equipos = relationship("LigaEquipoDB", back_populates="liga", cascade="all, delete-orphan")
 
     __table_args__ = (
         CheckConstraint('equipos_max IN (4,6,8,10,12,14,16,18,20)', name='ck_equipos_max'),
@@ -180,42 +186,19 @@ class LigaCupoDB(Base):
     )
 
 class EquipoDB(Base):
+    """Modelo de datos para equipos NFL (equipos reales de la NFL)"""
     __tablename__ = "equipos"
     
-    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    liga_id = Column(PG_UUID(as_uuid=True), ForeignKey("ligas.id", ondelete="CASCADE"), nullable=False)
-    usuario_id = Column(PG_UUID(as_uuid=True), ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuid_generate_v4()"))
     nombre = Column(String(100), nullable=False)
+    ciudad = Column(String(100), nullable=True)
     thumbnail = Column(Text, nullable=True)
-    creado_en = Column(DateTime(timezone=True), server_default=func.now())
-    actualizado_en = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    creado_en = Column(DateTime(timezone=True), server_default=text("NOW()"))
+    actualizado_en = Column(DateTime(timezone=True), server_default=text("NOW()"))
     
     # Relationships
-    liga = relationship("LigaDB", back_populates="equipos")
-    usuario = relationship("UsuarioDB", back_populates="equipos")
     media = relationship("MediaDB", back_populates="equipo", uselist=False, cascade="all, delete-orphan")
-    ligas_equipos = relationship("LigaEquipoDB", back_populates="equipo")
-
-class LigaEquipoDB(Base):
-    __tablename__ = "ligas_equipos"
-    
-    liga_id = Column(PG_UUID(as_uuid=True), ForeignKey("ligas.id", ondelete="CASCADE"), primary_key=True)
-    equipo_id = Column(PG_UUID(as_uuid=True), ForeignKey("equipos.id", ondelete="CASCADE"), primary_key=True)
-    usuario_id = Column(PG_UUID(as_uuid=True), nullable=False)
-    
-    # Relationships
-    liga = relationship("LigaDB", back_populates="ligas_equipos")
-    equipo = relationship("EquipoDB", back_populates="ligas_equipos")
-    
-    __table_args__ = (
-        UniqueConstraint('liga_id', 'usuario_id', name='uq_usuario_un_equipo_por_liga'),
-        ForeignKeyConstraint(
-            ['liga_id', 'usuario_id'], 
-            ['ligas_miembros.liga_id', 'ligas_miembros.usuario_id'],
-            name='fk_le_miembro',
-            ondelete='CASCADE'
-        )
-    )
+    jugadores = relationship("JugadoresDB", back_populates="equipo_nfl")
 
 class MediaDB(Base):
     __tablename__ = "media"
@@ -228,3 +211,64 @@ class MediaDB(Base):
     # Relationships
     equipo = relationship("EquipoDB", back_populates="media")
 
+class JugadoresDB(Base):
+    __tablename__ = "jugadores"
+
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    nombre = Column(String(100), nullable=False)
+    posicion = Column(Enum(PosicionJugadorEnum), nullable=False)
+    equipo_id = Column(PG_UUID(as_uuid=True), ForeignKey("equipos.id", ondelete="RESTRICT"), nullable=False)
+    imagen_url = Column(Text, nullable=False)
+    thumbnail_url = Column(Text, nullable=True)
+    activo = Column(Boolean, nullable=False, default=True)
+    creado_en = Column(DateTime(timezone=True), server_default=text("now()"))
+    
+    # Relationships
+    equipo_nfl = relationship("EquipoDB", back_populates="jugadores")
+
+    __table_args__ = (
+        UniqueConstraint('equipo_id', 'nombre', name='uq_jugador_por_equipo'),
+        CheckConstraint('length(nombre) BETWEEN 1 AND 100', name='ck_nombre_jugador_len')
+    )
+
+class EquipoFantasyDB(Base):
+    __tablename__ = "equipos_fantasy"
+
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuid_generate_v4()"))
+    liga_id = Column(PG_UUID(as_uuid=True), ForeignKey("ligas.id", ondelete="CASCADE"), nullable=False)
+    usuario_id = Column(PG_UUID(as_uuid=True), ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
+    nombre = Column(String(100), nullable=False)
+    imagen_url = Column(Text, nullable=True)
+    thumbnail_url = Column(Text, nullable=True)
+    creado_en = Column(DateTime(timezone=True), server_default=text("NOW()"))
+    actualizado_en = Column(DateTime(timezone=True), server_default=text("NOW()"))
+    
+    # Relationships
+    liga = relationship("LigaDB", back_populates="equipos_fantasy")
+    usuario = relationship("UsuarioDB", back_populates="equipos_fantasy")
+    audit_logs = relationship("EquipoFantasyAuditDB", back_populates="equipo_fantasy", cascade="all, delete-orphan")
+
+    __table_args__ = (
+        UniqueConstraint('liga_id', 'nombre', name='uq_nombre_equipo_fantasy_por_liga'),
+        CheckConstraint('length(nombre) BETWEEN 1 AND 100', name='ck_nombre_equipo_fantasy_len'),
+        CheckConstraint(
+            "imagen_url IS NULL OR imagen_url ~ '\\.(jpg|jpeg|png)(\\?.*)?$'",
+            name='ck_imagen_url_format'
+        )
+    )
+
+class EquipoFantasyAuditDB(Base):
+    __tablename__ = "equipos_fantasy_audit"
+
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuid_generate_v4()"))
+    equipo_fantasy_id = Column(PG_UUID(as_uuid=True), ForeignKey("equipos_fantasy.id", ondelete="CASCADE"), nullable=False)
+    usuario_id = Column(PG_UUID(as_uuid=True), ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
+    accion = Column(String(50), nullable=False)  # 'CREATE', 'UPDATE_NOMBRE', 'UPDATE_IMAGEN', 'DELETE'
+    campo_modificado = Column(String(50), nullable=True)  # 'nombre', 'imagen_url', NULL for CREATE/DELETE
+    valor_anterior = Column(Text, nullable=True)
+    valor_nuevo = Column(Text, nullable=True)
+    timestamp_accion = Column(DateTime(timezone=True), server_default=text("NOW()"))
+    
+    # Relationships
+    equipo_fantasy = relationship("EquipoFantasyDB", back_populates="audit_logs")
+    usuario = relationship("UsuarioDB")

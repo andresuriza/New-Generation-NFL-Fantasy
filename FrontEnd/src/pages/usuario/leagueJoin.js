@@ -6,8 +6,8 @@ import {
   validateName as validateTeamName,
 } from "../../utils/validators";
 import {
-  GetLigas,
-  JoinLiga,
+  JoinLeague,
+  SearchLeague,
 } from "../../utils/communicationModule/resources/ligas";
 import { GetTemporadaId } from "../../utils/communicationModule/resources/temporadas";
 import { useAuth } from "../../context/authContext";
@@ -20,6 +20,7 @@ export default function LeagueJoin() {
   const [status, setStatus] = useState("");
   const [results, setResults] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [name, setName] = useState("");
   const [alias, setAlias] = useState("");
   const [teamName, setTeamName] = useState("");
   const [password, setPassword] = useState("");
@@ -49,34 +50,6 @@ export default function LeagueJoin() {
     document.title = "Buscar liga";
   }, []);
 
-  useEffect(() => {
-    async function GetLigasAPI() {
-      try {
-        const ligas_api_original = await GetLigas();
-        const ligas_api = await Promise.all(
-          ligas_api_original.map(async (e) => {
-            try {
-              const temporadaName = await GetTemporadaId(e.temporada_id);
-              return {
-                ...e,
-                temporada_name: await temporadaName.nombre,
-              };
-            } catch (error) {
-              console.error("Error obteniendo temporada");
-              return { ...e, temporadaName: "Desconocido" };
-            }
-          })
-        );
-        setLigas(ligas_api);
-      } catch (error) {
-        console.error("Error fecthing ligas");
-        setLigas([]);
-      }
-    }
-
-    GetLigasAPI();
-  }, []);
-
   function doSearch() {
     const list = searchLeaguesLocal({
       q,
@@ -86,10 +59,6 @@ export default function LeagueJoin() {
     setResults(list);
   }
 
-  useEffect(() => {
-    doSearch();
-  }, [ligas]);
-
   const seasonsInData = useMemo(() => {
     const uniq = new Set(results.map((r) => r.temporada_id).filter(Boolean));
     return Array.from(uniq).sort();
@@ -97,12 +66,19 @@ export default function LeagueJoin() {
 
   function validateJoin() {
     const e = {};
+
+    if (!name || !name.trim()) e.name = "Ingresa un nombre de liga";
+
     const eAlias = validateAlias(alias);
-    if (eAlias) e.alias = eAlias;
+
+    if (eAlias)
+      e.alias = "Alias: " + eAlias.replace("Alias", "obligatorio y ≤ 50");
+
     const eTeam = validateTeamName(teamName);
     if (eTeam)
       e.teamName =
         "Nombre de equipo: " + eTeam.replace("El nombre", "obligatorio y ≤ 50");
+
     if (!password || !password.trim())
       e.password = "Ingresa la contraseña de la liga.";
     setErrors(e);
@@ -111,22 +87,39 @@ export default function LeagueJoin() {
 
   async function handleJoin() {
     setToast({ type: null, message: "" });
-    if (!selected) return;
+    //if (!selected) return;
     if (!validateJoin()) return;
 
     setLoading(true);
     try {
-      const res = await JoinLiga({
-        liga_id: selected.id,
+      const liga = await SearchLeague({
+        nombre: name,
+        skip: 0,
+        limit: 100,
+      });
+
+      if (liga.length == 0) {
+        setToast({
+          type: "err",
+          message: "No se encontro una liga con ese nombre",
+        });
+        return;
+      }
+
+      const leagueID = liga[0].id;
+
+      const res = await JoinLeague({
+        liga_id: leagueID,
         usuario_id: user.id,
         contrasena: password,
         alias: alias.trim(),
+        nombre_equipo: teamName,
       });
 
       setLoading(false);
       setToast({
         type: "ok",
-        message: `¡Te uniste a ${selected.nombre}!`,
+        message: `¡Te uniste a ${name}!`,
       });
       setTimeout(() => navigate("/player/profile"), 900);
     } catch (err) {
@@ -140,166 +133,80 @@ export default function LeagueJoin() {
 
   return (
     <div className="container" style={{ paddingTop: 24, paddingBottom: 48 }}>
-      <div className="card" style={{ maxWidth: 900, margin: "0 auto" }}>
-        <h2 style={{ marginTop: 0, textAlign: "center" }}>
-          Buscar liga y unirse
-        </h2>
+      <div className="card" style={{ marginTop: 12 }}>
+        <h3 style={{ marginTop: 0 }}>Unirse a liga</h3>
         <div
           className="grid"
-          style={{ gridTemplateColumns: "2fr 1fr 1fr auto", gap: 8 }}
+          style={{ gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}
         >
-          <input
-            className="input"
-            placeholder="Buscar por nombre…"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-          <input
-            className="input"
-            placeholder="Temporada (ej. 2025)"
-            value={s}
-            onChange={(e) => setS(e.target.value)}
-          />
-          <select
-            className="input"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
+          <div className="form__group">
+            <label>Nombre liga *</label>
+            <input
+              className={`input ${errors.name ? "input--invalid" : ""}`}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={50}
+            />
+            {errors.alias && <div className="error">{errors.name}</div>}
+          </div>
+          <div className="form__group">
+            <label>Alias (opcional)</label>
+            <input
+              className={`input ${errors.alias ? "input--invalid" : ""}`}
+              value={alias}
+              onChange={(e) => setAlias(e.target.value)}
+              maxLength={50}
+            />
+            {errors.alias && <div className="error">{errors.alias}</div>}
+          </div>
+          <div className="form__group">
+            <label>Nombre de equipo *</label>
+            <input
+              className={`input ${errors.teamName ? "input--invalid" : ""}`}
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              maxLength={50}
+            />
+            {errors.teamName && <div className="error">{errors.teamName}</div>}
+          </div>
+          <div className="form__group">
+            <label>Contraseña de la liga *</label>
+            <input
+              className={`input ${errors.password ? "input--invalid" : ""}`}
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              maxLength={12}
+            />
+            {errors.password && <div className="error">{errors.password}</div>}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+          <button
+            className="button button--accent"
+            onClick={handleJoin}
+            disabled={loading}
           >
-            <option value="">Estado (todos)</option>
-            <option value="Pre_Draft">Pre-Draft</option>
-            <option>Activa</option>
-            <option>Inactiva</option>
-          </select>
-          <button className="button" onClick={doSearch}>
-            Buscar
+            {loading ? "Procesando…" : "Unirme"}
+          </button>
+          <button
+            className="button button--ghost"
+            onClick={() => setSelected(null)}
+            disabled={loading}
+          >
+            Cancelar
           </button>
         </div>
-        <div className="card" style={{ marginTop: 12 }}>
-          <h3 style={{ marginTop: 0 }}>Resultados ({results.length})</h3>
-          {results.length === 0 && (
-            <div className="help">
-              No hay ligas que coincidan con los filtros.
-            </div>
-          )}
-          {results.map((lg) => {
-            const capacity = Number(lg.equipos_max || 0);
-            const regs = Number(lg.registeredTeams || lg.members?.length || 0);
-            const remaining = capacity ? Math.max(capacity - regs, 0) : 0;
-            return (
-              <div
-                key={lg.id}
-                className={`card ${
-                  selected?.id === lg.id ? "card--selected" : ""
-                }`}
-                style={{ marginBottom: 8 }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 8,
-                  }}
-                >
-                  <div>
-                    <div style={{ fontWeight: 600 }}>{lg.nombre}</div>
-                    <div className="help">
-                      Temporada: {lg.temporada_name || "—"} • Estado:{" "}
-                      {lg.estado || "—"} • Cupos restantes: {remaining}
-                    </div>
-                    {lg.descripcion && (
-                      <div className="help">{lg.descripcion}</div>
-                    )}
-                  </div>
-                  <div>
-                    <button
-                      className="button"
-                      onClick={() => setSelected(lg)}
-                      disabled={remaining <= 0}
-                    >
-                      {remaining <= 0
-                        ? "Sin cupos"
-                        : selected?.id === lg.id
-                        ? "Seleccionada"
-                        : "Unirme"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        {selected && (
-          <div className="card" style={{ marginTop: 12 }}>
-            <h3 style={{ marginTop: 0 }}>Unirse a: {selected.nombre}</h3>
-            <div
-              className="grid"
-              style={{ gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}
-            >
-              <div className="form__group">
-                <label>Alias (opcional)</label>
-                <input
-                  className={`input ${errors.alias ? "input--invalid" : ""}`}
-                  value={alias}
-                  onChange={(e) => setAlias(e.target.value)}
-                  maxLength={50}
-                />
-                {errors.alias && <div className="error">{errors.alias}</div>}
-              </div>
-              <div className="form__group">
-                <label>Nombre de equipo *</label>
-                <input
-                  className={`input ${errors.teamName ? "input--invalid" : ""}`}
-                  value={teamName}
-                  onChange={(e) => setTeamName(e.target.value)}
-                  maxLength={50}
-                />
-                {errors.teamName && (
-                  <div className="error">{errors.teamName}</div>
-                )}
-              </div>
-              <div className="form__group">
-                <label>Contraseña de la liga *</label>
-                <input
-                  className={`input ${errors.password ? "input--invalid" : ""}`}
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  maxLength={12}
-                />
-                {errors.password && (
-                  <div className="error">{errors.password}</div>
-                )}
-              </div>
-            </div>
 
-            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-              <button
-                className="button button--accent"
-                onClick={handleJoin}
-                disabled={loading}
-              >
-                {loading ? "Procesando…" : "Unirme"}
-              </button>
-              <button
-                className="button button--ghost"
-                onClick={() => setSelected(null)}
-                disabled={loading}
-              >
-                Cancelar
-              </button>
-            </div>
-
-            {toast.message && (
-              <div
-                className={`toast ${
-                  toast.type === "ok" ? "toast--ok" : "toast--err"
-                }`}
-                style={{ marginTop: 12 }}
-              >
-                {toast.message}
-              </div>
-            )}
+        {toast.message && (
+          <div
+            className={`toast ${
+              toast.type === "ok" ? "toast--ok" : "toast--err"
+            }`}
+            style={{ marginTop: 12 }}
+          >
+            {toast.message}
           </div>
         )}
       </div>

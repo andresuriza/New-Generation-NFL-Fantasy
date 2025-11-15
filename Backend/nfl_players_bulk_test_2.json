@@ -1,0 +1,248 @@
+[
+  {
+    "nombre": "James Cook",
+    "posicion": "RB",
+    "equipo_nfl": "Buffalo Bills",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/james-cook-headshot.jpg"
+  },
+  {
+    "nombre": "Gabe Davis",
+    "posicion": "WR",
+    "equipo_nfl": "Buffalo Bills",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/gabe-davis-headshot.jpg"
+  },
+  {
+    "nombre": "Dawson Knox",
+    "posicion": "TE",
+    "equipo_nfl": "Buffalo Bills",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/dawson-knox-headshot.jpg"
+  },
+  {
+    "nombre": "Ryan Tannehill",
+    "posicion": "QB",
+    "equipo_nfl": "Tennessee Titans",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/ryan-tannehill-headshot.jpg"
+  },
+  {
+    "nombre": "DeAndre Hopkins",
+    "posicion": "WR",
+    "equipo_nfl": "Tennessee Titans",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/deandre-hopkins-headshot.jpg"
+  },
+  {
+    "nombre": "Isiah Pacheco",
+    "posicion": "RB",
+    "equipo_nfl": "Kansas City Chiefs",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/isiah-pacheco-headshot.jpg"
+  },
+  {
+    "nombre": "JuJu Smith-Schuster",
+    "posicion": "WR",
+    "equipo_nfl": "Kansas City Chiefs",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/juju-smith-schuster-headshot.jpg"
+  },
+  {
+    "nombre": "Harrison Butker",
+    "posicion": "K",
+    "equipo_nfl": "Kansas City Chiefs",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/harrison-butker-headshot.jpg"
+  },
+  {
+    "nombre": "Gus Edwards",
+    "posicion": "RB",
+    "equipo_nfl": "Baltimore Ravens",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/gus-edwards-headshot.jpg"
+  },
+  {
+    "nombre": "Odell Beckham Jr.",
+    "posicion": "WR",
+    "equipo_nfl": "Baltimore Ravens",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/odell-beckham-jr-headshot.jpg"
+  },
+  {
+    "nombre": "Roquan Smith",
+    "posicion": "DEF",
+    "equipo_nfl": "Baltimore Ravens",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/roquan-smith-headshot.jpg"
+  },
+  {
+    "nombre": "Jordan Love",
+    "posicion": "QB",
+    "equipo_nfl": "Green Bay Packers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/jordan-love-headshot.jpg"
+  },
+  {
+    "nombre": "Aaron Jones",
+    "posicion": "RB",
+    "equipo_nfl": "Green Bay Packers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/aaron-jones-headshot.jpg"
+  },
+  {
+    "nombre": "Christian Watson",
+    "posicion": "WR",
+    "equipo_nfl": "Green Bay Packers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/christian-watson-headshot.jpg"
+  },
+  {
+    "nombre": "Tony Pollard",
+    "posicion": "RB",
+    "equipo_nfl": "Dallas Cowboys",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/tony-pollard-headshot.jpg"
+  },
+  {
+    "nombre": "CeeDee Lamb",
+    "posicion": "WR",
+    "equipo_nfl": "Dallas Cowboys",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/ceedee-lamb-headshot.jpg"
+  },
+  {
+    "nombre": "Micah Parsons",
+    "posicion": "DEF",
+    "equipo_nfl": "Dallas Cowboys",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/micah-parsons-headshot.jpg"
+  },
+  {
+    "nombre": "Brock Purdy",
+    "posicion": "QB",
+    "equipo_nfl": "San Francisco 49ers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/brock-purdy-headshot.jpg"
+  },
+  {
+    "nombre": "Deebo Samuel",
+    "posicion": "WR",
+    "equipo_nfl": "San Francisco 49ers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/deebo-samuel-headshot.jpg"
+  },
+  {
+    "nombre": "Nick Bosa",
+    "posicion": "DEF",
+    "equipo_nfl": "San Francisco 49ers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/nick-bosa-headshot.jpg"
+  },
+  {
+    "nombre": "Derek Carr",
+    "posicion": "QB",
+    "equipo_nfl": "New Orleans Saints",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/derek-carr-headshot.jpg"
+  },
+  {
+    "nombre": "Chris Olave",
+    "posicion": "WR",
+    "equipo_nfl": "New Orleans Saints",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/chris-olave-headshot.jpg"
+  },
+  {
+    "nombre": "Juwan Johnson",
+    "posicion": "TE",
+    "equipo_nfl": "New Orleans Saints",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/juwan-johnson-headshot.jpg"
+  },
+  {
+    "nombre": "Matthew Stafford",
+    "posicion": "QB",
+    "equipo_nfl": "Los Angeles Rams",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/matthew-stafford-headshot.jpg"
+  },
+  {
+    "nombre": "Cam Akers",
+    "posicion": "RB",
+    "equipo_nfl": "Los Angeles Rams",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/cam-akers-headshot.jpg"
+  },
+  {
+    "nombre": "Puka Nacua",
+    "posicion": "WR",
+    "equipo_nfl": "Los Angeles Rams",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/puka-nacua-headshot.jpg"
+  },
+  {
+    "nombre": "Aidan O'Connell",
+    "posicion": "QB",
+    "equipo_nfl": "Las Vegas Raiders",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/aidan-oconnell-headshot.jpg"
+  },
+  {
+    "nombre": "Josh Jacobs",
+    "posicion": "RB",
+    "equipo_nfl": "Las Vegas Raiders",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/josh-jacobs-headshot.jpg"
+  },
+  {
+    "nombre": "Jakobi Meyers",
+    "posicion": "WR",
+    "equipo_nfl": "Las Vegas Raiders",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/jakobi-meyers-headshot.jpg"
+  },
+  {
+    "nombre": "Maxx Crosby",
+    "posicion": "DEF",
+    "equipo_nfl": "Las Vegas Raiders",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/maxx-crosby-headshot.jpg"
+  },
+  {
+    "nombre": "Kenny Pickett",
+    "posicion": "QB",
+    "equipo_nfl": "Pittsburgh Steelers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/kenny-pickett-headshot.jpg"
+  },
+  {
+    "nombre": "Najee Harris",
+    "posicion": "RB",
+    "equipo_nfl": "Pittsburgh Steelers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/najee-harris-headshot.jpg"
+  },
+  {
+    "nombre": "George Pickens",
+    "posicion": "WR",
+    "equipo_nfl": "Pittsburgh Steelers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/george-pickens-headshot.jpg"
+  },
+  {
+    "nombre": "Pat Freiermuth",
+    "posicion": "TE",
+    "equipo_nfl": "Pittsburgh Steelers",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/pat-freiermuth-headshot.jpg"
+  },
+  {
+    "nombre": "Deshaun Watson",
+    "posicion": "QB",
+    "equipo_nfl": "Cleveland Browns",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/deshaun-watson-headshot.jpg"
+  },
+  {
+    "nombre": "Amari Cooper",
+    "posicion": "WR",
+    "equipo_nfl": "Cleveland Browns",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/amari-cooper-headshot.jpg"
+  },
+  {
+    "nombre": "David Njoku",
+    "posicion": "TE",
+    "equipo_nfl": "Cleveland Browns",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/david-njoku-headshot.jpg"
+  },
+  {
+    "nombre": "Myles Garrett",
+    "posicion": "DEF",
+    "equipo_nfl": "Cleveland Browns",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/myles-garrett-headshot.jpg"
+  },
+  {
+    "nombre": "Jake Browning",
+    "posicion": "QB",
+    "equipo_nfl": "Cincinnati Bengals",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/jake-browning-headshot.jpg"
+  },
+  {
+    "nombre": "Joe Mixon",
+    "posicion": "RB",
+    "equipo_nfl": "Cincinnati Bengals",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/joe-mixon-headshot.jpg"
+  },
+  {
+    "nombre": "Tee Higgins",
+    "posicion": "WR",
+    "equipo_nfl": "Cincinnati Bengals",
+    "imagen": "https://static.www.nfl.com/image/private/t_player_profile_landscape_2x/f_auto/league/tee-higgins-headshot.jpg"
+  }
+]

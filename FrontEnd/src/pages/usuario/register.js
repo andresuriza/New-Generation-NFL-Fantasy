@@ -18,6 +18,7 @@ export default function Register() {
     password: "",
     confirm: "",
     alias: "",
+    rol: "",
   });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({}); // para no mostrar errores hasta interactuar
@@ -36,6 +37,7 @@ export default function Register() {
     password: useRef(null),
     confirm: useRef(null),
     alias: useRef(null),
+    rol: useRef(null),
   };
 
   function handleChange(e) {
