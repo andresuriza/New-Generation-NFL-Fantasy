@@ -31,6 +31,16 @@ class PosicionJugadorEnum(enum.Enum):
     K = "K"
     DEF = "DEF"
     IR = "IR"
+
+class DesignacionLesionEnum(enum.Enum):
+    O = "O"  # Fuera (Out): no jugarán
+    D = "D"  # Dudoso (Doubtful): muy poco probable que jueguen (~25%)
+    Q = "Q"  # Cuestionable (Questionable): probabilidad ~50%, suele definirse el día del partido
+    P = "P"  # Probable: casi seguro que juega
+    FP = "FP"  # Participación Plena (Full Participation): casi seguro que juega (usado en reportes de práctica)
+    IR = "IR"  # Reserva de Lesionados (Injured Reserve): fuera por periodo extendido según reglas de la liga/NFL
+    PUP = "PUP"  # Incapaz Físicamente de Jugar (Physically Unable to Perform): no habilitado para jugar hasta cumplir requisitos médicos/reglamentarios
+    SUS = "SUS"  # Suspendido (Suspended): no elegible por sanción
 class UsuarioDB(Base):
     __tablename__ = "usuarios"
     
@@ -225,10 +235,36 @@ class JugadoresDB(Base):
     
     # Relationships
     equipo_nfl = relationship("EquipoDB", back_populates="jugadores")
+    noticias = relationship("NoticiaJugadorDB", back_populates="jugador", cascade="all, delete-orphan")
 
     __table_args__ = (
         UniqueConstraint('equipo_id', 'nombre', name='uq_jugador_por_equipo'),
         CheckConstraint('length(nombre) BETWEEN 1 AND 100', name='ck_nombre_jugador_len')
+    )
+
+class NoticiaJugadorDB(Base):
+    __tablename__ = "noticias_jugadores"
+
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    jugador_id = Column(PG_UUID(as_uuid=True), ForeignKey("jugadores.id", ondelete="CASCADE"), nullable=False)
+    texto = Column(Text, nullable=False)
+    es_lesion = Column(Boolean, nullable=False, default=False)
+    resumen = Column(String(200), nullable=True)
+    designacion = Column(String(30), nullable=True)
+    creado_en = Column(DateTime(timezone=True), server_default=text("now()"))
+    creado_por = Column(PG_UUID(as_uuid=True), ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
+    
+    # Relationships
+    jugador = relationship("JugadoresDB", back_populates="noticias")
+    autor = relationship("UsuarioDB")
+    
+    __table_args__ = (
+        CheckConstraint('length(texto) BETWEEN 10 AND 300', name='ck_texto_noticia_len'),
+        CheckConstraint('length(resumen) BETWEEN 1 AND 30', name='ck_resumen_len'),
+        CheckConstraint(
+            '(es_lesion = false AND resumen IS NULL AND designacion IS NULL) OR (es_lesion = true AND resumen IS NOT NULL AND designacion IS NOT NULL)',
+            name='ck_lesion_campos_requeridos'
+        )
     )
 
 class EquipoFantasyDB(Base):

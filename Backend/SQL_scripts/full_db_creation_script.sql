@@ -929,13 +929,14 @@ ALTER TABLE ONLY public.temporadas_semanas
 --
 
 CREATE TYPE public.designacion_lesion AS ENUM (
-    'Healthy',
-    'Questionable',
-    'Doubtful',
-    'Out',
-    'Injured_Reserve',
-    'Physically_Unable_to_Perform',
-    'Did_Not_Participate'
+    'O',
+    'D', 
+    'Q',
+    'P',
+    'FP',
+    'IR',
+    'PUP',
+    'SUS'
 );
 
 
@@ -1037,15 +1038,22 @@ CREATE FUNCTION public.audit_noticias_jugadores_changes() RETURNS trigger
 DECLARE
     v_usuario_id UUID;
 BEGIN
-    -- Get the user who made the change (this would need to be set by the application)
-    -- For now, we'll use a default admin user or the user from the session
-    v_usuario_id := COALESCE(NEW.creado_por, (SELECT id FROM usuarios WHERE rol = 'admin' LIMIT 1));
-
-    IF TG_OP = 'INSERT' THEN
+    IF TG_OP = 'DELETE' THEN
+        -- For DELETE, use OLD record data and insert audit before deletion
+        v_usuario_id := COALESCE(OLD.creado_por, (SELECT id FROM usuarios WHERE rol = 'administrador' LIMIT 1));
+        INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior)
+        VALUES (OLD.id, v_usuario_id, 'DELETE', 'all', 'Player news deleted');
+        RETURN OLD;
+    ELSIF TG_OP = 'INSERT' THEN
+        -- Get the user who made the change
+        v_usuario_id := COALESCE(NEW.creado_por, (SELECT id FROM usuarios WHERE rol = 'administrador' LIMIT 1));
         INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_nuevo)
         VALUES (NEW.id, v_usuario_id, 'INSERT', 'all', 'New player news created');
         RETURN NEW;
     ELSIF TG_OP = 'UPDATE' THEN
+        -- Get the user who made the change
+        v_usuario_id := COALESCE(NEW.creado_por, (SELECT id FROM usuarios WHERE rol = 'administrador' LIMIT 1));
+        
         -- Log changes to specific fields
         IF OLD.texto <> NEW.texto THEN
             INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior, valor_nuevo)
@@ -1064,10 +1072,6 @@ BEGIN
             VALUES (NEW.id, v_usuario_id, 'UPDATE', 'designacion', OLD.designacion::text, NEW.designacion::text);
         END IF;
         RETURN NEW;
-    ELSIF TG_OP = 'DELETE' THEN
-        INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior)
-        VALUES (OLD.id, v_usuario_id, 'DELETE', 'all', 'Player news deleted');
-        RETURN OLD;
     END IF;
     RETURN NULL;
 END;
@@ -1099,7 +1103,14 @@ ALTER TABLE ONLY public.noticias_jugadores_audit
 -- Name: noticias_jugadores trigger_audit_noticias_jugadores; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trigger_audit_noticias_jugadores AFTER INSERT OR DELETE OR UPDATE ON public.noticias_jugadores FOR EACH ROW EXECUTE FUNCTION public.audit_noticias_jugadores_changes();
+CREATE TRIGGER trigger_audit_noticias_jugadores BEFORE DELETE ON public.noticias_jugadores FOR EACH ROW EXECUTE FUNCTION public.audit_noticias_jugadores_changes();
+
+--
+-- TOC entry 3582 (class 2620 OID 25656)
+-- Name: noticias_jugadores trigger_audit_noticias_jugadores_after; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trigger_audit_noticias_jugadores_after AFTER INSERT OR UPDATE ON public.noticias_jugadores FOR EACH ROW EXECUTE FUNCTION public.audit_noticias_jugadores_changes();
 
 
 --

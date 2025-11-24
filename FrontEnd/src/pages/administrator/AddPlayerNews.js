@@ -32,7 +32,7 @@ function AddPlayerNews() {
     { value: "O", label: "Fuera (O)", description: "no jugarán" },
     { value: "D", label: "Dudoso (D)", description: "muy poco probable que jueguen (~25%)" },
     { value: "Q", label: "Cuestionable (Q)", description: "probabilidad ~50%, suele definirse el día del partido" },
-    { value: "P", label: "Probable (P)", description: "casi seguro que juega (usado en reportes de práctica)" },
+    { value: "P", label: "Probable (P)", description: "casi seguro que juega" },
     { value: "FP", label: "Participación Plena (FP)", description: "casi seguro que juega (usado en reportes de práctica)" },
     { value: "IR", label: "Reserva de Lesionados (IR)", description: "fuera por periodo extendido según reglas de la liga/NFL" },
     { value: "PUP", label: "Incapaz Físicamente de Jugar (PUP)", description: "no habilitado para jugar hasta cumplir requisitos médicos/reglamentarios" },
