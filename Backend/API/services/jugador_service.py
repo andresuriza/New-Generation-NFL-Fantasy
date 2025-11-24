@@ -227,8 +227,9 @@ class JugadorService:
         - If player name already exists for same NFL team, player not created and error reported
         - If required fields missing, player not created and error reported
         """
+        #TODO: do not repete yourself , created player can be
         errors = []
-        created_players = []
+        created_players = [] 
         
         # Validate all players first (before creating any)
         equipo_cache = {}  # Cache to avoid repeated DB queries

@@ -17,6 +17,8 @@ import EditarEquipo from "../pages/administrator/EditarEquipo";
 import SeasonCreate from "../pages/administrator/seasonCreate";
 import LeagueJoin from "../pages/usuario/leagueJoin";
 import CreatePlayerPage from "../pages/administrator/CreatePlayerForm";
+import AddPlayerNews from "../pages/administrator/AddPlayerNews";
+import PlayerManagement from "../pages/administrator/PlayerManagement";
 
 const router = createBrowserRouter([
   {
@@ -38,9 +40,9 @@ const router = createBrowserRouter([
       {
         path: "/players",
         element: (
-          <div className="container" style={{ paddingTop: 24 }}>
-            Próximamente: Explorador de jugadores
-          </div>
+          <RequireAuth>
+            <PlayerManagement />
+          </RequireAuth>
         ),
       },
       { path: "/account/unlock/confirm", element: <UnlockConfirm /> },
@@ -98,6 +100,14 @@ const router = createBrowserRouter([
     </RequireAuth>
   ),
 },
+      {
+        path: "/player/:id/add-news",
+        element: (
+          <RequireAuth>
+            <AddPlayerNews />
+          </RequireAuth>
+        ),
+      },
 
     ],
   },

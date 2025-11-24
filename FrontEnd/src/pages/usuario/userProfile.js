@@ -245,6 +245,12 @@ export default function UserProfile() {
               >
                 Crear jugador NFL
               </button>
+              <button
+                className="button "
+                onClick={() => navigate("/players")}
+              >
+                Gestionar jugadores
+              </button>
             </div>
           )}
           {teams.length === 0 ? (
