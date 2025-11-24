@@ -8,10 +8,12 @@ from uuid import UUID
 
 from models.jugador import (
     JugadorResponse, JugadorCreate, JugadorUpdate, JugadorConEquipo, 
-    JugadorFilter, JugadorBulkRequest, JugadorBulkResult
+    JugadorFilter, JugadorBulkRequest, JugadorBulkResult,
+    NoticiaJugadorCreate, NoticiaJugadorResponse, NoticiaJugadorConAutor
 )
 from models.database_models import PosicionJugadorEnum
 from services.jugador_service import jugador_service
+from services.noticia_jugador_service import noticia_jugador_service
 from database import get_db
 
 router = APIRouter()
@@ -162,3 +164,82 @@ async def actualizar_jugador(
 async def eliminar_jugador(jugador_id: UUID, db: Session = Depends(get_db)):
     """Eliminar un jugador"""
     jugador_service.eliminar_jugador(db, jugador_id)
+
+# ============================================================================
+# NOTICIAS DE JUGADORES (Player News)
+# ============================================================================
+
+@router.post("/{jugador_id}/noticias", response_model=NoticiaJugadorResponse, status_code=status.HTTP_201_CREATED)
+async def crear_noticia_jugador(
+    jugador_id: UUID,
+    noticia: NoticiaJugadorCreate,
+    db: Session = Depends(get_db),
+    # current_user: Any = Depends(get_current_user)  # TODO: Implement authentication
+):
+    """
+    Crear una noticia para un jugador.
+    
+    Características:
+    • El formulario acepta un texto entre 10 y 300 caracteres y un indicador de si la noticia es de lesión
+    • La fecha/hora de creación se autogenera al momento de guardar
+    • Si la noticia es de lesión, además se requiere un resumen de hasta 30 caracteres y una designación: O, D, Q, P/FP, IR, PUP o SUS
+    • Se registra auditoría (autor, fecha/hora, cambios)
+    
+    Comportamientos alternativos:
+    • Si el texto no cumple los límites o falta la designación en una noticia de lesión, se rechaza con mensaje claro
+    • Si el jugador no existe o está inactivo, se rechaza con mensaje claro
+    
+    Información adicional – designaciones de lesión:
+    • Fuera (O): no jugarán
+    • Dudoso (D): muy poco probable que jueguen (~25%)
+    • Cuestionable (Q): probabilidad ~50%, suele definirse el día del partido
+    • Probable (P) / Participación Plena (FP): casi seguro que juega (usado en reportes de práctica)
+    • Reserva de Lesionados (IR): fuera por periodo extendido según reglas de la liga/NFL
+    • Incapaz Físicamente de Jugar (PUP): no habilitado para jugar hasta cumplir requisitos médicos/reglamentarios
+    • Suspendido (SUS): no elegible por sanción
+    """
+    try:
+        # TODO: Replace with actual user ID from authentication
+        author_id = UUID("d950d818-477e-44d9-b386-17807d818a44")  # Temporary admin ID (Administrator)
+        
+        return noticia_jugador_service.crear_noticia(db, jugador_id, noticia, author_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Error al crear la noticia del jugador",
+                "error": str(e)
+            }
+        )
+
+@router.get("/{jugador_id}/noticias", response_model=List[NoticiaJugadorResponse])
+async def obtener_noticias_jugador(
+    jugador_id: UUID,
+    skip: int = Query(0, ge=0, description="Elementos a omitir"),
+    limit: int = Query(10, ge=1, le=50, description="Límite de elementos"),
+    incluir_autor: bool = Query(False, description="Incluir información del autor"),
+    db: Session = Depends(get_db)
+):
+    """Obtener todas las noticias de un jugador"""
+    return noticia_jugador_service.obtener_noticias_jugador(
+        db, jugador_id, skip, limit, incluir_autor
+    )
+
+@router.get("/noticias/lesiones-recientes", response_model=List[NoticiaJugadorConAutor])
+async def obtener_noticias_lesiones_recientes(
+    days: int = Query(7, ge=1, le=30, description="Días hacia atrás para buscar"),
+    skip: int = Query(0, ge=0, description="Elementos a omitir"),
+    limit: int = Query(10, ge=1, le=50, description="Límite de elementos"),
+    db: Session = Depends(get_db)
+):
+    """Obtener noticias de lesiones recientes de los últimos N días"""
+    return noticia_jugador_service.obtener_noticias_lesiones_recientes(db, days, skip, limit)
+
+@router.get("/noticias/{noticia_id}", response_model=NoticiaJugadorResponse)
+async def obtener_noticia_por_id(
+    noticia_id: UUID,
+    incluir_autor: bool = Query(False, description="Incluir información del autor"),
+    db: Session = Depends(get_db)
+):
+    """Obtener una noticia específica por ID"""
+    return noticia_jugador_service.obtener_noticia_por_id(db, noticia_id, incluir_autor)

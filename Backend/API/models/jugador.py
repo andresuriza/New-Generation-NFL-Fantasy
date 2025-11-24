@@ -1,11 +1,11 @@
 """
 Pydantic models for Jugadores (Players) entity
 """
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
-from models.database_models import PosicionJugadorEnum
+from models.database_models import PosicionJugadorEnum, DesignacionLesionEnum
 
 # Base model with common fields
 class JugadorBase(BaseModel):
@@ -91,3 +91,42 @@ class JugadorBulkResult(BaseModel):
 class JugadorBulkRequest(BaseModel):
     jugadores: List[JugadorBulkCreate] = Field(..., description="Lista de jugadores a crear")
     filename: Optional[str] = Field(None, description="Nombre del archivo original")
+
+# Player News Models
+class NoticiaJugadorCreate(BaseModel):
+    """Modelo para crear una noticia de jugador"""
+    model_config = ConfigDict(use_enum_values=True)
+    
+    texto: str = Field(..., min_length=10, max_length=300, description="Texto de la noticia (10-300 caracteres)")
+    es_lesion: bool = Field(False, description="Si la noticia es de lesión")
+    resumen: Optional[str] = Field(None, min_length=1, max_length=30, description="Resumen de la lesión (requerido si es_lesion=True)")
+    designacion: Optional[str] = Field(None, description="Designación de lesión (requerido si es_lesion=True)")
+    
+    @field_validator('designacion')
+    @classmethod
+    def validate_designacion(cls, v):
+        if v is None:
+            return v
+        # Check if the value is a valid enum value
+        valid_values = [item.value for item in DesignacionLesionEnum]
+        if v not in valid_values:
+            raise ValueError(f'Invalid designation. Must be one of: {valid_values}')
+        return v
+
+class NoticiaJugadorResponse(BaseModel):
+    """Modelo de respuesta para noticias de jugadores"""
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
+    
+    id: UUID = Field(..., description="ID único de la noticia")
+    jugador_id: UUID = Field(..., description="ID del jugador")
+    texto: str = Field(..., description="Texto de la noticia")
+    es_lesion: bool = Field(..., description="Si la noticia es de lesión")
+    resumen: Optional[str] = Field(None, description="Resumen de la lesión")
+    designacion: Optional[DesignacionLesionEnum] = Field(None, description="Designación de lesión")
+    creado_en: datetime = Field(..., description="Fecha de creación")
+    creado_por: UUID = Field(..., description="ID del usuario que creó la noticia")
+
+class NoticiaJugadorConAutor(NoticiaJugadorResponse):
+    """Noticia de jugador con información del autor"""
+    autor_nombre: str = Field(..., description="Nombre del autor")
+    autor_alias: str = Field(..., description="Alias del autor")
