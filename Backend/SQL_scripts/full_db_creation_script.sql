@@ -923,6 +923,229 @@ ALTER TABLE ONLY public.temporadas_semanas
     ADD CONSTRAINT temporadas_semanas_temporada_id_fkey FOREIGN KEY (temporada_id) REFERENCES public.temporadas(id) ON DELETE CASCADE;
 
 
+--
+-- TOC entry 231 (class 1259 OID 25650)
+-- Name: designacion_lesion; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.designacion_lesion AS ENUM (
+    'Healthy',
+    'Questionable',
+    'Doubtful',
+    'Out',
+    'Injured_Reserve',
+    'Physically_Unable_to_Perform',
+    'Did_Not_Participate'
+);
+
+
+ALTER TYPE public.designacion_lesion OWNER TO postgres;
+
+--
+-- TOC entry 232 (class 1259 OID 25651)
+-- Name: noticias_jugadores; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.noticias_jugadores (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    jugador_id uuid NOT NULL,
+    texto text NOT NULL,
+    es_lesion boolean DEFAULT false NOT NULL,
+    resumen character varying(200),
+    designacion public.designacion_lesion,
+    creado_en timestamp with time zone DEFAULT now() NOT NULL,
+    creado_por uuid NOT NULL,
+    CONSTRAINT ck_resumen_len CHECK (((length((resumen)::text) >= 1) AND (length((resumen)::text) <= 200))),
+    CONSTRAINT ck_texto_len CHECK (((length(texto) >= 1) AND (length(texto) <= 2000)))
+);
+
+
+ALTER TABLE public.noticias_jugadores OWNER TO postgres;
+
+--
+-- TOC entry 3739 (class 0 OID 0)
+-- Dependencies: 232
+-- Name: TABLE noticias_jugadores; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.noticias_jugadores IS 'Player news and injury updates';
+
+
+--
+-- TOC entry 3740 (class 0 OID 0)
+-- Dependencies: 232
+-- Name: COLUMN noticias_jugadores.texto; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.noticias_jugadores.texto IS 'News text content (1-2000 chars)';
+
+
+--
+-- TOC entry 3741 (class 0 OID 0)
+-- Dependencies: 232
+-- Name: COLUMN noticias_jugadores.es_lesion; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.noticias_jugadores.es_lesion IS 'Whether this news item is injury-related';
+
+
+--
+-- TOC entry 3742 (class 0 OID 0)
+-- Dependencies: 232
+-- Name: COLUMN noticias_jugadores.resumen; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.noticias_jugadores.resumen IS 'Brief summary of the news (1-200 chars)';
+
+
+--
+-- TOC entry 3743 (class 0 OID 0)
+-- Dependencies: 232
+-- Name: COLUMN noticias_jugadores.designacion; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.noticias_jugadores.designacion IS 'Injury designation if applicable';
+
+
+--
+-- TOC entry 233 (class 1259 OID 25652)
+-- Name: noticias_jugadores_audit; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.noticias_jugadores_audit (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    noticia_id uuid NOT NULL,
+    usuario_id uuid NOT NULL,
+    accion character varying(50) NOT NULL,
+    campo_modificado character varying(50),
+    valor_anterior text,
+    valor_nuevo text,
+    timestamp_accion timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.noticias_jugadores_audit OWNER TO postgres;
+
+--
+-- TOC entry 255 (class 1255 OID 25653)
+-- Name: audit_noticias_jugadores_changes(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.audit_noticias_jugadores_changes() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_usuario_id UUID;
+BEGIN
+    -- Get the user who made the change (this would need to be set by the application)
+    -- For now, we'll use a default admin user or the user from the session
+    v_usuario_id := COALESCE(NEW.creado_por, (SELECT id FROM usuarios WHERE rol = 'admin' LIMIT 1));
+
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_nuevo)
+        VALUES (NEW.id, v_usuario_id, 'INSERT', 'all', 'New player news created');
+        RETURN NEW;
+    ELSIF TG_OP = 'UPDATE' THEN
+        -- Log changes to specific fields
+        IF OLD.texto <> NEW.texto THEN
+            INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior, valor_nuevo)
+            VALUES (NEW.id, v_usuario_id, 'UPDATE', 'texto', OLD.texto, NEW.texto);
+        END IF;
+        IF OLD.es_lesion <> NEW.es_lesion THEN
+            INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior, valor_nuevo)
+            VALUES (NEW.id, v_usuario_id, 'UPDATE', 'es_lesion', OLD.es_lesion::text, NEW.es_lesion::text);
+        END IF;
+        IF OLD.resumen IS DISTINCT FROM NEW.resumen THEN
+            INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior, valor_nuevo)
+            VALUES (NEW.id, v_usuario_id, 'UPDATE', 'resumen', OLD.resumen, NEW.resumen);
+        END IF;
+        IF OLD.designacion IS DISTINCT FROM NEW.designacion THEN
+            INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior, valor_nuevo)
+            VALUES (NEW.id, v_usuario_id, 'UPDATE', 'designacion', OLD.designacion::text, NEW.designacion::text);
+        END IF;
+        RETURN NEW;
+    ELSIF TG_OP = 'DELETE' THEN
+        INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior)
+        VALUES (OLD.id, v_usuario_id, 'DELETE', 'all', 'Player news deleted');
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END;
+$$;
+
+
+ALTER FUNCTION public.audit_noticias_jugadores_changes() OWNER TO postgres;
+
+--
+-- TOC entry 3564 (class 2606 OID 25654)
+-- Name: noticias_jugadores noticias_jugadores_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.noticias_jugadores
+    ADD CONSTRAINT noticias_jugadores_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3565 (class 2606 OID 25655)
+-- Name: noticias_jugadores_audit noticias_jugadores_audit_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.noticias_jugadores_audit
+    ADD CONSTRAINT noticias_jugadores_audit_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3582 (class 2620 OID 25656)
+-- Name: noticias_jugadores trigger_audit_noticias_jugadores; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trigger_audit_noticias_jugadores AFTER INSERT OR DELETE OR UPDATE ON public.noticias_jugadores FOR EACH ROW EXECUTE FUNCTION public.audit_noticias_jugadores_changes();
+
+
+--
+-- TOC entry 3583 (class 2620 OID 25657)
+-- Name: noticias_jugadores update_noticias_jugadores_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER update_noticias_jugadores_updated_at BEFORE UPDATE ON public.noticias_jugadores FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
+-- TOC entry 3566 (class 2606 OID 25658)
+-- Name: noticias_jugadores noticias_jugadores_creado_por_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.noticias_jugadores
+    ADD CONSTRAINT noticias_jugadores_creado_por_fkey FOREIGN KEY (creado_por) REFERENCES public.usuarios(id) ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 3567 (class 2606 OID 25659)
+-- Name: noticias_jugadores noticias_jugadores_jugador_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.noticias_jugadores
+    ADD CONSTRAINT noticias_jugadores_jugador_id_fkey FOREIGN KEY (jugador_id) REFERENCES public.jugadores(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3568 (class 2606 OID 25660)
+-- Name: noticias_jugadores_audit noticias_jugadores_audit_noticia_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.noticias_jugadores_audit
+    ADD CONSTRAINT noticias_jugadores_audit_noticia_id_fkey FOREIGN KEY (noticia_id) REFERENCES public.noticias_jugadores(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3569 (class 2606 OID 25661)
+-- Name: noticias_jugadores_audit noticias_jugadores_audit_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.noticias_jugadores_audit
+    ADD CONSTRAINT noticias_jugadores_audit_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE RESTRICT;
+
+
 -- Completed on 2025-11-08 21:08:37 CST
 
 --
