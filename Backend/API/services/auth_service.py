@@ -2,13 +2,10 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import HTTPException, status, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 import os
 from dotenv import load_dotenv
 import uuid
-
 load_dotenv()
 
 # Configuración JWT
@@ -18,9 +15,6 @@ ACCESS_TOKEN_EXPIRE_HOURS = 12  # 12 horas según requerimientos
 
 # Configuración de password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# Configuración de seguridad HTTP Bearer
-security = HTTPBearer()
 
 class AuthService:
     """Servicio de autenticación con JWT y gestión de sesiones"""
@@ -88,10 +82,7 @@ class AuthService:
             
             # Verificar tipo de token
             if payload.get("token_type") != "access":
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Tipo de token inválido"
-                )
+                raise ValueError("Tipo de token inválido")
             
             # Verificar si la sesión está activa
             session_id = payload.get("session_id")
@@ -103,10 +94,7 @@ class AuthService:
                 if last_activity and (now - last_activity) > timedelta(hours=12):
                     # Expirada por inactividad: invalidar y rechazar
                     self.invalidate_session(session_id)
-                    raise HTTPException(
-                        status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Sesión expirada por inactividad"
-                    )
+                    raise ValueError("Sesión expirada por inactividad")
                 # Todo bien: actualizar última actividad
                 session["last_activity"] = now
             # Si no hay session en memoria, aceptar token válido (modo stateless)
@@ -114,11 +102,7 @@ class AuthService:
             return payload
             
         except JWTError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token inválido",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+            raise ValueError("Token inválido")
     
     def invalidate_session(self, session_id: str):
         """Invalidar sesión específica"""
@@ -260,34 +244,3 @@ class AuthService:
 
 # Instancia global del servicio de autenticación
 auth_service = AuthService()
-
-# Dependency para obtener usuario actual
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Dependency para obtener el usuario actual desde el token JWT"""
-    token = credentials.credentials
-    payload = auth_service.verify_token(token)
-    
-    user_id = payload.get("sub")
-    if user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token inválido"
-        )
-    
-    return {"user_id": user_id, "session_id": payload.get("session_id")}
-
-# Modelos de respuesta para autenticación
-from pydantic import BaseModel
-
-class TokenResponse(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str = "bearer"
-    expires_in: int = ACCESS_TOKEN_EXPIRE_HOURS * 3600  # en segundos
-    user_id: str
-
-class LoginResponse(BaseModel):
-    user: dict
-    tokens: TokenResponse
-    message: str
-    redirect_url: str = "/profile"

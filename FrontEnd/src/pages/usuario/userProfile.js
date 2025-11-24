@@ -214,17 +214,17 @@ export default function UserProfile() {
         >
           <Field label="Alias">{user.alias}</Field>
           <Field label="Idioma">{user.idioma}</Field>
-          <Field label="Rol">{user.rol}</Field>
+          <Field label="Rol">{user?.rol}</Field>
           <Field label="Estado">{user.estado}</Field>
           <Field label="Creado">
             {new Date(user.creado_en).toLocaleString()}
           </Field>
         </div>
       </div>
-      {user.rol === "administrador" ? (
+      {user?.rol === "administrador" ? (
         <section style={{ marginTop: 24 }}>
           <h3 style={{ margin: "0 0 12px 0" }}>Equipos NFL</h3>
-          {user.rol === "administrador" && (
+          {user?.rol === "administrador" && (
             <div
               style={{
                 marginBottom: 22,

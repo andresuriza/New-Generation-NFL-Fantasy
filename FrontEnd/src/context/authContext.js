@@ -61,14 +61,14 @@ export function AuthProvider({ children }) {
   async function loginAsync({ correo, contrasena }) {
     try {
       const res = await apiLogin({ correo, contrasena })
-      // Backend returns: { access_token, refresh_token, token_type, usuario, expires_in, redirect_to }
-      const { access_token, refresh_token, usuario } = res
+      // Backend returns NEW format: { user, tokens: { access_token, refresh_token, ... }, message, redirect_url }
+      const { user, tokens } = res
       const s = createSession({
-        email: usuario?.correo,
-        userId: usuario?.id,
-        accessToken: access_token,
-        refreshToken: refresh_token,
-        user: usuario,
+        email: user?.correo,
+        userId: user?.id,
+        accessToken: tokens?.access_token,
+        refreshToken: tokens?.refresh_token,
+        user: user,
       })
       setSession(s)
       return { ok: true, data: res }

@@ -33,7 +33,7 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              {user.rol == "administrador" ? (
+              {user?.rol == "administrador" ? (
                 <NavLink className={linkClass} to="/season/create">
                   Temporada
                 </NavLink>

@@ -195,7 +195,7 @@ export default function AdminProfile() {
         >
           <Field label="Alias">{user.alias}</Field>
           <Field label="Idioma">{user.idioma}</Field>
-          <Field label="Rol">{user.rol}</Field>
+          <Field label="Rol">{user?.rol}</Field>
           <Field label="Estado">{user.estado}</Field>
           <Field label="Creado">
             {new Date(user.creado_en).toLocaleString()}

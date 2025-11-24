@@ -90,11 +90,3 @@ class UsuarioResponse(BaseModel):
 class UsuarioLogin(BaseModel):
     correo: EmailStr = Field(..., description="Correo electrónico")
     contrasena: str = Field(..., description="Contraseña")
-
-class LoginResponse(BaseModel):
-    access_token: str = Field(..., description="Token de acceso JWT")
-    refresh_token: str = Field(..., description="Token de actualización")
-    token_type: str = Field(default="bearer", description="Tipo de token")
-    usuario: UsuarioResponse = Field(..., description="Información del usuario")
-    expires_in: int = Field(..., description="Tiempo de expiración en segundos")
-    redirect_to: str = Field(default="/profile", description="URL de redirección después del login")

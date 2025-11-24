@@ -110,7 +110,7 @@ export default function LeagueJoin() {
 
       const res = await JoinLeague({
         liga_id: leagueID,
-        usuario_id: user.id,
+        usuario_id: user?.id,
         contrasena: password,
         alias: alias.trim(),
         nombre_equipo: teamName,

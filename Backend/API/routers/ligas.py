@@ -31,15 +31,22 @@ async def crear_liga(liga: LigaCreate, db: Session = Depends(get_db)):
     """
     Crear una nueva liga.
     """
-    liga_creada = liga_service.crear_liga(db, liga)
-    info_cupos = liga_service.obtener_info_cupos(db, liga_creada.id)
-    
-    return LigaCreateResponse(
-        liga=liga_creada,
-        cupos_disponibles=info_cupos["cupos_disponibles"],
-        equipos_max=info_cupos["equipos_max"],
-        miembros_actuales=info_cupos["miembros_actuales"]
-    )
+    try:
+        liga_creada = liga_service.crear_liga(db, liga)
+        info_cupos = liga_service.obtener_info_cupos(db, liga_creada.id)
+        
+        return LigaCreateResponse(
+            liga=liga_creada,
+            cupos_disponibles=info_cupos["cupos_disponibles"],
+            equipos_max=info_cupos["equipos_max"],
+            miembros_actuales=info_cupos["miembros_actuales"]
+        )
+    except ValueError as e:
+        # Password validation and other business logic errors
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
 
 @router.get("/", response_model=List[LigaResponse])
 async def listar_ligas(
@@ -106,6 +113,32 @@ async def unirse_liga(
     db: Session = Depends(get_db)
 ):
     """Unirse a una liga"""
-    return liga_service.unirse_liga(
-        db, liga_id, request.usuario_id, request.contrasena, request.alias, request.nombre_equipo
-    )
+    try:
+        return liga_service.unirse_liga(
+            db, liga_id, request.usuario_id, request.contrasena, request.alias, request.nombre_equipo
+        )
+    except ValueError as e:
+        error_msg = str(e)
+        
+        # Map specific business errors to appropriate HTTP status codes
+        if "contraseña" in error_msg.lower() and "incorrecta" in error_msg.lower():
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=error_msg
+            )
+        elif "no eres miembro" in error_msg.lower():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=error_msg
+            )
+        elif "comisionado no puede" in error_msg.lower():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=error_msg
+            )
+        else:
+            # General business logic errors
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_msg
+            )

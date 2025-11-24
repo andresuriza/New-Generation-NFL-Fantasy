@@ -109,7 +109,7 @@ export default function LeagueCreate() {
         puntajes_decimales: form.puntajes_decimales,
         nombre_equipo_comisionado: form.nombre_equipo_comisionado,
         temporada_id: temporada.id,
-        comisionado_id: user.id,
+        comisionado_id: user?.id,
       });
 
       setSubmitting(false);
