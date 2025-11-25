@@ -19,7 +19,10 @@ services:
       - ./API:/app/API # Mount for development
       - imgs-data:/app/imgs # Persistent storage for images
       - processed-files:/app/processed_files # Persistent storage for processed files
+      - stored-jsons:/app/stored-jsons # Persistent storage for bulk upload JSONs
+      - ./stored-jsons/processed_uploads:/app/processed_uploads # Para guardar JSONs
 
 volumes:
   imgs-data:
   processed-files:
+  stored-jsons:
