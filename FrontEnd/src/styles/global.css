@@ -734,3 +734,9 @@ fieldset legend {
   gap: 16px;
   padding: 24px;      /* padding interno de la card */
 }
+
+a.button,
+a.button:hover,
+a.button.active {
+  text-decoration: none;
+}
