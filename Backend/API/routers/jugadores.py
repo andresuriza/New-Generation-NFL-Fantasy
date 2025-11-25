@@ -5,6 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from uuid import UUID
+import os
+import json
+from datetime import datetime
 
 from models.jugador import (
     JugadorResponse, JugadorCreate, JugadorUpdate, JugadorConEquipo, 
@@ -56,21 +59,78 @@ async def crear_jugadores_bulk(
         HTTPException 400: Si hay errores en los datos
         HTTPException 500: Si hay errores en el procesamiento
     """
+    uploaded_file_path = None
+    try:
+        # Directorio en Docker
+        uploads_dir = "/app/processed_uploads"
+        os.makedirs(uploads_dir, exist_ok=True)
+
+        base_name = request.filename or 'jugadores'
+        base_name = os.path.splitext(base_name)[0]
+        timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+        temp_filename = f"{timestamp}_processing_{base_name}.json"
+        temp_path = os.path.join(uploads_dir, temp_filename)
+
+        print(f"Guardando a: {temp_path}")
+        
+        with open(temp_path, 'w', encoding='utf-8') as f:
+            json.dump(request.dict(), f, ensure_ascii=False, indent=2, default=str)
+        
+        uploaded_file_path = temp_path
+        
+    except Exception as e:
+        print(f"Error guardando archivo: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "No se pudo guardar el archivo entrante", "error": str(e)}
+        )
+
     result = jugador_service.crear_jugadores_bulk(db, request.jugadores, request.filename)
-    
+
+    try:
+        if uploaded_file_path and os.path.exists(uploaded_file_path):
+            status_label = 'success' if getattr(result, 'success', False) else 'error'
+            final_filename = f"{timestamp}_{status_label}_{base_name}.json"
+            final_path = os.path.join(os.path.dirname(uploaded_file_path), final_filename)
+            
+            print(f"[DEBUG] Renaming from: {uploaded_file_path}")
+            print(f"[DEBUG] Renaming to: {final_path}")
+            
+            # Overwrite if exists
+            if os.path.exists(final_path):
+                os.remove(final_path)
+            os.replace(uploaded_file_path, final_path)
+            
+            print(f"[DEBUG] File renamed successfully to: {final_path}")
+
+            # If the result object supports a `processed_file` attribute, set it
+            if hasattr(result, 'processed_file'):
+                try:
+                    setattr(result, 'processed_file', final_path)
+                except Exception:
+                    pass
+
+    except Exception as e:
+        print(f"[DEBUG] Error renaming file: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        pass
+
     # Si la operación no fue exitosa, retornar error 400
-    if not result.success:
+    if not getattr(result, 'success', False):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
                 "message": "Error en la creación masiva de jugadores",
-                "created_count": result.created_count,
-                "error_count": result.error_count,
-                "errors": result.errors,
-                "processed_file": result.processed_file
+                "created_count": getattr(result, 'created_count', 0),
+                "error_count": getattr(result, 'error_count', 0),
+                "errors": getattr(result, 'errors', []),
+                "processed_file": getattr(result, 'processed_file', None)
             }
         )
-    
+
     return result
 
 @router.get("/", response_model=List[JugadorResponse])
