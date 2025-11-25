@@ -17,6 +17,7 @@ from models.jugador import (
 from models.database_models import PosicionJugadorEnum
 from services.jugador_service import jugador_service
 from services.noticia_jugador_service import noticia_jugador_service
+from routers.auth import get_current_user
 from database import get_db
 
 router = APIRouter()
@@ -234,7 +235,7 @@ async def crear_noticia_jugador(
     jugador_id: UUID,
     noticia: NoticiaJugadorCreate,
     db: Session = Depends(get_db),
-    # current_user: Any = Depends(get_current_user)  # TODO: Implement authentication
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Crear una noticia para un jugador.
@@ -259,8 +260,8 @@ async def crear_noticia_jugador(
     • Suspendido (SUS): no elegible por sanción
     """
     try:
-        # TODO: Replace with actual user ID from authentication
-        author_id = UUID("d950d818-477e-44d9-b386-17807d818a44")  # Temporary admin ID (Administrator)
+        # Get authenticated user ID
+        author_id = UUID(current_user["user_id"])
         
         return noticia_jugador_service.crear_noticia(db, jugador_id, noticia, author_id)
     except Exception as e:
