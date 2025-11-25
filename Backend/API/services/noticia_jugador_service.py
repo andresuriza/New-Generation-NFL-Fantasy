@@ -13,6 +13,7 @@ from models.jugador import (
 from models.database_models import NoticiaJugadorDB
 from repositories.noticia_jugador_repository import noticia_jugador_repository
 from repositories.jugador_repository import jugador_repository
+from repositories.usuario_repository import usuario_repository
 from validators.jugador_validator import JugadorValidator
 from exceptions.business_exceptions import ValidationError
 
@@ -64,6 +65,15 @@ class NoticiaJugadorService:
         jugador = JugadorValidator.validate_exists(db, jugador_id)
         if not jugador.activo:
             raise ValidationError(f"El jugador con ID {jugador_id} no está activo")
+        
+        # Validate author exists and is administrator
+        author = usuario_repository.get(db, author_id)
+        if not author:
+            raise ValidationError(f"El usuario autor con ID {author_id} no existe")
+        if author.rol.value != "administrador":
+            raise ValidationError("Solo los administradores pueden crear noticias de jugadores")
+        if author.estado.value != "activa":
+            raise ValidationError("El usuario autor debe estar activo")
         
         # Validate injury news requirements
         if noticia_data.es_lesion:
