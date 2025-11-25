@@ -2,12 +2,10 @@
 -- PostgreSQL database dump
 --
 
-\restrict phIkbSHO7hwO8P5bDqVgPP9h3W7xupffFdH6kDJPMi5LD1wmC8gZ8umAcLbYsjY
-
 -- Dumped from database version 17.6 (Debian 17.6-0+deb13u1)
--- Dumped by pg_dump version 18.0
+-- Dumped by pg_dump version 18.1
 
--- Started on 2025-11-08 21:08:37 CST
+-- Started on 2025-11-25 10:08:45 CST
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -23,19 +21,14 @@ SET row_security = off;
 
 DROP DATABASE "XNFL-Fantasy-test";
 --
--- TOC entry 3732 (class 1262 OID 16623)
--- Name: XNFL-Fantasy; Type: DATABASE; Schema: -; Owner: postgres
+-- TOC entry 3762 (class 1262 OID 26188)
+-- Name: XNFL-Fantasy-test; Type: DATABASE; Schema: -; Owner: postgres
 --
 
 CREATE DATABASE "XNFL-Fantasy-test" WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'C.UTF-8';
 
 
 ALTER DATABASE "XNFL-Fantasy-test" OWNER TO postgres;
-
-\unrestrict phIkbSHO7hwO8P5bDqVgPP9h3W7xupffFdH6kDJPMi5LD1wmC8gZ8umAcLbYsjY
-\encoding SQL_ASCII
-\connect -reuse-previous=on "dbname='XNFL-Fantasy-test'"
-\restrict phIkbSHO7hwO8P5bDqVgPP9h3W7xupffFdH6kDJPMi5LD1wmC8gZ8umAcLbYsjY
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -50,7 +43,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 3 (class 3079 OID 16944)
+-- TOC entry 2 (class 3079 OID 26189)
 -- Name: citext; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -58,8 +51,8 @@ CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
 
 --
--- TOC entry 3733 (class 0 OID 0)
--- Dependencies: 3
+-- TOC entry 3763 (class 0 OID 0)
+-- Dependencies: 2
 -- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: 
 --
 
@@ -67,7 +60,7 @@ COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings
 
 
 --
--- TOC entry 2 (class 3079 OID 16907)
+-- TOC entry 3 (class 3079 OID 26294)
 -- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -75,8 +68,8 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 
 
 --
--- TOC entry 3734 (class 0 OID 0)
--- Dependencies: 2
+-- TOC entry 3764 (class 0 OID 0)
+-- Dependencies: 3
 -- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: 
 --
 
@@ -84,7 +77,7 @@ COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 
 
 --
--- TOC entry 4 (class 3079 OID 25583)
+-- TOC entry 4 (class 3079 OID 26331)
 -- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -92,7 +85,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 
 
 --
--- TOC entry 3735 (class 0 OID 0)
+-- TOC entry 3765 (class 0 OID 0)
 -- Dependencies: 4
 -- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: 
 --
@@ -101,7 +94,33 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 
 --
--- TOC entry 980 (class 1247 OID 17317)
+-- TOC entry 1013 (class 1247 OID 26601)
+-- Name: designacion_lesion; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.designacion_lesion AS ENUM (
+    'Healthy',
+    'Questionable',
+    'Doubtful',
+    'Out',
+    'Injured_Reserve',
+    'Physically_Unable_to_Perform',
+    'Did_Not_Participate',
+    'D',
+    'Q',
+    'P',
+    'FP',
+    'IR',
+    'PUP',
+    'SUS',
+    'O'
+);
+
+
+ALTER TYPE public.designacion_lesion OWNER TO postgres;
+
+--
+-- TOC entry 959 (class 1247 OID 26343)
 -- Name: estado_liga; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -114,7 +133,7 @@ CREATE TYPE public.estado_liga AS ENUM (
 ALTER TYPE public.estado_liga OWNER TO postgres;
 
 --
--- TOC entry 957 (class 1247 OID 16900)
+-- TOC entry 962 (class 1247 OID 26348)
 -- Name: estado_usuario; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -128,7 +147,7 @@ CREATE TYPE public.estado_usuario AS ENUM (
 ALTER TYPE public.estado_usuario OWNER TO postgres;
 
 --
--- TOC entry 974 (class 1247 OID 17112)
+-- TOC entry 965 (class 1247 OID 26356)
 -- Name: estadousuarioenum; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -142,7 +161,7 @@ CREATE TYPE public.estadousuarioenum AS ENUM (
 ALTER TYPE public.estadousuarioenum OWNER TO postgres;
 
 --
--- TOC entry 998 (class 1247 OID 25545)
+-- TOC entry 968 (class 1247 OID 26364)
 -- Name: posicion_jugador; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -160,7 +179,7 @@ CREATE TYPE public.posicion_jugador AS ENUM (
 ALTER TYPE public.posicion_jugador OWNER TO postgres;
 
 --
--- TOC entry 989 (class 1247 OID 17399)
+-- TOC entry 971 (class 1247 OID 26380)
 -- Name: rol_membresia; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -173,7 +192,7 @@ CREATE TYPE public.rol_membresia AS ENUM (
 ALTER TYPE public.rol_membresia OWNER TO postgres;
 
 --
--- TOC entry 954 (class 1247 OID 16895)
+-- TOC entry 974 (class 1247 OID 26386)
 -- Name: rol_usuario; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -186,7 +205,7 @@ CREATE TYPE public.rol_usuario AS ENUM (
 ALTER TYPE public.rol_usuario OWNER TO postgres;
 
 --
--- TOC entry 971 (class 1247 OID 17107)
+-- TOC entry 977 (class 1247 OID 26392)
 -- Name: rolusuarioenum; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -199,7 +218,7 @@ CREATE TYPE public.rolusuarioenum AS ENUM (
 ALTER TYPE public.rolusuarioenum OWNER TO postgres;
 
 --
--- TOC entry 244 (class 1255 OID 25645)
+-- TOC entry 263 (class 1255 OID 26397)
 -- Name: audit_equipos_fantasy_changes(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -266,7 +285,60 @@ $$;
 ALTER FUNCTION public.audit_equipos_fantasy_changes() OWNER TO postgres;
 
 --
--- TOC entry 312 (class 1255 OID 17457)
+-- TOC entry 320 (class 1255 OID 26632)
+-- Name: audit_noticias_jugadores_changes(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.audit_noticias_jugadores_changes() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            DECLARE
+                v_usuario_id UUID;
+            BEGIN
+                IF TG_OP = 'DELETE' THEN
+                    -- For DELETE, use OLD record data and insert audit before deletion
+                    v_usuario_id := COALESCE(OLD.creado_por, (SELECT id FROM usuarios WHERE rol = 'administrador' LIMIT 1));
+                    INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior)
+                    VALUES (OLD.id, v_usuario_id, 'DELETE', 'all', 'Player news deleted');
+                    RETURN OLD;
+                ELSIF TG_OP = 'INSERT' THEN
+                    -- Get the user who made the change
+                    v_usuario_id := COALESCE(NEW.creado_por, (SELECT id FROM usuarios WHERE rol = 'administrador' LIMIT 1));
+                    INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_nuevo)
+                    VALUES (NEW.id, v_usuario_id, 'INSERT', 'all', 'New player news created');
+                    RETURN NEW;
+                ELSIF TG_OP = 'UPDATE' THEN
+                    -- Get the user who made the change
+                    v_usuario_id := COALESCE(NEW.creado_por, (SELECT id FROM usuarios WHERE rol = 'administrador' LIMIT 1));
+                    
+                    -- Log changes to specific fields
+                    IF OLD.texto <> NEW.texto THEN
+                        INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior, valor_nuevo)
+                        VALUES (NEW.id, v_usuario_id, 'UPDATE', 'texto', OLD.texto, NEW.texto);
+                    END IF;
+                    IF OLD.es_lesion <> NEW.es_lesion THEN
+                        INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior, valor_nuevo)
+                        VALUES (NEW.id, v_usuario_id, 'UPDATE', 'es_lesion', OLD.es_lesion::text, NEW.es_lesion::text);
+                    END IF;
+                    IF OLD.resumen IS DISTINCT FROM NEW.resumen THEN
+                        INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior, valor_nuevo)
+                        VALUES (NEW.id, v_usuario_id, 'UPDATE', 'resumen', OLD.resumen, NEW.resumen);
+                    END IF;
+                    IF OLD.designacion IS DISTINCT FROM NEW.designacion THEN
+                        INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior, valor_nuevo)
+                        VALUES (NEW.id, v_usuario_id, 'UPDATE', 'designacion', OLD.designacion::text, NEW.designacion::text);
+                    END IF;
+                    RETURN NEW;
+                END IF;
+                RETURN NULL;
+            END;
+            $$;
+
+
+ALTER FUNCTION public.audit_noticias_jugadores_changes() OWNER TO postgres;
+
+--
+-- TOC entry 285 (class 1255 OID 26398)
 -- Name: trg_liga_insert_add_commissioner(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -301,7 +373,7 @@ $$;
 ALTER FUNCTION public.trg_liga_insert_add_commissioner() OWNER TO postgres;
 
 --
--- TOC entry 254 (class 1255 OID 17352)
+-- TOC entry 323 (class 1255 OID 26399)
 -- Name: trg_set_actualizado_liga(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -317,7 +389,7 @@ END$$;
 ALTER FUNCTION public.trg_set_actualizado_liga() OWNER TO postgres;
 
 --
--- TOC entry 232 (class 1255 OID 25643)
+-- TOC entry 251 (class 1255 OID 26400)
 -- Name: update_updated_at_column(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -338,7 +410,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- TOC entry 221 (class 1259 OID 17068)
+-- TOC entry 220 (class 1259 OID 26401)
 -- Name: equipos; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -356,7 +428,7 @@ CREATE TABLE public.equipos (
 ALTER TABLE public.equipos OWNER TO postgres;
 
 --
--- TOC entry 229 (class 1259 OID 25594)
+-- TOC entry 221 (class 1259 OID 26411)
 -- Name: equipos_fantasy; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -377,8 +449,8 @@ CREATE TABLE public.equipos_fantasy (
 ALTER TABLE public.equipos_fantasy OWNER TO postgres;
 
 --
--- TOC entry 3736 (class 0 OID 0)
--- Dependencies: 229
+-- TOC entry 3766 (class 0 OID 0)
+-- Dependencies: 221
 -- Name: COLUMN equipos_fantasy.nombre; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -386,8 +458,8 @@ COMMENT ON COLUMN public.equipos_fantasy.nombre IS 'Fantasy team name (1-100 cha
 
 
 --
--- TOC entry 3737 (class 0 OID 0)
--- Dependencies: 229
+-- TOC entry 3767 (class 0 OID 0)
+-- Dependencies: 221
 -- Name: COLUMN equipos_fantasy.imagen_url; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -395,8 +467,8 @@ COMMENT ON COLUMN public.equipos_fantasy.imagen_url IS 'Team image URL (JPEG/PNG
 
 
 --
--- TOC entry 3738 (class 0 OID 0)
--- Dependencies: 229
+-- TOC entry 3768 (class 0 OID 0)
+-- Dependencies: 221
 -- Name: COLUMN equipos_fantasy.thumbnail_url; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -404,7 +476,7 @@ COMMENT ON COLUMN public.equipos_fantasy.thumbnail_url IS 'Auto-generated thumbn
 
 
 --
--- TOC entry 230 (class 1259 OID 25618)
+-- TOC entry 222 (class 1259 OID 26421)
 -- Name: equipos_fantasy_audit; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -423,7 +495,7 @@ CREATE TABLE public.equipos_fantasy_audit (
 ALTER TABLE public.equipos_fantasy_audit OWNER TO postgres;
 
 --
--- TOC entry 228 (class 1259 OID 25559)
+-- TOC entry 223 (class 1259 OID 26428)
 -- Name: jugadores; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -443,8 +515,8 @@ CREATE TABLE public.jugadores (
 ALTER TABLE public.jugadores OWNER TO postgres;
 
 --
--- TOC entry 3739 (class 0 OID 0)
--- Dependencies: 228
+-- TOC entry 3769 (class 0 OID 0)
+-- Dependencies: 223
 -- Name: TABLE jugadores; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -452,7 +524,7 @@ COMMENT ON TABLE public.jugadores IS 'NFL players assigned to real NFL teams';
 
 
 --
--- TOC entry 224 (class 1259 OID 17354)
+-- TOC entry 224 (class 1259 OID 26437)
 -- Name: ligas; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -483,7 +555,7 @@ CREATE TABLE public.ligas (
 ALTER TABLE public.ligas OWNER TO postgres;
 
 --
--- TOC entry 226 (class 1259 OID 17403)
+-- TOC entry 225 (class 1259 OID 26454)
 -- Name: ligas_miembros; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -500,7 +572,7 @@ CREATE TABLE public.ligas_miembros (
 ALTER TABLE public.ligas_miembros OWNER TO postgres;
 
 --
--- TOC entry 227 (class 1259 OID 17424)
+-- TOC entry 226 (class 1259 OID 26460)
 -- Name: ligas_miembros_aud; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -517,7 +589,7 @@ CREATE TABLE public.ligas_miembros_aud (
 ALTER TABLE public.ligas_miembros_aud OWNER TO postgres;
 
 --
--- TOC entry 222 (class 1259 OID 17091)
+-- TOC entry 227 (class 1259 OID 26468)
 -- Name: media; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -532,7 +604,92 @@ CREATE TABLE public.media (
 ALTER TABLE public.media OWNER TO postgres;
 
 --
--- TOC entry 223 (class 1259 OID 17304)
+-- TOC entry 231 (class 1259 OID 26615)
+-- Name: noticias_jugadores; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.noticias_jugadores (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    jugador_id uuid NOT NULL,
+    texto text NOT NULL,
+    es_lesion boolean DEFAULT false NOT NULL,
+    resumen character varying(200),
+    designacion public.designacion_lesion,
+    creado_en timestamp with time zone DEFAULT now() NOT NULL,
+    creado_por uuid NOT NULL,
+    CONSTRAINT ck_resumen_len CHECK (((length((resumen)::text) >= 1) AND (length((resumen)::text) <= 200))),
+    CONSTRAINT ck_texto_len CHECK (((length(texto) >= 1) AND (length(texto) <= 2000)))
+);
+
+
+ALTER TABLE public.noticias_jugadores OWNER TO postgres;
+
+--
+-- TOC entry 3770 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: TABLE noticias_jugadores; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.noticias_jugadores IS 'Player news and injury updates';
+
+
+--
+-- TOC entry 3771 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: COLUMN noticias_jugadores.texto; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.noticias_jugadores.texto IS 'News text content (1-2000 chars)';
+
+
+--
+-- TOC entry 3772 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: COLUMN noticias_jugadores.es_lesion; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.noticias_jugadores.es_lesion IS 'Whether this news item is injury-related';
+
+
+--
+-- TOC entry 3773 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: COLUMN noticias_jugadores.resumen; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.noticias_jugadores.resumen IS 'Brief summary of the news (1-200 chars)';
+
+
+--
+-- TOC entry 3774 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: COLUMN noticias_jugadores.designacion; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.noticias_jugadores.designacion IS 'Injury designation if applicable';
+
+
+--
+-- TOC entry 232 (class 1259 OID 26625)
+-- Name: noticias_jugadores_audit; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.noticias_jugadores_audit (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    noticia_id uuid NOT NULL,
+    usuario_id uuid NOT NULL,
+    accion character varying(50) NOT NULL,
+    campo_modificado character varying(50),
+    valor_anterior text,
+    valor_nuevo text,
+    timestamp_accion timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.noticias_jugadores_audit OWNER TO postgres;
+
+--
+-- TOC entry 228 (class 1259 OID 26475)
 -- Name: temporadas; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -551,7 +708,7 @@ CREATE TABLE public.temporadas (
 ALTER TABLE public.temporadas OWNER TO postgres;
 
 --
--- TOC entry 225 (class 1259 OID 17387)
+-- TOC entry 229 (class 1259 OID 26482)
 -- Name: temporadas_semanas; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -567,7 +724,7 @@ CREATE TABLE public.temporadas_semanas (
 ALTER TABLE public.temporadas_semanas OWNER TO postgres;
 
 --
--- TOC entry 220 (class 1259 OID 17049)
+-- TOC entry 230 (class 1259 OID 26486)
 -- Name: usuarios; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -593,7 +750,7 @@ CREATE TABLE public.usuarios (
 ALTER TABLE public.usuarios OWNER TO postgres;
 
 --
--- TOC entry 3564 (class 2606 OID 25626)
+-- TOC entry 3555 (class 2606 OID 26503)
 -- Name: equipos_fantasy_audit equipos_fantasy_audit_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -602,7 +759,7 @@ ALTER TABLE ONLY public.equipos_fantasy_audit
 
 
 --
--- TOC entry 3557 (class 2606 OID 25605)
+-- TOC entry 3548 (class 2606 OID 26505)
 -- Name: equipos_fantasy equipos_fantasy_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -611,7 +768,7 @@ ALTER TABLE ONLY public.equipos_fantasy
 
 
 --
--- TOC entry 3553 (class 2606 OID 25569)
+-- TOC entry 3560 (class 2606 OID 26507)
 -- Name: jugadores jugadores_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -620,7 +777,7 @@ ALTER TABLE ONLY public.jugadores
 
 
 --
--- TOC entry 3551 (class 2606 OID 17433)
+-- TOC entry 3573 (class 2606 OID 26509)
 -- Name: ligas_miembros_aud ligas_miembros_aud_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -629,7 +786,7 @@ ALTER TABLE ONLY public.ligas_miembros_aud
 
 
 --
--- TOC entry 3540 (class 2606 OID 17374)
+-- TOC entry 3564 (class 2606 OID 26511)
 -- Name: ligas ligas_nombre_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -638,7 +795,7 @@ ALTER TABLE ONLY public.ligas
 
 
 --
--- TOC entry 3542 (class 2606 OID 17372)
+-- TOC entry 3566 (class 2606 OID 26513)
 -- Name: ligas ligas_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -647,7 +804,7 @@ ALTER TABLE ONLY public.ligas
 
 
 --
--- TOC entry 3533 (class 2606 OID 17099)
+-- TOC entry 3575 (class 2606 OID 26515)
 -- Name: media media_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -656,441 +813,7 @@ ALTER TABLE ONLY public.media
 
 
 --
--- TOC entry 3546 (class 2606 OID 17410)
--- Name: ligas_miembros pk_liga_miembro; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.ligas_miembros
-    ADD CONSTRAINT pk_liga_miembro PRIMARY KEY (liga_id, usuario_id);
-
-
---
--- TOC entry 3544 (class 2606 OID 17392)
--- Name: temporadas_semanas pk_temp_sem; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.temporadas_semanas
-    ADD CONSTRAINT pk_temp_sem PRIMARY KEY (temporada_id, numero);
-
-
---
--- TOC entry 3535 (class 2606 OID 17313)
--- Name: temporadas temporadas_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.temporadas
-    ADD CONSTRAINT temporadas_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 3548 (class 2606 OID 17412)
--- Name: ligas_miembros uq_alias_por_liga; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.ligas_miembros
-    ADD CONSTRAINT uq_alias_por_liga UNIQUE (liga_id, alias);
-
-
---
--- TOC entry 3555 (class 2606 OID 25571)
--- Name: jugadores uq_jugador_por_equipo; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.jugadores
-    ADD CONSTRAINT uq_jugador_por_equipo UNIQUE (equipo_id, nombre);
-
-
---
--- TOC entry 3562 (class 2606 OID 25607)
--- Name: equipos_fantasy uq_nombre_equipo_fantasy_por_liga; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.equipos_fantasy
-    ADD CONSTRAINT uq_nombre_equipo_fantasy_por_liga UNIQUE (liga_id, nombre);
-
-
---
--- TOC entry 3538 (class 2606 OID 17315)
--- Name: temporadas uq_temporadas_nombre; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.temporadas
-    ADD CONSTRAINT uq_temporadas_nombre UNIQUE (nombre);
-
-
---
--- TOC entry 3529 (class 2606 OID 17067)
--- Name: usuarios usuarios_correo_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.usuarios
-    ADD CONSTRAINT usuarios_correo_key UNIQUE (correo);
-
-
---
--- TOC entry 3531 (class 2606 OID 17065)
--- Name: usuarios usuarios_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.usuarios
-    ADD CONSTRAINT usuarios_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 3565 (class 1259 OID 25640)
--- Name: idx_equipos_fantasy_audit_equipo; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_equipos_fantasy_audit_equipo ON public.equipos_fantasy_audit USING btree (equipo_fantasy_id);
-
-
---
--- TOC entry 3566 (class 1259 OID 25642)
--- Name: idx_equipos_fantasy_audit_timestamp; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_equipos_fantasy_audit_timestamp ON public.equipos_fantasy_audit USING btree (timestamp_accion);
-
-
---
--- TOC entry 3567 (class 1259 OID 25641)
--- Name: idx_equipos_fantasy_audit_usuario; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_equipos_fantasy_audit_usuario ON public.equipos_fantasy_audit USING btree (usuario_id);
-
-
---
--- TOC entry 3558 (class 1259 OID 25637)
--- Name: idx_equipos_fantasy_liga; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_equipos_fantasy_liga ON public.equipos_fantasy USING btree (liga_id);
-
-
---
--- TOC entry 3559 (class 1259 OID 25639)
--- Name: idx_equipos_fantasy_nombre; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_equipos_fantasy_nombre ON public.equipos_fantasy USING btree (nombre);
-
-
---
--- TOC entry 3560 (class 1259 OID 25638)
--- Name: idx_equipos_fantasy_usuario; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_equipos_fantasy_usuario ON public.equipos_fantasy USING btree (usuario_id);
-
-
---
--- TOC entry 3536 (class 1259 OID 17386)
--- Name: uq_temporada_actual; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX uq_temporada_actual ON public.temporadas USING btree (es_actual) WHERE (es_actual = true);
-
-
---
--- TOC entry 3549 (class 1259 OID 17423)
--- Name: uq_unico_comisionado_por_liga; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX uq_unico_comisionado_por_liga ON public.ligas_miembros USING btree (liga_id) WHERE (rol = 'Comisionado'::public.rol_membresia);
-
-
---
--- TOC entry 3579 (class 2620 OID 17385)
--- Name: ligas trg_ligas_actualizado; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER trg_ligas_actualizado BEFORE UPDATE ON public.ligas FOR EACH ROW EXECUTE FUNCTION public.trg_set_actualizado_liga();
-
-
---
--- TOC entry 3580 (class 2620 OID 25646)
--- Name: equipos_fantasy trigger_audit_equipos_fantasy; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER trigger_audit_equipos_fantasy AFTER INSERT OR DELETE OR UPDATE ON public.equipos_fantasy FOR EACH ROW EXECUTE FUNCTION public.audit_equipos_fantasy_changes();
-
-
---
--- TOC entry 3581 (class 2620 OID 25644)
--- Name: equipos_fantasy update_equipos_fantasy_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER update_equipos_fantasy_updated_at BEFORE UPDATE ON public.equipos_fantasy FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-
---
--- TOC entry 3577 (class 2606 OID 25627)
--- Name: equipos_fantasy_audit equipos_fantasy_audit_equipo_fantasy_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.equipos_fantasy_audit
-    ADD CONSTRAINT equipos_fantasy_audit_equipo_fantasy_id_fkey FOREIGN KEY (equipo_fantasy_id) REFERENCES public.equipos_fantasy(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3578 (class 2606 OID 25632)
--- Name: equipos_fantasy_audit equipos_fantasy_audit_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.equipos_fantasy_audit
-    ADD CONSTRAINT equipos_fantasy_audit_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE RESTRICT;
-
-
---
--- TOC entry 3575 (class 2606 OID 25608)
--- Name: equipos_fantasy equipos_fantasy_liga_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.equipos_fantasy
-    ADD CONSTRAINT equipos_fantasy_liga_id_fkey FOREIGN KEY (liga_id) REFERENCES public.ligas(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3576 (class 2606 OID 25613)
--- Name: equipos_fantasy equipos_fantasy_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.equipos_fantasy
-    ADD CONSTRAINT equipos_fantasy_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE RESTRICT;
-
-
---
--- TOC entry 3568 (class 2606 OID 17380)
--- Name: ligas ligas_comisionado_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.ligas
-    ADD CONSTRAINT ligas_comisionado_id_fkey FOREIGN KEY (comisionado_id) REFERENCES public.usuarios(id) ON DELETE RESTRICT;
-
-
---
--- TOC entry 3573 (class 2606 OID 17434)
--- Name: ligas_miembros_aud ligas_miembros_aud_liga_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.ligas_miembros_aud
-    ADD CONSTRAINT ligas_miembros_aud_liga_id_fkey FOREIGN KEY (liga_id) REFERENCES public.ligas(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3574 (class 2606 OID 17439)
--- Name: ligas_miembros_aud ligas_miembros_aud_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.ligas_miembros_aud
-    ADD CONSTRAINT ligas_miembros_aud_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3571 (class 2606 OID 17413)
--- Name: ligas_miembros ligas_miembros_liga_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.ligas_miembros
-    ADD CONSTRAINT ligas_miembros_liga_id_fkey FOREIGN KEY (liga_id) REFERENCES public.ligas(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3572 (class 2606 OID 17418)
--- Name: ligas_miembros ligas_miembros_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.ligas_miembros
-    ADD CONSTRAINT ligas_miembros_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3569 (class 2606 OID 17375)
--- Name: ligas ligas_temporada_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.ligas
-    ADD CONSTRAINT ligas_temporada_id_fkey FOREIGN KEY (temporada_id) REFERENCES public.temporadas(id) ON DELETE RESTRICT;
-
-
---
--- TOC entry 3570 (class 2606 OID 17393)
--- Name: temporadas_semanas temporadas_semanas_temporada_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.temporadas_semanas
-    ADD CONSTRAINT temporadas_semanas_temporada_id_fkey FOREIGN KEY (temporada_id) REFERENCES public.temporadas(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 231 (class 1259 OID 25650)
--- Name: designacion_lesion; Type: TYPE; Schema: public; Owner: postgres
---
-
-CREATE TYPE public.designacion_lesion AS ENUM (
-    'O',
-    'D', 
-    'Q',
-    'P',
-    'FP',
-    'IR',
-    'PUP',
-    'SUS'
-);
-
-
-ALTER TYPE public.designacion_lesion OWNER TO postgres;
-
---
--- TOC entry 232 (class 1259 OID 25651)
--- Name: noticias_jugadores; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.noticias_jugadores (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    jugador_id uuid NOT NULL,
-    texto text NOT NULL,
-    es_lesion boolean DEFAULT false NOT NULL,
-    resumen character varying(200),
-    designacion public.designacion_lesion,
-    creado_en timestamp with time zone DEFAULT now() NOT NULL,
-    creado_por uuid NOT NULL,
-    CONSTRAINT ck_resumen_len CHECK (((length((resumen)::text) >= 1) AND (length((resumen)::text) <= 200))),
-    CONSTRAINT ck_texto_len CHECK (((length(texto) >= 1) AND (length(texto) <= 2000)))
-);
-
-
-ALTER TABLE public.noticias_jugadores OWNER TO postgres;
-
---
--- TOC entry 3739 (class 0 OID 0)
--- Dependencies: 232
--- Name: TABLE noticias_jugadores; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON TABLE public.noticias_jugadores IS 'Player news and injury updates';
-
-
---
--- TOC entry 3740 (class 0 OID 0)
--- Dependencies: 232
--- Name: COLUMN noticias_jugadores.texto; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.noticias_jugadores.texto IS 'News text content (1-2000 chars)';
-
-
---
--- TOC entry 3741 (class 0 OID 0)
--- Dependencies: 232
--- Name: COLUMN noticias_jugadores.es_lesion; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.noticias_jugadores.es_lesion IS 'Whether this news item is injury-related';
-
-
---
--- TOC entry 3742 (class 0 OID 0)
--- Dependencies: 232
--- Name: COLUMN noticias_jugadores.resumen; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.noticias_jugadores.resumen IS 'Brief summary of the news (1-200 chars)';
-
-
---
--- TOC entry 3743 (class 0 OID 0)
--- Dependencies: 232
--- Name: COLUMN noticias_jugadores.designacion; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.noticias_jugadores.designacion IS 'Injury designation if applicable';
-
-
---
--- TOC entry 233 (class 1259 OID 25652)
--- Name: noticias_jugadores_audit; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.noticias_jugadores_audit (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    noticia_id uuid NOT NULL,
-    usuario_id uuid NOT NULL,
-    accion character varying(50) NOT NULL,
-    campo_modificado character varying(50),
-    valor_anterior text,
-    valor_nuevo text,
-    timestamp_accion timestamp with time zone DEFAULT now()
-);
-
-
-ALTER TABLE public.noticias_jugadores_audit OWNER TO postgres;
-
---
--- TOC entry 255 (class 1255 OID 25653)
--- Name: audit_noticias_jugadores_changes(); Type: FUNCTION; Schema: public; Owner: postgres
---
-
-CREATE FUNCTION public.audit_noticias_jugadores_changes() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-DECLARE
-    v_usuario_id UUID;
-BEGIN
-    IF TG_OP = 'DELETE' THEN
-        -- For DELETE, use OLD record data and insert audit before deletion
-        v_usuario_id := COALESCE(OLD.creado_por, (SELECT id FROM usuarios WHERE rol = 'administrador' LIMIT 1));
-        INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior)
-        VALUES (OLD.id, v_usuario_id, 'DELETE', 'all', 'Player news deleted');
-        RETURN OLD;
-    ELSIF TG_OP = 'INSERT' THEN
-        -- Get the user who made the change
-        v_usuario_id := COALESCE(NEW.creado_por, (SELECT id FROM usuarios WHERE rol = 'administrador' LIMIT 1));
-        INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_nuevo)
-        VALUES (NEW.id, v_usuario_id, 'INSERT', 'all', 'New player news created');
-        RETURN NEW;
-    ELSIF TG_OP = 'UPDATE' THEN
-        -- Get the user who made the change
-        v_usuario_id := COALESCE(NEW.creado_por, (SELECT id FROM usuarios WHERE rol = 'administrador' LIMIT 1));
-        
-        -- Log changes to specific fields
-        IF OLD.texto <> NEW.texto THEN
-            INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior, valor_nuevo)
-            VALUES (NEW.id, v_usuario_id, 'UPDATE', 'texto', OLD.texto, NEW.texto);
-        END IF;
-        IF OLD.es_lesion <> NEW.es_lesion THEN
-            INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior, valor_nuevo)
-            VALUES (NEW.id, v_usuario_id, 'UPDATE', 'es_lesion', OLD.es_lesion::text, NEW.es_lesion::text);
-        END IF;
-        IF OLD.resumen IS DISTINCT FROM NEW.resumen THEN
-            INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior, valor_nuevo)
-            VALUES (NEW.id, v_usuario_id, 'UPDATE', 'resumen', OLD.resumen, NEW.resumen);
-        END IF;
-        IF OLD.designacion IS DISTINCT FROM NEW.designacion THEN
-            INSERT INTO noticias_jugadores_audit (noticia_id, usuario_id, accion, campo_modificado, valor_anterior, valor_nuevo)
-            VALUES (NEW.id, v_usuario_id, 'UPDATE', 'designacion', OLD.designacion::text, NEW.designacion::text);
-        END IF;
-        RETURN NEW;
-    END IF;
-    RETURN NULL;
-END;
-$$;
-
-
-ALTER FUNCTION public.audit_noticias_jugadores_changes() OWNER TO postgres;
-
---
--- TOC entry 3564 (class 2606 OID 25654)
--- Name: noticias_jugadores noticias_jugadores_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.noticias_jugadores
-    ADD CONSTRAINT noticias_jugadores_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 3565 (class 2606 OID 25655)
+-- TOC entry 3590 (class 2606 OID 26636)
 -- Name: noticias_jugadores_audit noticias_jugadores_audit_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1099,14 +822,185 @@ ALTER TABLE ONLY public.noticias_jugadores_audit
 
 
 --
--- TOC entry 3582 (class 2620 OID 25656)
+-- TOC entry 3588 (class 2606 OID 26634)
+-- Name: noticias_jugadores noticias_jugadores_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.noticias_jugadores
+    ADD CONSTRAINT noticias_jugadores_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3568 (class 2606 OID 26517)
+-- Name: ligas_miembros pk_liga_miembro; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ligas_miembros
+    ADD CONSTRAINT pk_liga_miembro PRIMARY KEY (liga_id, usuario_id);
+
+
+--
+-- TOC entry 3582 (class 2606 OID 26519)
+-- Name: temporadas_semanas pk_temp_sem; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.temporadas_semanas
+    ADD CONSTRAINT pk_temp_sem PRIMARY KEY (temporada_id, numero);
+
+
+--
+-- TOC entry 3577 (class 2606 OID 26521)
+-- Name: temporadas temporadas_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.temporadas
+    ADD CONSTRAINT temporadas_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3570 (class 2606 OID 26523)
+-- Name: ligas_miembros uq_alias_por_liga; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ligas_miembros
+    ADD CONSTRAINT uq_alias_por_liga UNIQUE (liga_id, alias);
+
+
+--
+-- TOC entry 3562 (class 2606 OID 26525)
+-- Name: jugadores uq_jugador_por_equipo; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.jugadores
+    ADD CONSTRAINT uq_jugador_por_equipo UNIQUE (equipo_id, nombre);
+
+
+--
+-- TOC entry 3553 (class 2606 OID 26527)
+-- Name: equipos_fantasy uq_nombre_equipo_fantasy_por_liga; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.equipos_fantasy
+    ADD CONSTRAINT uq_nombre_equipo_fantasy_por_liga UNIQUE (liga_id, nombre);
+
+
+--
+-- TOC entry 3580 (class 2606 OID 26529)
+-- Name: temporadas uq_temporadas_nombre; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.temporadas
+    ADD CONSTRAINT uq_temporadas_nombre UNIQUE (nombre);
+
+
+--
+-- TOC entry 3584 (class 2606 OID 26531)
+-- Name: usuarios usuarios_correo_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuarios
+    ADD CONSTRAINT usuarios_correo_key UNIQUE (correo);
+
+
+--
+-- TOC entry 3586 (class 2606 OID 26533)
+-- Name: usuarios usuarios_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuarios
+    ADD CONSTRAINT usuarios_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3556 (class 1259 OID 26534)
+-- Name: idx_equipos_fantasy_audit_equipo; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_equipos_fantasy_audit_equipo ON public.equipos_fantasy_audit USING btree (equipo_fantasy_id);
+
+
+--
+-- TOC entry 3557 (class 1259 OID 26535)
+-- Name: idx_equipos_fantasy_audit_timestamp; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_equipos_fantasy_audit_timestamp ON public.equipos_fantasy_audit USING btree (timestamp_accion);
+
+
+--
+-- TOC entry 3558 (class 1259 OID 26536)
+-- Name: idx_equipos_fantasy_audit_usuario; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_equipos_fantasy_audit_usuario ON public.equipos_fantasy_audit USING btree (usuario_id);
+
+
+--
+-- TOC entry 3549 (class 1259 OID 26537)
+-- Name: idx_equipos_fantasy_liga; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_equipos_fantasy_liga ON public.equipos_fantasy USING btree (liga_id);
+
+
+--
+-- TOC entry 3550 (class 1259 OID 26538)
+-- Name: idx_equipos_fantasy_nombre; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_equipos_fantasy_nombre ON public.equipos_fantasy USING btree (nombre);
+
+
+--
+-- TOC entry 3551 (class 1259 OID 26539)
+-- Name: idx_equipos_fantasy_usuario; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_equipos_fantasy_usuario ON public.equipos_fantasy USING btree (usuario_id);
+
+
+--
+-- TOC entry 3578 (class 1259 OID 26540)
+-- Name: uq_temporada_actual; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX uq_temporada_actual ON public.temporadas USING btree (es_actual) WHERE (es_actual = true);
+
+
+--
+-- TOC entry 3571 (class 1259 OID 26541)
+-- Name: uq_unico_comisionado_por_liga; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX uq_unico_comisionado_por_liga ON public.ligas_miembros USING btree (liga_id) WHERE (rol = 'Comisionado'::public.rol_membresia);
+
+
+--
+-- TOC entry 3608 (class 2620 OID 26542)
+-- Name: ligas trg_ligas_actualizado; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_ligas_actualizado BEFORE UPDATE ON public.ligas FOR EACH ROW EXECUTE FUNCTION public.trg_set_actualizado_liga();
+
+
+--
+-- TOC entry 3606 (class 2620 OID 26543)
+-- Name: equipos_fantasy trigger_audit_equipos_fantasy; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trigger_audit_equipos_fantasy AFTER INSERT OR DELETE OR UPDATE ON public.equipos_fantasy FOR EACH ROW EXECUTE FUNCTION public.audit_equipos_fantasy_changes();
+
+
+--
+-- TOC entry 3609 (class 2620 OID 26673)
 -- Name: noticias_jugadores trigger_audit_noticias_jugadores; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
 CREATE TRIGGER trigger_audit_noticias_jugadores BEFORE DELETE ON public.noticias_jugadores FOR EACH ROW EXECUTE FUNCTION public.audit_noticias_jugadores_changes();
 
+
 --
--- TOC entry 3582 (class 2620 OID 25656)
+-- TOC entry 3610 (class 2620 OID 26674)
 -- Name: noticias_jugadores trigger_audit_noticias_jugadores_after; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1114,7 +1008,15 @@ CREATE TRIGGER trigger_audit_noticias_jugadores_after AFTER INSERT OR UPDATE ON 
 
 
 --
--- TOC entry 3583 (class 2620 OID 25657)
+-- TOC entry 3607 (class 2620 OID 26544)
+-- Name: equipos_fantasy update_equipos_fantasy_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER update_equipos_fantasy_updated_at BEFORE UPDATE ON public.equipos_fantasy FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
+-- TOC entry 3611 (class 2620 OID 26638)
 -- Name: noticias_jugadores update_noticias_jugadores_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1122,25 +1024,97 @@ CREATE TRIGGER update_noticias_jugadores_updated_at BEFORE UPDATE ON public.noti
 
 
 --
--- TOC entry 3566 (class 2606 OID 25658)
--- Name: noticias_jugadores noticias_jugadores_creado_por_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- TOC entry 3593 (class 2606 OID 26545)
+-- Name: equipos_fantasy_audit equipos_fantasy_audit_equipo_fantasy_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.noticias_jugadores
-    ADD CONSTRAINT noticias_jugadores_creado_por_fkey FOREIGN KEY (creado_por) REFERENCES public.usuarios(id) ON DELETE RESTRICT;
-
-
---
--- TOC entry 3567 (class 2606 OID 25659)
--- Name: noticias_jugadores noticias_jugadores_jugador_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.noticias_jugadores
-    ADD CONSTRAINT noticias_jugadores_jugador_id_fkey FOREIGN KEY (jugador_id) REFERENCES public.jugadores(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.equipos_fantasy_audit
+    ADD CONSTRAINT equipos_fantasy_audit_equipo_fantasy_id_fkey FOREIGN KEY (equipo_fantasy_id) REFERENCES public.equipos_fantasy(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 3568 (class 2606 OID 25660)
+-- TOC entry 3594 (class 2606 OID 26550)
+-- Name: equipos_fantasy_audit equipos_fantasy_audit_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.equipos_fantasy_audit
+    ADD CONSTRAINT equipos_fantasy_audit_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 3591 (class 2606 OID 26555)
+-- Name: equipos_fantasy equipos_fantasy_liga_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.equipos_fantasy
+    ADD CONSTRAINT equipos_fantasy_liga_id_fkey FOREIGN KEY (liga_id) REFERENCES public.ligas(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3592 (class 2606 OID 26560)
+-- Name: equipos_fantasy equipos_fantasy_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.equipos_fantasy
+    ADD CONSTRAINT equipos_fantasy_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 3595 (class 2606 OID 26565)
+-- Name: ligas ligas_comisionado_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ligas
+    ADD CONSTRAINT ligas_comisionado_id_fkey FOREIGN KEY (comisionado_id) REFERENCES public.usuarios(id) ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 3599 (class 2606 OID 26570)
+-- Name: ligas_miembros_aud ligas_miembros_aud_liga_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ligas_miembros_aud
+    ADD CONSTRAINT ligas_miembros_aud_liga_id_fkey FOREIGN KEY (liga_id) REFERENCES public.ligas(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3600 (class 2606 OID 26575)
+-- Name: ligas_miembros_aud ligas_miembros_aud_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ligas_miembros_aud
+    ADD CONSTRAINT ligas_miembros_aud_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3597 (class 2606 OID 26580)
+-- Name: ligas_miembros ligas_miembros_liga_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ligas_miembros
+    ADD CONSTRAINT ligas_miembros_liga_id_fkey FOREIGN KEY (liga_id) REFERENCES public.ligas(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3598 (class 2606 OID 26585)
+-- Name: ligas_miembros ligas_miembros_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ligas_miembros
+    ADD CONSTRAINT ligas_miembros_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3596 (class 2606 OID 26590)
+-- Name: ligas ligas_temporada_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ligas
+    ADD CONSTRAINT ligas_temporada_id_fkey FOREIGN KEY (temporada_id) REFERENCES public.temporadas(id) ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 3604 (class 2606 OID 26649)
 -- Name: noticias_jugadores_audit noticias_jugadores_audit_noticia_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1149,7 +1123,7 @@ ALTER TABLE ONLY public.noticias_jugadores_audit
 
 
 --
--- TOC entry 3569 (class 2606 OID 25661)
+-- TOC entry 3605 (class 2606 OID 26654)
 -- Name: noticias_jugadores_audit noticias_jugadores_audit_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1157,11 +1131,36 @@ ALTER TABLE ONLY public.noticias_jugadores_audit
     ADD CONSTRAINT noticias_jugadores_audit_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE RESTRICT;
 
 
--- Completed on 2025-11-08 21:08:37 CST
+--
+-- TOC entry 3602 (class 2606 OID 26639)
+-- Name: noticias_jugadores noticias_jugadores_creado_por_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.noticias_jugadores
+    ADD CONSTRAINT noticias_jugadores_creado_por_fkey FOREIGN KEY (creado_por) REFERENCES public.usuarios(id) ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 3603 (class 2606 OID 26644)
+-- Name: noticias_jugadores noticias_jugadores_jugador_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.noticias_jugadores
+    ADD CONSTRAINT noticias_jugadores_jugador_id_fkey FOREIGN KEY (jugador_id) REFERENCES public.jugadores(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3601 (class 2606 OID 26595)
+-- Name: temporadas_semanas temporadas_semanas_temporada_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.temporadas_semanas
+    ADD CONSTRAINT temporadas_semanas_temporada_id_fkey FOREIGN KEY (temporada_id) REFERENCES public.temporadas(id) ON DELETE CASCADE;
+
+
+-- Completed on 2025-11-25 10:08:45 CST
 
 --
 -- PostgreSQL database dump complete
 --
-
-\unrestrict phIkbSHO7hwO8P5bDqVgPP9h3W7xupffFdH6kDJPMi5LD1wmC8gZ8umAcLbYsjY
 
