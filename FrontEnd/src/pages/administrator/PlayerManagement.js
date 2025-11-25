@@ -6,6 +6,7 @@ import PlayerList from "../../components/PlayerList";
 import PlayerFilter from "../../components/PlayerFilter";
 import { getPlayers } from "../../utils/communicationModule/resources/players.js";
 import { list as getTeams } from "../../utils/communicationModule/resources/equipos.js";
+import { formatPlayerData } from "../../utils/imageUtils.js";
 
 function PlayerManagement() {
   const { session } = useAuth();
@@ -64,14 +65,13 @@ function PlayerManagement() {
     }, {});
 
     // Transform API data to match PlayerCard expectations
-    const transformedPlayers = players.map(player => ({
-      id: player.id,
-      name: player.nombre,
-      position: player.posicion,
-      team: teamMap[player.equipo_id] || 'Unknown Team',
-      image: player.imagen_url,
-      activo: player.activo,
-    }));
+    const transformedPlayers = players.map(player => {
+      const formattedPlayer = formatPlayerData(player);
+      return {
+        ...formattedPlayer,
+        team: teamMap[player.equipo_id] || 'Unknown Team',
+      };
+    });
 
     // Apply filters
     return transformedPlayers.filter((player) => {
