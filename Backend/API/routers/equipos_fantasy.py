@@ -12,7 +12,7 @@ from models.equipo_fantasy import (
     EquipoFantasyConRelaciones, EquipoFantasyFilter, EquipoFantasyAuditResponse
 )
 from services.equipo_fantasy_service import equipo_fantasy_service
-from services.auth_service import get_current_user
+from routers.auth import get_current_user
 from models.database_models import UsuarioDB
 
 router = APIRouter(prefix="/equipos-fantasy", tags=["equipos-fantasy"])

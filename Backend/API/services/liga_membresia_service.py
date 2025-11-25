@@ -4,7 +4,6 @@ Business logic service for Liga membership operations
 from typing import List
 from uuid import UUID
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 
 from models.database_models import LigaMiembroDB, LigaMiembroAudDB, EquipoFantasyDB
 from models.liga import LigaMiembroResponse, LigaMiembroCreate
@@ -34,16 +33,10 @@ class LigaMembresiaService:
         try:
             password_valid = security_service.verify_password(contrasena, liga.contrasena_hash)
         except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Error al verificar contraseña: {str(e)}"
-            )
+            raise ValueError(f"Error al verificar contraseña: {str(e)}")
         
         if not password_valid:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Contraseña de liga incorrecta"
-            )
+            raise ValueError("Contraseña de liga incorrecta")
         
         # Validate user is not already in league
         liga_validator.validate_usuario_not_in_liga(db, liga_id, usuario_id)
@@ -92,10 +85,7 @@ class LigaMembresiaService:
             
         except Exception as e:
             db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Error al unirse a la liga"
-            ) from e
+            raise ValueError("Error al unirse a la liga") from e
     
     def salir_liga(self, db: Session, liga_id: UUID, usuario_id: UUID) -> bool:
         """Leave a league"""
@@ -106,17 +96,11 @@ class LigaMembresiaService:
         # Get membership
         membresia = liga_miembro_repository.get_by_liga_usuario(db, liga_id, usuario_id)
         if not membresia:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="No eres miembro de esta liga"
-            )
+            raise ValueError("No eres miembro de esta liga")
         
         # Prevent commissioner from leaving
         if membresia.rol.value == "Comisionado":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="El comisionado no puede abandonar la liga"
-            )
+            raise ValueError("El comisionado no puede abandonar la liga")
         
         # Get the corresponding fantasy team
         equipo_fantasy = db.query(EquipoFantasyDB).filter(
@@ -144,10 +128,7 @@ class LigaMembresiaService:
             
         except Exception as e:
             db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Error al salir de la liga"
-            ) from e
+            raise ValueError("Error al salir de la liga") from e
     
     def obtener_miembros_liga(self, db: Session, liga_id: UUID) -> List[LigaMiembroResponse]:
         """Get all members of a league"""
@@ -165,10 +146,7 @@ class LigaMembresiaService:
         # Get membership
         membresia = liga_miembro_repository.get_by_liga_usuario(db, liga_id, usuario_id)
         if not membresia:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="No eres miembro de esta liga"
-            )
+            raise ValueError("No eres miembro de esta liga")
         
         # Validate new alias is unique
         liga_validator.validate_alias_unique_in_liga(db, liga_id, nuevo_alias, usuario_id)
@@ -182,9 +160,6 @@ class LigaMembresiaService:
             return _to_miembro_response(membresia)
         except Exception as e:
             db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Error al cambiar el alias"
-            ) from e
+            raise ValueError("Error al cambiar el alias") from e
 
 liga_membresia_service = LigaMembresiaService()

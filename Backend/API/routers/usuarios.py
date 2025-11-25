@@ -10,13 +10,12 @@ from models.usuario import (
     UsuarioResponse, 
     UsuarioLogin,
     RolUsuario, 
-    EstadoUsuario,
-    LoginResponse
+    EstadoUsuario
 )
 from models.database_models import UsuarioDB, RolUsuarioEnum, EstadoUsuarioEnum
 from database import get_db
 from services.auth_service import auth_service
-from services.auth_service import get_current_user
+from routers.auth import get_current_user, LoginResponse
 from services.usuario_service import usuario_service
 from exceptions.business_exceptions import ValidationError, ConflictError, NotFoundError
 from jose import JWTError
@@ -114,13 +113,21 @@ async def login_usuario(credenciales: UsuarioLogin, request: Request, db: Sessio
         raise HTTPException(status_code=code, detail=msg)
 
     # Login exitoso, devolver tokens y información del usuario
-    return LoginResponse(
+    from routers.auth import TokenResponse
+    
+    tokens = TokenResponse(
         access_token=resultado_login["access_token"],
         refresh_token=resultado_login["refresh_token"],
         token_type="bearer",
-        usuario=resultado_login["usuario"],
         expires_in=43200,  # 12 horas en segundos
-        redirect_to="/player/profile"  # URL de redirección alineada con el frontend
+        user_id=str(resultado_login["usuario"].id)
+    )
+    
+    return LoginResponse(
+        user=resultado_login["usuario"].dict(),
+        tokens=tokens,
+        message=resultado_login["message"],
+        redirect_url="/player/profile"
     )
 
 
