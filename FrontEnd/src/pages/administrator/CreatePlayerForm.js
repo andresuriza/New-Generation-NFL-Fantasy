@@ -7,7 +7,7 @@ import {
   postPlayer,
   postPlayers,
 } from "../../utils/communicationModule/resources/players.js";
-
+//TODO allow image upload too
 function CreateNflPlayerForm() {
   const [form, setForm] = useState({
     nombre: "",

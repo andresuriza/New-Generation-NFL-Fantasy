@@ -246,6 +246,63 @@ class CDNService:
         except Exception as e:
             raise ValueError(f"Error al procesar imagen base64: {str(e)}")
     
+    def save_image_auto(self, image_data: str, entity_type: str = "jugador") -> Tuple[str, str]:
+        """
+        Automatically detect and save image from either URL or base64 data.
+        
+        Args:
+            image_data: Either a URL string or base64 encoded image data
+            entity_type: Type of entity (jugador, equipo, usuario, etc.)
+            
+        Returns:
+            Tuple of (image_path, thumbnail_path) - relative paths to stored images
+            
+        Raises:
+            ValueError: If image_data is invalid or cannot be processed
+        """
+        if not image_data or not isinstance(image_data, str):
+            raise ValueError("image_data debe ser una cadena válida")
+        
+        image_data = image_data.strip()
+        
+        # Check if it's a URL (starts with http:// or https://)
+        if image_data.startswith(('http://', 'https://')):
+            return self.save_image_from_url(image_data, entity_type)
+        
+        # Check if it's base64 data (starts with data: or looks like base64)
+        elif image_data.startswith('data:') or self._is_base64(image_data):
+            return self.save_base64_image(image_data, entity_type)
+        
+        else:
+            raise ValueError("Formato de imagen no reconocido. Debe ser una URL (http/https) o datos base64")
+    
+    def _is_base64(self, data: str) -> bool:
+        """
+        Check if a string is valid base64 encoded data.
+        
+        Args:
+            data: String to check
+            
+        Returns:
+            True if data appears to be base64 encoded
+        """
+        try:
+            # Remove whitespace and check length
+            cleaned_data = data.replace(' ', '').replace('\n', '').replace('\r', '')
+            
+            # Base64 should be divisible by 4 and contain only valid characters
+            if len(cleaned_data) % 4 != 0:
+                return False
+            
+            # Try to decode a small portion to verify it's valid base64
+            base64.b64decode(cleaned_data[:20] if len(cleaned_data) > 20 else cleaned_data)
+            
+            # Additional heuristic: base64 data should be reasonably long for images
+            return len(cleaned_data) > 50
+            
+        except Exception:
+            return False
+    
     def delete_image(self, image_path: str) -> bool:
         """
         Delete an image and its thumbnail.

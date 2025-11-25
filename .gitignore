@@ -175,3 +175,7 @@ sketch
 
 FrontEnd/build
 /Diagrams
+*.wsd
+Diagrams/componentes.wsd
+Diagrams/c2.wsd
+Diagrams/c2.wsd
