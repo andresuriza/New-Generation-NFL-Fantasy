@@ -19,27 +19,27 @@ export default function Navbar() {
         </div>
 
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <NavLink className={linkClass} to="/">
+          <NavLink style={{ textDecoration: 'none' }} className={linkClass} to="/">
             Home
           </NavLink>
           {!isAuthenticated ? (
             <>
-              <NavLink className={linkClass} to="/register">
+              <NavLink style={{ textDecoration: 'none' }} className={linkClass} to="/register">
                 Registrarse
               </NavLink>
-              <NavLink className={linkClass} to="/login">
+              <NavLink style={{ textDecoration: 'none' }} className={linkClass} to="/login">
                 Login
               </NavLink>
             </>
           ) : (
             <>
               {user?.rol == "administrador" ? (
-                <NavLink className={linkClass} to="/season/create">
+                <NavLink style={{ textDecoration: 'none' }} className={linkClass} to="/season/create">
                   Temporada
                 </NavLink>
               ) : null}
 
-              <NavLink className={linkClass} to="/player/profile">
+              <NavLink style={{ textDecoration: 'none' }} className={linkClass} to="/player/profile">
                 Perfil
               </NavLink>
               <LogoutButton className="button button--ghost">
