@@ -1,0 +1,19 @@
+{
+  "jugadores": [
+    {
+      "nombre": "Harrison Butker",
+      "posicion": "PosicionJugadorEnum.K",
+      "equipo_nfl": "Philadelphia Eagles",
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Patrick_Mahomes_2023_%28cropped%29.jpg/960px-Patrick_Mahomes_2023_%28cropped%29.jpg",
+      "id": null
+    },
+    {
+      "nombre": "Gus Edwards",
+      "posicion": "PosicionJugadorEnum.RB",
+      "equipo_nfl": "Philadelphia Eagles",
+      "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Patrick_Mahomes_2023_%28cropped%29.jpg/960px-Patrick_Mahomes_2023_%28cropped%29.jpg",
+      "id": null
+    }
+  ],
+  "filename": "nfl_players_andres.json"
+}
