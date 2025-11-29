@@ -9,30 +9,7 @@ import { GetLigas as apiListLigas } from "../../utils/communicationModule/resour
 
 const DEFAULT_AVATAR = DEFAULTS.DEFAULT_AVATAR;
 
-// ----- MOCKS VISUALES (sin backend) para ligas/equipos -----
-function getMockCommissionerLeagues(email) {
-  if ((email || "").toLowerCase() === "demo@nfl.com") {
-    return [
-      {
-        id: "lg_123",
-        name: "Liga TEC",
-        season: 2024,
-        teams: 10,
-        scoring: "PPR",
-      },
-      {
-        id: "lg_987",
-        name: "Dynasty CR",
-        season: 2024,
-        teams: 12,
-        scoring: "Half-PPR",
-      },
-    ];
-  }
-  return [];
-}
-
-// ----- Componentes UI auxiliares -----
+// Renderiza una fila simple con etiqueta y contenido.
 function Field({ label, children }) {
   return (
     <div style={{ display: "grid", gap: 4 }}>
@@ -42,6 +19,7 @@ function Field({ label, children }) {
   );
 }
 
+// Muestra un mensaje cuando no existen datos para mostrar.
 function EmptyState({ title, subtitle, action }) {
   return (
     <div className="card" style={{ textAlign: "center", padding: 24 }}>
@@ -52,33 +30,32 @@ function EmptyState({ title, subtitle, action }) {
   );
 }
 
-// Funcion que permite al usuario ver su perfil
+// Renderiza la vista principal del perfil del usuario.
 export default function UserProfile() {
   const { session, isAuthenticated, user } = useAuth();
+
+  // Lista de equipos NFL administrados.
   const [teams, setTeams] = useState([]);
+
+  // Lista de equipos fantasy del usuario.
   const [fantasyTeams, setFantasyTeams] = useState([]);
+
+  // Ligas donde el usuario tiene rol de comisionado.
   const [ligas, setLigas] = useState([]);
+
   const navigate = useNavigate();
 
-  // Perfil y datos persistidos en localStorage (visual)
-  const profile = useMemo(
-    () => (session ? getProfile(session.email) : null),
-    [session]
-  );
-  const history = useMemo(
-    () => (session ? getHistory(session.email) : []),
-    [session]
-  );
+  // Información persistida del perfil del usuario.
+  const profile = useMemo(() => (session ? getProfile(session.email) : null), [session]);
 
-  // Mocks de ligas/equipos (solo lectura)
-  const commishLeagues = useMemo(
-    () => (session ? getMockCommissionerLeagues(session.email) : []),
-    [session]
-  );
+  // Historial de cambios del perfil.
+  const history = useMemo(() => (session ? getHistory(session.email) : []), [session]);
 
+  // Carga equipos, ligas y equipos fantasy desde la API.
   useEffect(() => {
     let active = true;
 
+    // Descarga y procesa equipos NFL y fantasy.
     async function fetchTeams() {
       try {
         const [equiposApi, usuariosApi, ligasApi, fantasyTeamApi] =
@@ -89,31 +66,23 @@ export default function UserProfile() {
             getFantasyTeam(),
           ]);
         if (!active) return;
-        const usuariosMap = (
-          Array.isArray(usuariosApi) ? usuariosApi : []
-        ).reduce((m, u) => {
+
+        const usuariosMap = (Array.isArray(usuariosApi) ? usuariosApi : []).reduce((m, u) => {
           m[String(u.id)] = u.alias || u.nombre || u.correo;
           return m;
         }, {});
-        const ligasMap = (Array.isArray(ligasApi) ? ligasApi : []).reduce(
-          (m, l) => {
-            m[String(l.id)] = l.nombre;
-            return m;
-          },
-          {}
-        );
+
+        const ligasMap = (Array.isArray(ligasApi) ? ligasApi : []).reduce((m, l) => {
+          m[String(l.id)] = l.nombre;
+          return m;
+        }, {});
 
         const apiList = Array.isArray(equiposApi) ? equiposApi : [];
         const flat = apiList.map((team) => ({
           id: team.id,
           name: team.nombre,
-          manager:
-            usuariosMap[String(team.usuario_id)] ||
-            (team.usuario_id || "").toString().slice(0, 8),
-          leagueName:
-            ligasMap[String(team.liga_id)] ||
-            String(team.liga_id) ||
-            "Sin Liga",
+          manager: usuariosMap[String(team.usuario_id)] || String(team.usuario_id).slice(0, 8),
+          leagueName: ligasMap[String(team.liga_id)] || String(team.liga_id) || "Sin Liga",
         }));
         setTeams(flat);
 
@@ -121,13 +90,8 @@ export default function UserProfile() {
         const fantasyFlat = fantasyList.map((team) => ({
           id: team.id,
           name: team.nombre,
-          manager:
-            usuariosMap[String(team.usuario_id)] ||
-            (team.usuario_id || "").toString().slice(0, 8),
-          leagueName:
-            ligasMap[String(team.liga_id)] ||
-            String(team.liga_id) ||
-            "Sin Liga",
+          manager: usuariosMap[String(team.usuario_id)] || String(team.usuario_id).slice(0, 8),
+          leagueName: ligasMap[String(team.liga_id)] || String(team.liga_id) || "Sin Liga",
         }));
         setFantasyTeams(fantasyFlat);
       } catch (_) {
@@ -136,6 +100,7 @@ export default function UserProfile() {
       }
     }
 
+    // Descarga y guarda información de ligas existentes.
     async function fetchLigas() {
       try {
         const [ligasArr] = await Promise.all([apiListLigas()]);
@@ -144,7 +109,6 @@ export default function UserProfile() {
           id: liga.id,
           nombre: liga.nombre,
         }));
-
         setLigas(flat);
       } catch (_) {
         setLigas([]);
@@ -161,20 +125,13 @@ export default function UserProfile() {
 
   if (!isAuthenticated || !profile) return null;
 
+  // Imagen de perfil del usuario.
   const photo = profile.profileImage || DEFAULT_AVATAR;
 
   return (
     <div className="container" style={{ paddingTop: 24, paddingBottom: 48 }}>
-      {/* Header de perfil */}
       <div className="card" style={{ display: "grid", gap: 16 }}>
-        <div
-          style={{
-            display: "flex",
-            gap: 16,
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
+        <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
           <img
             src={photo}
             alt="Foto de perfil"
@@ -187,72 +144,44 @@ export default function UserProfile() {
               objectFit: "cover",
               border: "1px solid var(--border)",
             }}
-            onError={(e) => {
-              e.currentTarget.src = DEFAULT_AVATAR;
-            }}
+            onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
           />
           <div style={{ flex: 1, minWidth: 220 }}>
             <h2 style={{ margin: 0 }}>{user.nombre}</h2>
-            <div style={{ color: "var(--muted)", fontSize: 14 }}>
-              {user.correo}
-            </div>
+            <div style={{ color: "var(--muted)", fontSize: 14 }}>{user.correo}</div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button
-              className="button"
-              onClick={() => navigate("/player/profile/edit")}
-            >
+            <button className="button" onClick={() => navigate("/player/profile/edit")}>
               Editar perfil
             </button>
           </div>
         </div>
 
-        {/* Datos del perfil */}
-        <div
-          className="grid"
-          style={{ gridTemplateColumns: "repeat(4, minmax(0,1fr))" }}
-        >
+        <div className="grid" style={{ gridTemplateColumns: "repeat(4, minmax(0,1fr))" }}>
           <Field label="Alias">{user.alias}</Field>
           <Field label="Idioma">{user.idioma}</Field>
           <Field label="Rol">{user?.rol}</Field>
           <Field label="Estado">{user.estado}</Field>
-          <Field label="Creado">
-            {new Date(user.creado_en).toLocaleString()}
-          </Field>
+          <Field label="Creado">{new Date(user.creado_en).toLocaleString()}</Field>
         </div>
       </div>
+
       {user?.rol === "administrador" ? (
         <section style={{ marginTop: 24 }}>
           <h3 style={{ margin: "0 0 12px 0" }}>Equipos NFL</h3>
-          {user?.rol === "administrador" && (
-            <div
-              style={{
-                marginBottom: 22,
-                display: "flex",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
-              <button
-                className="button"
-                onClick={() => navigate("/crear-equipo")}
-              >
-                Crear equipo NFL
-              </button>
-              <button
-                className="button "
-                onClick={() => navigate("/create-player")}
-              >
-                Crear jugador NFL
-              </button>
-              <button
-                className="button "
-                onClick={() => navigate("/players")}
-              >
-                Gestionar jugadores
-              </button>
-            </div>
-          )}
+
+          <div style={{ marginBottom: 22, display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button className="button" onClick={() => navigate("/crear-equipo")}>
+              Crear equipo NFL
+            </button>
+            <button className="button" onClick={() => navigate("/create-player")}>
+              Crear jugador NFL
+            </button>
+            <button className="button" onClick={() => navigate("/players")}>
+              Gestionar jugadores
+            </button>
+          </div>
+
           {teams.length === 0 ? (
             <EmptyState
               title="No hay equipos NFL aun"
@@ -264,10 +193,7 @@ export default function UserProfile() {
                 <div key={tm.id} className="card">
                   <h4 style={{ margin: 0 }}>{tm.name}</h4>
                   <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-                    <button
-                      className="button"
-                      onClick={() => navigate(`/equipo/${tm.id}`)}
-                    >
+                    <button className="button" onClick={() => navigate(`/equipo/${tm.id}`)}>
                       Ver equipo
                     </button>
                     <button
@@ -286,6 +212,7 @@ export default function UserProfile() {
         <section style={{ marginTop: 24 }}>
           <section style={{ marginTop: 24 }}>
             <h3 style={{ margin: "0 0 12px 0" }}>Equipos Fantasy</h3>
+
             {fantasyTeams.length === 0 ? (
               <EmptyState
                 title="No hay equipos fantasy aun"
@@ -297,10 +224,7 @@ export default function UserProfile() {
                   <div key={tm.id} className="card">
                     <h4 style={{ margin: 0 }}>{tm.name}</h4>
                     <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-                      <button
-                        className="button"
-                        onClick={() => navigate(`/equipo/${tm.id}`)}
-                      >
+                      <button className="button" onClick={() => navigate(`/equipo/${tm.id}`)}>
                         Ver equipo
                       </button>
                       <button
@@ -315,22 +239,17 @@ export default function UserProfile() {
               </div>
             )}
           </section>
+
           <div>
-            <h3 style={{ margin: "20px 0 12px 0" }}>
-              Ligas donde soy comisionado
-            </h3>
-            <button
-              className="liga-button"
-              onClick={() => navigate("/league/join")}
-            >
+            <h3 style={{ margin: "20px 0 12px 0" }}>Ligas donde soy comisionado</h3>
+
+            <button className="liga-button" onClick={() => navigate("/league/join")}>
               Unirme a liga
             </button>
-            <button
-              className="button"
-              onClick={() => navigate("/league/create")}
-            >
+            <button className="button" onClick={() => navigate("/league/create")}>
               Crear liga
             </button>
+
             {ligas.length === 0 ? (
               <EmptyState
                 title="Aún no eres comisionado en ninguna liga"
@@ -340,41 +259,23 @@ export default function UserProfile() {
               <div className="grid grid-3">
                 {ligas.map((lg) => (
                   <div key={lg.id} className="card">
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "baseline",
-                      }}
-                    >
-                      <h4 style={{ margin: 0 }}>{lg.nombre}</h4>
-                      {/*<span className="badge">{lg.season}</span>*/}
-                    </div>
-                    <div style={{ marginTop: 8, color: "var(--muted)" }}>
-                      {/*{lg.teams} equipos • {lg.scoring}*/}
-                    </div>
+                    <h4 style={{ margin: 0 }}>{lg.nombre}</h4>
+
                     <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-                      <button
-                        className="button"
-                        onClick={() => navigate(`/league/${lg.id}`)}
-                      >
+                      <button className="button" onClick={() => navigate(`/league/${lg.id}`)}>
                         Ver liga
                       </button>
 
                       <button
                         className="button button--ghost"
-                        onClick={() =>
-                          navigate(`/league/${lg.id}/admin/status`)
-                        }
+                        onClick={() => navigate(`/league/${lg.id}/admin/status`)}
                       >
                         Administrar estado
                       </button>
 
                       <button
                         className="button button--ghost"
-                        onClick={() =>
-                          navigate(`/league/${lg.id}/admin/config`)
-                        }
+                        onClick={() => navigate(`/league/${lg.id}/admin/config`)}
                       >
                         Configurar liga
                       </button>
@@ -386,9 +287,10 @@ export default function UserProfile() {
           </div>
         </section>
       )}
-      {/* Historial de cambios */}
+
       <section style={{ marginTop: 24 }}>
         <h3 style={{ margin: "0 0 12px 0" }}>Historial de cambios</h3>
+
         {history.length === 0 ? (
           <div className="card" style={{ padding: 16, color: "var(--muted)" }}>
             Aún no hay cambios registrados en tu perfil.
@@ -403,8 +305,7 @@ export default function UserProfile() {
                 <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
                   {h.changes.map((c, idx) => (
                     <li key={idx}>
-                      <strong>{c.field}</strong>: “{String(c.oldValue)}” → “
-                      {String(c.newValue)}”
+                      <strong>{c.field}</strong>: “{String(c.oldValue)}” → “{String(c.newValue)}”
                     </li>
                   ))}
                 </ul>
