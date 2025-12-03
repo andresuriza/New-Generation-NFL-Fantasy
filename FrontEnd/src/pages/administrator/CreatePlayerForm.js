@@ -1,4 +1,3 @@
-// src/components/CreateNflPlayerForm.js
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/global.css";
@@ -7,7 +6,7 @@ import {
   postPlayer,
   postPlayers,
 } from "../../utils/communicationModule/resources/players.js";
-//TODO allow image upload too
+
 function CreateNflPlayerForm() {
   const [form, setForm] = useState({
     nombre: "",
@@ -24,7 +23,6 @@ function CreateNflPlayerForm() {
   const navigate = useNavigate();
 
   // Solo usamos estado para la vista previa del thumbnail
-  const [imageUrl, setImageUrl] = useState("");
   const [error, setError] = useState("");
   const [fileName, setFileName] = useState("");
   const [jsonData, setJsonData] = useState(null);
