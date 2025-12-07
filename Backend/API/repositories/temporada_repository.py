@@ -16,30 +16,41 @@ class TemporadaRepository(BaseRepository[TemporadaDB, TemporadaCreate, Temporada
     def __init__(self):
         super().__init__(TemporadaDB)
     
-    def get_by_nombre(self, db: Session, nombre: str) -> Optional[TemporadaDB]:
+    def get_by_nombre(self, nombre: str) -> Optional[TemporadaDB]:
         """Get season by name"""
-        return db.query(self.model).filter(self.model.nombre == nombre).first()
+        def query(db: Session):
+            return db.query(self.model).filter(self.model.nombre == nombre).first()
+        return self._execute_query(query)
     
-    def get_actual(self, db: Session) -> Optional[TemporadaDB]:
+    def get_actual(self) -> Optional[TemporadaDB]:
         """Get current active season"""
-        return db.query(self.model).filter(self.model.es_actual == True).first()
+        def query(db: Session):
+            return db.query(self.model).filter(self.model.es_actual == True).first()
+        return self._execute_query(query)
     
-    def get_with_semanas(self, db: Session, temporada_id: UUID) -> Optional[TemporadaDB]:
+    def get_with_semanas(self, temporada_id: UUID) -> Optional[TemporadaDB]:
         """Get season with its weeks loaded"""
-        return db.query(self.model).options(
-            joinedload(self.model.temporadas_semanas)
-        ).filter(self.model.id == temporada_id).first()
+        def query(db: Session):
+            return db.query(self.model).options(
+                joinedload(self.model.temporadas_semanas)
+            ).filter(self.model.id == temporada_id).first()
+        return self._execute_query(query)
     
-    def get_all_ordered(self, db: Session) -> List[TemporadaDB]:
+    def get_all_ordered(self) -> List[TemporadaDB]:
         """Get all seasons ordered by creation date"""
-        return db.query(self.model).order_by(self.model.creado_en.desc()).all()
+        def query(db: Session):
+            return db.query(self.model).order_by(self.model.creado_en.desc()).all()
+        return self._execute_query(query)
     
-    def unset_all_actual(self, db: Session, exclude_id: Optional[UUID] = None) -> None:
+    def unset_all_actual(self, exclude_id: Optional[UUID] = None) -> None:
         """Unset es_actual for all seasons except the excluded one"""
-        query = db.query(self.model).filter(self.model.es_actual == True)
-        if exclude_id:
-            query = query.filter(self.model.id != exclude_id)
-        query.update({"es_actual": False})
+        def query(db: Session):
+            q = db.query(self.model).filter(self.model.es_actual == True)
+            if exclude_id:
+                q = q.filter(self.model.id != exclude_id)
+            q.update({"es_actual": False})
+            db.flush()
+        self._execute_query(query)
 
 class TemporadaSemanaRepository(BaseRepository[TemporadaSemanaDB, dict, dict]):
     """Repository for Season Week operations"""
@@ -47,20 +58,24 @@ class TemporadaSemanaRepository(BaseRepository[TemporadaSemanaDB, dict, dict]):
     def __init__(self):
         super().__init__(TemporadaSemanaDB)
     
-    def get_by_temporada_numero(self, db: Session, temporada_id: UUID, numero: int) -> Optional[TemporadaSemanaDB]:
+    def get_by_temporada_numero(self, temporada_id: UUID, numero: int) -> Optional[TemporadaSemanaDB]:
         """Get week by season and week number"""
-        return db.query(self.model).filter(
-            and_(
-                self.model.temporada_id == temporada_id,
-                self.model.numero == numero
-            )
-        ).first()
+        def query(db: Session):
+            return db.query(self.model).filter(
+                and_(
+                    self.model.temporada_id == temporada_id,
+                    self.model.numero == numero
+                )
+            ).first()
+        return self._execute_query(query)
     
-    def get_by_temporada(self, db: Session, temporada_id: UUID) -> List[TemporadaSemanaDB]:
+    def get_by_temporada(self, temporada_id: UUID) -> List[TemporadaSemanaDB]:
         """Get all weeks for a season ordered by number"""
-        return db.query(self.model).filter(
-            self.model.temporada_id == temporada_id
-        ).order_by(self.model.numero).all()
+        def query(db: Session):
+            return db.query(self.model).filter(
+                self.model.temporada_id == temporada_id
+            ).order_by(self.model.numero).all()
+        return self._execute_query(query)
 
 # Repository instances
 temporada_repository = TemporadaRepository()

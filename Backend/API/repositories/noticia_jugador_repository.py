@@ -16,10 +16,10 @@ class NoticiaJugadorRepository(BaseRepository[NoticiaJugadorDB, NoticiaJugadorCr
     def __init__(self):
         super().__init__(NoticiaJugadorDB)
     
-    def get_by_jugador_id(self, db: Session, jugador_id: UUID, skip: int = 0, limit: int = 100) -> List[NoticiaJugadorDB]:
+    def get_by_jugador_id(self,  jugador_id: UUID, skip: int = 0, limit: int = 100) -> List[NoticiaJugadorDB]:
         """Get all news for a specific player, ordered by creation date (newest first)"""
         return (
-            db.query(self.model)
+            db_context.get_session().query(self.model)
             .filter(self.model.jugador_id == jugador_id)
             .order_by(self.model.creado_en.desc())
             .offset(skip)
@@ -27,19 +27,19 @@ class NoticiaJugadorRepository(BaseRepository[NoticiaJugadorDB, NoticiaJugadorCr
             .all()
         )
     
-    def get_with_author(self, db: Session, noticia_id: UUID) -> Optional[NoticiaJugadorDB]:
+    def get_with_author(self, noticia_id: UUID) -> Optional[NoticiaJugadorDB]:
         """Get a news item with author information"""
         return (
-            db.query(self.model)
+            db_context.get_session().query(self.model)
             .options(joinedload(self.model.autor))
             .filter(self.model.id == noticia_id)
             .first()
         )
     
-    def get_by_jugador_with_author(self, db: Session, jugador_id: UUID, skip: int = 0, limit: int = 100) -> List[NoticiaJugadorDB]:
+    def get_by_jugador_with_author(self, jugador_id: UUID, skip: int = 0, limit: int = 100) -> List[NoticiaJugadorDB]:
         """Get all news for a player with author information"""
         return (
-            db.query(self.model)
+            db_context.get_session().query(self.model)
             .options(joinedload(self.model.autor))
             .filter(self.model.jugador_id == jugador_id)
             .order_by(self.model.creado_en.desc())
@@ -48,14 +48,14 @@ class NoticiaJugadorRepository(BaseRepository[NoticiaJugadorDB, NoticiaJugadorCr
             .all()
         )
     
-    def get_recent_injury_news(self, db: Session, days: int = 7, skip: int = 0, limit: int = 100) -> List[NoticiaJugadorDB]:
+    def get_recent_injury_news(self, days: int = 7, skip: int = 0, limit: int = 100) -> List[NoticiaJugadorDB]:
         """Get recent injury news from the last N days"""
         from datetime import datetime, timedelta
         
         cutoff_date = datetime.utcnow() - timedelta(days=days)
         
         return (
-            db.query(self.model)
+            db_context.get_session().query(self.model)
             .options(joinedload(self.model.jugador))
             .filter(
                 self.model.es_lesion == True,
@@ -67,7 +67,7 @@ class NoticiaJugadorRepository(BaseRepository[NoticiaJugadorDB, NoticiaJugadorCr
             .all()
         )
     
-    def create_with_author(self, db: Session, jugador_id: UUID, obj_in: NoticiaJugadorCreate, author_id: UUID) -> NoticiaJugadorDB:
+    def create_with_author(self, jugador_id: UUID, obj_in: NoticiaJugadorCreate, author_id: UUID) -> NoticiaJugadorDB:
         """Create a new player news item with author"""
         db_obj_data = obj_in.model_dump()
         
@@ -80,9 +80,10 @@ class NoticiaJugadorRepository(BaseRepository[NoticiaJugadorDB, NoticiaJugadorCr
             designacion=db_obj_data['designacion'],  # Pass as string
             creado_por=author_id
         )
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        with db_context.get_session() as db:
+            db.add(db_obj)
+            db.commit()
+            db.refresh(db_obj)
         return db_obj
 
 

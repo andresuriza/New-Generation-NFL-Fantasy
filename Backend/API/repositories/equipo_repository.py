@@ -16,17 +16,21 @@ class EquipoNFLRepository(BaseRepository[EquipoDB, EquipoNFLCreate, EquipoNFLUpd
     def __init__(self):
         super().__init__(EquipoDB)
     
-    def get_by_nombre(self, db: Session, nombre: str) -> Optional[EquipoDB]:
+    def get_by_nombre(self, nombre: str) -> Optional[EquipoDB]:
         """Get NFL team by name (case-insensitive)"""
-        return db.query(EquipoDB).filter(
-            func.lower(EquipoDB.nombre) == func.lower(nombre)
-        ).first()
+        def query(db: Session):
+            return db.query(EquipoDB).filter(
+                func.lower(EquipoDB.nombre) == func.lower(nombre)
+            ).first()
+        return self._execute_query(query)
     
-    def get_with_media(self, db: Session, equipo_id: UUID) -> Optional[EquipoDB]:
+    def get_with_media(self, equipo_id: UUID) -> Optional[EquipoDB]:
         """Get NFL team with media loaded"""
-        return db.query(self.model).options(
-            joinedload(self.model.media)
-        ).filter(self.model.id == equipo_id).first()
+        def query(db: Session):
+            return db.query(self.model).options(
+                joinedload(self.model.media)
+            ).filter(self.model.id == equipo_id).first()
+        return self._execute_query(query)
 
 
 # Create repository instance

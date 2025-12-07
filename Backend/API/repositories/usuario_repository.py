@@ -16,79 +16,101 @@ class UsuarioRepository(BaseRepository[UsuarioDB, UsuarioCreate, UsuarioUpdate])
     def __init__(self):
         super().__init__(UsuarioDB)
     
-    def get_by_correo(self, db: Session, correo: str) -> Optional[UsuarioDB]:
+    def get_by_correo(self, correo: str) -> Optional[UsuarioDB]:
         """Get user by email"""
-        return db.query(self.model).filter(self.model.correo == correo).first()
+        def query(db: Session):
+            return db.query(self.model).filter(self.model.correo == correo).first()
+        return self._execute_query(query)
     
-    def get_by_alias(self, db: Session, alias: str) -> Optional[UsuarioDB]:
+    def get_by_alias(self, alias: str) -> Optional[UsuarioDB]:
         """Get user by alias"""
-        return db.query(self.model).filter(self.model.alias == alias).first()
+        def query(db: Session):
+            return db.query(self.model).filter(self.model.alias == alias).first()
+        return self._execute_query(query)
     
-    def get_by_correo_or_alias(self, db: Session, identifier: str) -> Optional[UsuarioDB]:
+    def get_by_correo_or_alias(self, identifier: str) -> Optional[UsuarioDB]:
         """Get user by email or alias (for login)"""
-        return db.query(self.model).filter(
-            or_(
-                self.model.correo == identifier,
-                self.model.alias == identifier
-            )
-        ).first()
+        def query(db: Session):
+            return db.query(self.model).filter(
+                or_(
+                    self.model.correo == identifier,
+                    self.model.alias == identifier
+                )
+            ).first()
+        return self._execute_query(query)
     
-    def get_activos(self, db: Session, skip: int = 0, limit: int = 100) -> List[UsuarioDB]:
+    def get_activos(self, skip: int = 0, limit: int = 100) -> List[UsuarioDB]:
         """Get active users only"""
-        return db.query(self.model).filter(
-            self.model.estado == "activa"
-        ).offset(skip).limit(limit).all()
+        def query(db: Session):
+            return db.query(self.model).filter(
+                self.model.estado == "activa"
+            ).offset(skip).limit(limit).all()
+        return self._execute_query(query)
     
-    def get_by_rol(self, db: Session, rol: str, skip: int = 0, limit: int = 100) -> List[UsuarioDB]:
+    def get_by_rol(self, rol: str, skip: int = 0, limit: int = 100) -> List[UsuarioDB]:
         """Get users by role"""
-        return db.query(self.model).filter(
-            self.model.rol == rol
-        ).offset(skip).limit(limit).all()
+        def query(db: Session):
+            return db.query(self.model).filter(
+                self.model.rol == rol
+            ).offset(skip).limit(limit).all()
+        return self._execute_query(query)
     
-    def search_by_name_or_alias(self, db: Session, search_term: str, limit: int = 10) -> List[UsuarioDB]:
+    def search_by_name_or_alias(self, search_term: str, limit: int = 10) -> List[UsuarioDB]:
         """Search users by name or alias (case insensitive)"""
-        search_pattern = f"%{search_term}%"
-        return db.query(self.model).filter(
-            or_(
-                self.model.nombre.ilike(search_pattern),
-                self.model.alias.ilike(search_pattern)
-            )
-        ).filter(self.model.estado == "activa").limit(limit).all()
+        def query(db: Session):
+            search_pattern = f"%{search_term}%"
+            return db.query(self.model).filter(
+                or_(
+                    self.model.nombre.ilike(search_pattern),
+                    self.model.alias.ilike(search_pattern)
+                )
+            ).filter(self.model.estado == "activa").limit(limit).all()
+        return self._execute_query(query)
     
-    def exists_by_correo(self, db: Session, correo: str, exclude_id: Optional[UUID] = None) -> bool:
+    def exists_by_correo(self, correo: str, exclude_id: Optional[UUID] = None) -> bool:
         """Check if email exists (excluding specific user ID)"""
-        query = db.query(self.model).filter(self.model.correo == correo)
-        if exclude_id:
-            query = query.filter(self.model.id != exclude_id)
-        return query.first() is not None
+        def query(db: Session):
+            q = db.query(self.model).filter(self.model.correo == correo)
+            if exclude_id:
+                q = q.filter(self.model.id != exclude_id)
+            return q.first() is not None
+        return self._execute_query(query)
     
-    def exists_by_alias(self, db: Session, alias: str, exclude_id: Optional[UUID] = None) -> bool:
+    def exists_by_alias(self, alias: str, exclude_id: Optional[UUID] = None) -> bool:
         """Check if alias exists (excluding specific user ID)"""
-        query = db.query(self.model).filter(self.model.alias == alias)
-        if exclude_id:
-            query = query.filter(self.model.id != exclude_id)
-        return query.first() is not None
+        def query(db: Session):
+            q = db.query(self.model).filter(self.model.alias == alias)
+            if exclude_id:
+                q = q.filter(self.model.id != exclude_id)
+            return q.first() is not None
+        return self._execute_query(query)
     
-    def increment_failed_attempts(self, db: Session, usuario_id: UUID) -> None:
+    def increment_failed_attempts(self, usuario_id: UUID) -> None:
         """Increment failed login attempts"""
-        usuario = self.get(db, usuario_id)
-        if usuario:
-            usuario.failed_attempts += 1
-            db.commit()
+        def query(db: Session):
+            usuario = db.query(self.model).filter(self.model.id == usuario_id).first()
+            if usuario:
+                usuario.failed_attempts += 1
+                db.flush()
+        self._execute_query(query)
     
-    def reset_failed_attempts(self, db: Session, usuario_id: UUID) -> None:
+    def reset_failed_attempts(self, usuario_id: UUID) -> None:
         """Reset failed login attempts to 0"""
-        usuario = self.get(db, usuario_id)
-        if usuario:
-            usuario.failed_attempts = 0
-            db.commit()
+        def query(db: Session):
+            usuario = db.query(self.model).filter(self.model.id == usuario_id).first()
+            if usuario:
+                usuario.failed_attempts = 0
+                db.flush()
+        self._execute_query(query)
     
-    def block_user(self, db: Session, usuario_id: UUID) -> None:
+    def block_user(self, usuario_id: UUID) -> None:
         """Block user account"""
-        usuario = self.get(db, usuario_id)
-        if usuario:
-            usuario.estado = "bloqueado"
-            db.commit()
+        def query(db: Session):
+            usuario = db.query(self.model).filter(self.model.id == usuario_id).first()
+            if usuario:
+                usuario.estado = "bloqueado"
+                db.flush()
+        self._execute_query(query)
 
 # Repository instance
 usuario_repository = UsuarioRepository()
