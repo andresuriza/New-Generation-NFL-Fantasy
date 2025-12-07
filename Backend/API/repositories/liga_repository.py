@@ -55,6 +55,17 @@ class LigaRepository(BaseRepository[LigaDB, LigaCreate, LigaUpdate]):
         def query(db: Session):
             return db.query(self.model).filter(self.model.temporada_id == temporada_id).count() > 0
         return self._execute_query(query)
+    def is_usuario_miembro(self, usuario_id: UUID, liga_id: UUID) -> bool:
+        """Check if a user is a member of a league"""
+        def query(db: Session):
+            from models.database_models import LigaMiembroDB
+            return db.query(LigaMiembroDB).filter(
+                and_(
+                    LigaMiembroDB.usuario_id == usuario_id,
+                    LigaMiembroDB.liga_id == liga_id
+                )
+            ).count() > 0
+        return self._execute_query(query)
 
 class LigaMiembroRepository(BaseRepository[LigaMiembroDB, dict, dict]):
     """Repository for League Member operations"""

@@ -87,7 +87,19 @@ class EquipoFantasyRepository(BaseRepository[EquipoFantasyDB, EquipoFantasyCreat
             query = query.filter(EquipoFantasyDB.id != exclude_id)
         
         return query.first() is not None
-
+    def get_by_usuario_and_liga(self, usuario_id: UUID, liga_id: UUID, exclude_id: Optional[UUID] = None) -> Optional[EquipoFantasyDB]:
+        """Get fantasy team by user ID and league ID"""
+        query = db_context.get_session().query(EquipoFantasyDB).filter(
+            and_(
+                EquipoFantasyDB.usuario_id == usuario_id,
+                EquipoFantasyDB.liga_id == liga_id
+            )
+        )
+        
+        if exclude_id:
+            query = query.filter(EquipoFantasyDB.id != exclude_id)
+        
+        return query.first()
 class EquipoFantasyAuditRepository:
     
     def __init__(self):
