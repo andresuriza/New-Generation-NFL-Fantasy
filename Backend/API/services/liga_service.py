@@ -1,7 +1,3 @@
-"""
-Business logic service for Liga operations with separation of concerns
-Services coordinate business logic - NO direct database access
-"""
 from typing import List
 from uuid import UUID
 
