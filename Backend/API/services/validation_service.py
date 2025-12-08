@@ -6,7 +6,6 @@ providing a unified interface while delegating to specialized validators.
 """
 from typing import Optional
 from uuid import UUID
-from sqlalchemy.orm import Session
 
 from validators import (
     usuario_validator, temporada_validator, liga_validator, 
@@ -22,15 +21,15 @@ class ValidationService:
     
     # Usuario validations
     @staticmethod
-    def validate_usuario_exists(db: Session, usuario_id: UUID):
+    def validate_usuario_exists(usuario_id: UUID):
         """Validate that a user exists"""
-        return usuario_validator.validate_exists(db, usuario_id)
+        return usuario_validator.validate_exists(usuario_id)
     
     @staticmethod
-    def validate_usuario_email(email: str, db: Session, exclude_id: Optional[UUID] = None):
+    def validate_usuario_email(email: str, exclude_id: Optional[UUID] = None):
         """Validate user email format and uniqueness"""
         usuario_validator.validate_email_format(email)
-        usuario_validator.validate_email_unique(db, email, exclude_id)
+        usuario_validator.validate_email_unique(email, exclude_id)
     
     @staticmethod
     def validate_usuario_password(password: str):
@@ -39,26 +38,26 @@ class ValidationService:
     
     # Temporada validations
     @staticmethod 
-    def validate_temporada_exists(db: Session, temporada_id: UUID):
+    def validate_temporada_exists(temporada_id: UUID):
         """Validate that a season exists"""
-        return temporada_validator.validate_exists(db, temporada_id)
+        return temporada_validator.validate_exists(temporada_id)
     
     @staticmethod
-    def validate_temporada_dates(fecha_inicio, fecha_fin, db: Session, exclude_id: Optional[UUID] = None):
+    def validate_temporada_dates(fecha_inicio, fecha_fin, exclude_id: Optional[UUID] = None):
         """Validate season dates"""
         temporada_validator.validate_date_range(fecha_inicio, fecha_fin)
-        temporada_validator.validate_season_dates_not_overlap(db, fecha_inicio, fecha_fin, exclude_id)
+        temporada_validator.validate_season_dates_not_overlap(fecha_inicio, fecha_fin, exclude_id)
     
     # Liga validations
     @staticmethod
-    def validate_liga_exists(db: Session, liga_id: UUID):
+    def validate_liga_exists(liga_id: UUID):
         """Validate that a league exists"""
-        return liga_validator.validate_exists(db, liga_id)
+        return liga_validator.validate_exists(liga_id)
     
     @staticmethod
-    def validate_liga_nombre_unique(db: Session, nombre: str, exclude_id: Optional[UUID] = None):
+    def validate_liga_nombre_unique(nombre: str, exclude_id: Optional[UUID] = None):
         """Validate that league name is unique"""
-        liga_validator.validate_nombre_unique(db, nombre, exclude_id)
+        liga_validator.validate_nombre_unique(nombre, exclude_id)
     
     @staticmethod
     def validate_liga_editable(liga):
@@ -66,55 +65,55 @@ class ValidationService:
         liga_validator.validate_liga_editable(liga)
     
     @staticmethod
-    def validate_liga_has_cupos(db: Session, liga_id: UUID):
+    def validate_liga_has_cupos(liga_id: UUID):
         """Validate that a league has available spots"""
-        liga_validator.validate_liga_has_cupos(db, liga_id)
+        liga_validator.validate_liga_has_cupos(liga_id)
     
     @staticmethod
-    def validate_usuario_not_in_liga(db: Session, liga_id: UUID, usuario_id: UUID):
+    def validate_usuario_not_in_liga(liga_id: UUID, usuario_id: UUID):
         """Validate that a user is not already in the league"""
-        liga_validator.validate_usuario_not_in_liga(db, liga_id, usuario_id)
+        liga_validator.validate_usuario_not_in_liga(liga_id, usuario_id)
     
     @staticmethod
-    def validate_alias_unique_in_liga(db: Session, liga_id: UUID, alias: str, exclude_usuario_id: Optional[UUID] = None):
+    def validate_alias_unique_in_liga(liga_id: UUID, alias: str, exclude_usuario_id: Optional[UUID] = None):
         """Validate that an alias is unique within a league"""
-        liga_validator.validate_alias_unique_in_liga(db, liga_id, alias, exclude_usuario_id)
+        liga_validator.validate_alias_unique_in_liga(liga_id, alias, exclude_usuario_id)
     
     # Jugador validations
     @staticmethod
-    def validate_jugador_exists(db: Session, jugador_id: UUID):
+    def validate_jugador_exists(jugador_id: UUID):
         """Validate that a player exists"""
-        return jugador_validator.validate_exists(db, jugador_id)
+        return jugador_validator.validate_exists(jugador_id)
     
     @staticmethod
-    def validate_jugador_email(email: str, db: Session, exclude_id: Optional[UUID] = None):
+    def validate_jugador_email(email: str, exclude_id: Optional[UUID] = None):
         """Validate player email"""
         jugador_validator.validate_email_format(email)
-        jugador_validator.validate_email_unique(db, email, exclude_id)
+        jugador_validator.validate_email_unique(email, exclude_id)
     
     # Equipo NFL validations
     @staticmethod
-    def validate_equipo_nfl_exists(db: Session, equipo_id: UUID):
+    def validate_equipo_nfl_exists(equipo_id: UUID):
         """Validate that NFL team exists"""
-        return equipo_nfl_validator.validate_exists(db, equipo_id)
+        return equipo_nfl_validator.validate_exists(equipo_id)
     
     # Equipo Fantasy validations
     @staticmethod
-    def validate_equipo_fantasy_exists(db: Session, equipo_id: UUID):
+    def validate_equipo_fantasy_exists(equipo_id: UUID):
         """Validate that fantasy team exists"""
-        return equipo_fantasy_validator.validate_exists(db, equipo_id)
+        return equipo_fantasy_validator.validate_exists(equipo_id)
     
     # Media validations
     @staticmethod
-    def validate_media_exists(db: Session, media_id: UUID):
+    def validate_media_exists(media_id: UUID):
         """Validate that media exists"""
-        return media_validator.validate_exists(db, media_id)
+        return media_validator.validate_exists(media_id)
     
     # Helper methods
     @staticmethod
-    def get_liga_current_members_count(db: Session, liga_id: UUID) -> int:
+    def get_liga_current_members_count(liga_id: UUID) -> int:
         """Get the current number of members in a league"""
-        return liga_validator.get_liga_current_members_count(db, liga_id)
+        return liga_validator.get_liga_current_members_count(liga_id)
     
     # Utility validation methods
     @staticmethod

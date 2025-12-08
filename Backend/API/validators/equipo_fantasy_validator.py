@@ -5,7 +5,8 @@ import re
 from typing import Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
-
+from repositories.equipo_fantasy_repository import EquipoFantasyRepository
+from repositories.liga_repository import LigaRepository
 from models.database_models import EquipoFantasyDB, UsuarioDB, LigaDB
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
 
@@ -14,9 +15,9 @@ class EquipoFantasyValidator:
     """Validation service for Equipo Fantasy model"""
     
     @staticmethod
-    def validate_exists(db: Session, equipo_id: UUID) -> EquipoFantasyDB:
+    def validate_exists(equipo_id: UUID) -> EquipoFantasyDB:
         """Validate that a fantasy team exists"""
-        equipo = db.query(EquipoFantasyDB).filter(EquipoFantasyDB.id == equipo_id).first()
+        equipo = EquipoFantasyRepository().get(equipo_id)
         if not equipo:
             raise NotFoundError("Equipo fantasy no encontrado")
         return equipo
@@ -39,24 +40,17 @@ class EquipoFantasyValidator:
             raise ValidationError("El nombre del equipo contiene lenguaje inapropiado")
     
     @staticmethod
-    def validate_nombre_unique_in_liga(db: Session, nombre: str, liga_id: UUID, exclude_id: Optional[UUID] = None) -> None:
+    def validate_nombre_unique_in_liga( nombre: str, liga_id: UUID, exclude_id: Optional[UUID] = None) -> None:
         """Validate that fantasy team name is unique within the league"""
-        query = db.query(EquipoFantasyDB).filter(
-            EquipoFantasyDB.nombre == nombre,
-            EquipoFantasyDB.liga_id == liga_id
-        )
+        existing_team = EquipoFantasyRepository().get_by_liga_and_nombre(liga_id, nombre)
         
-        if exclude_id:
-            query = query.filter(EquipoFantasyDB.id != exclude_id)
-        
-        existing_team = query.first()
-        if existing_team:
+        if existing_team and (not exclude_id or existing_team.id != exclude_id):
             raise ConflictError("Ya existe un equipo con ese nombre en la liga")
     
     @staticmethod
-    def validate_usuario_exists(db: Session, usuario_id: UUID) -> UsuarioDB:
+    def validate_usuario_exists( usuario_id: UUID) -> UsuarioDB:
         """Validate that user exists and is active"""
-        usuario = db.query(UsuarioDB).filter(UsuarioDB.id == usuario_id).first()
+        usuario = EquipoFantasyRepository().get_usuario_by_id(usuario_id)
         if not usuario:
             raise NotFoundError("Usuario no encontrado")
         
@@ -66,38 +60,27 @@ class EquipoFantasyValidator:
         return usuario
     
     @staticmethod
-    def validate_liga_exists(db: Session, liga_id: UUID) -> LigaDB:
+    def validate_liga_exists(liga_id: UUID) -> LigaDB:
         """Validate that league exists"""
-        liga = db.query(LigaDB).filter(LigaDB.id == liga_id).first()
+        liga = LigaRepository().get(liga_id)
         if not liga:
             raise NotFoundError("Liga no encontrada")
         return liga
     
     @staticmethod
-    def validate_usuario_in_liga(db: Session, usuario_id: UUID, liga_id: UUID) -> None:
+    def validate_usuario_in_liga(usuario_id: UUID, liga_id: UUID) -> None:
         """Validate that user is a member of the league"""
-        from models.database_models import LigaMiembroDB
+        is_miembro = LigaRepository().is_usuario_miembro(usuario_id, liga_id)
         
-        miembro = db.query(LigaMiembroDB).filter(
-            LigaMiembroDB.usuario_id == usuario_id,
-            LigaMiembroDB.liga_id == liga_id
-        ).first()
         
-        if not miembro:
+        if not is_miembro:
             raise ValidationError("El usuario debe ser miembro de la liga")
     
     @staticmethod
-    def validate_usuario_not_has_team_in_liga(db: Session, usuario_id: UUID, liga_id: UUID, exclude_id: Optional[UUID] = None) -> None:
+    def validate_usuario_not_has_team_in_liga(usuario_id: UUID, liga_id: UUID, exclude_id: Optional[UUID] = None) -> None:
         """Validate that user doesn't already have a team in this league"""
-        query = db.query(EquipoFantasyDB).filter(
-            EquipoFantasyDB.usuario_id == usuario_id,
-            EquipoFantasyDB.liga_id == liga_id
-        )
-        
-        if exclude_id:
-            query = query.filter(EquipoFantasyDB.id != exclude_id)
-        
-        existing_team = query.first()
+
+        existing_team = EquipoFantasyRepository().get_by_usuario_and_liga(usuario_id, liga_id, exclude_id)
         if existing_team:
             raise ConflictError("El usuario ya tiene un equipo en esta liga")
     
@@ -147,12 +130,12 @@ class EquipoFantasyValidator:
                 raise ValidationError("El presupuesto no puede exceder 1000")
     
     @staticmethod
-    def validate_equipo_can_be_deleted(db: Session, equipo_id: UUID) -> None:
+    def validate_equipo_can_be_deleted(equipo_id: UUID) -> None:
         """Validate that fantasy team can be deleted"""
-        equipo = EquipoFantasyValidator.validate_exists(db, equipo_id)
+        equipo = EquipoFantasyValidator.validate_exists(equipo_id)
         
         # Check if league allows deletions
-        liga = db.query(LigaDB).filter(LigaDB.id == equipo.liga_id).first()
+        liga = LigaRepository().get(equipo.liga_id)
         if liga and liga.estado.value != "Pre_draft":
             raise ValidationError("No se puede eliminar el equipo después del draft")
 

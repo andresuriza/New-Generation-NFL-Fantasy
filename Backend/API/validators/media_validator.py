@@ -4,19 +4,18 @@ Media validation service
 import re
 from typing import Optional
 from uuid import UUID
-from sqlalchemy.orm import Session
 
 from models.database_models import MediaDB
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
-
+from repositories.media_repository import MediaRepository
 
 class MediaValidator:
     """Validation service for Media model"""
     
     @staticmethod
-    def validate_exists(db: Session, media_id: UUID) -> MediaDB:
+    def validate_exists(media_id: UUID) -> MediaDB:
         """Validate that media exists"""
-        media = db.query(MediaDB).filter(MediaDB.id == media_id).first()
+        media = MediaRepository().get(media_id)
         if not media:
             raise NotFoundError("Media no encontrado")
         return media
@@ -109,13 +108,10 @@ class MediaValidator:
                 raise ValidationError("La altura debe estar entre 1 y 10000 píxeles")
     
     @staticmethod
-    def validate_url_unique(db: Session, url: str, exclude_id: Optional[UUID] = None) -> None:
+    def validate_url_unique(url: str, exclude_id: Optional[UUID] = None) -> None:
         """Validate that URL is unique"""
-        query = db.query(MediaDB).filter(MediaDB.url == url)
-        if exclude_id:
-            query = query.filter(MediaDB.id != exclude_id)
-        
-        if query.first():
+        existing_media = MediaRepository().get_by_url(url, exclude_id)
+        if existing_media:
             raise ConflictError("La URL ya está registrada")
     
     @staticmethod

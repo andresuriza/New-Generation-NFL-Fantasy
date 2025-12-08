@@ -3,7 +3,6 @@ Business logic service for Temporada operations with separation of concerns
 """
 from typing import List, Optional
 from uuid import UUID
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from models.database_models import TemporadaDB, TemporadaSemanaDB
@@ -34,11 +33,10 @@ class TemporadaService:
     """Service for Temporada CRUD operations"""
     
     @handle_db_errors
-    def crear_temporada(self, db: Session, temporada: TemporadaCreate) -> TemporadaResponse:
+    def crear_temporada(self, temporada: TemporadaCreate) -> TemporadaResponse:
         """Create a new season"""
         # Use validator for all validations
         TemporadaValidator.validate_complete_season_creation(
-            db, 
             temporada.nombre,
             temporada.semanas,
             temporada.fecha_inicio,
@@ -48,34 +46,34 @@ class TemporadaService:
         
         # Handle current season logic
         if temporada.es_actual:
-            temporada_repository.unset_all_actual(db)
+            temporada_repository.unset_all_actual()
         
-        nueva_temporada = temporada_repository.create(db, temporada)
+        nueva_temporada = temporada_repository.create(temporada)
         return _to_temporada_response(nueva_temporada)
     
-    def listar_temporadas(self, db: Session) -> List[TemporadaResponse]:
+    def listar_temporadas(self) -> List[TemporadaResponse]:
         """List all seasons"""
-        temporadas = temporada_repository.get_all_ordered(db)
+        temporadas = temporada_repository.get_all_ordered()
         return [_to_temporada_response(t) for t in temporadas]
     
-    def obtener_temporada(self, db: Session, temporada_id: UUID) -> TemporadaResponse:
+    def obtener_temporada(self, temporada_id: UUID) -> TemporadaResponse:
         """Get a season by ID"""
-        temporada = temporada_repository.get(db, temporada_id)
+        temporada = temporada_repository.get(temporada_id)
         if not temporada:
             raise NotFoundError("Temporada no encontrada")
         return _to_temporada_response(temporada)
     
-    def obtener_temporada_actual(self, db: Session) -> TemporadaResponse:
+    def obtener_temporada_actual(self) -> TemporadaResponse:
         """Get current active season"""
-        temporada = temporada_repository.get_actual(db)
+        temporada = temporada_repository.get_actual()
         if not temporada:
             raise NotFoundError("No hay temporada actual definida")
         return _to_temporada_response(temporada)
     
     @handle_db_errors
-    def actualizar_temporada(self, db: Session, temporada_id: UUID, actualizacion: TemporadaUpdate) -> TemporadaResponse:
+    def actualizar_temporada(self, temporada_id: UUID, actualizacion: TemporadaUpdate) -> TemporadaResponse:
         """Actualizar una temporada"""
-        temporada = db.query(TemporadaDB).filter(TemporadaDB.id == temporada_id).first()
+        temporada = temporada_repository.get(temporada_id)
         
         if not temporada:
             raise NotFoundError("Temporada no encontrada")
@@ -85,67 +83,53 @@ class TemporadaService:
         if "fecha_inicio" in datos_actualizados or "fecha_fin" in datos_actualizados:
             fecha_inicio = datos_actualizados.get("fecha_inicio", temporada.fecha_inicio)
             fecha_fin = datos_actualizados.get("fecha_fin", temporada.fecha_fin)
-            TemporadaValidator.validate_fecha_fin_posterior_inicio(fecha_inicio, fecha_fin)
-        
+            TemporadaValidator.validate_date_range(fecha_inicio, fecha_fin)
+
         if "semanas" in datos_actualizados:
             TemporadaValidator.validate_weeks_count_range(datos_actualizados["semanas"])
-        
         # Si se marca como actual, desmarcar otras temporadas actuales
         if actualizacion.es_actual:
-            db.query(TemporadaDB).filter(
-                TemporadaDB.es_actual == True,
-                TemporadaDB.id != temporada_id
-            ).update({"es_actual": False})
+            temporada_repository.unset_all_actual()
         
-        for campo, valor in datos_actualizados.items():
-            setattr(temporada, campo, valor)
-        
-        db.commit()
-        db.refresh(temporada)
-        return _to_temporada_response(temporada)
+        temporada_actualizada = temporada_repository.update(temporada_id, actualizacion)
+        return _to_temporada_response(temporada_actualizada)
     
     @handle_db_errors
-    def eliminar_temporada(self, db: Session, temporada_id: UUID) -> bool:
+    def eliminar_temporada(self, temporada_id: UUID) -> bool:
         """Delete a season"""
-        temporada = temporada_repository.get(db, temporada_id)
+        temporada = temporada_repository.get(temporada_id)
         if not temporada:
             raise NotFoundError("Temporada no encontrada")
         
         # Check for associated leagues
-        if liga_repository.has_associated_ligas(db, temporada_id):
+        if liga_repository.has_associated_ligas(temporada_id):
             raise ValidationError("No se puede eliminar la temporada porque tiene ligas asociadas")
         
-        return temporada_repository.delete(db, temporada_id)
+        return temporada_repository.delete(temporada_id)
     
     @handle_db_errors
-    def crear_semana(self, db: Session, semana: TemporadaSemanaCreate) -> TemporadaSemanaResponse:
+    def crear_semana(self, semana: TemporadaSemanaCreate) -> TemporadaSemanaResponse:
         """Crear una semana para una temporada"""
         # Use validator for week creation
         TemporadaValidator.validate_week_creation(
-            db,
             semana.temporada_id,
             semana.numero,
             semana.fecha_inicio,
             semana.fecha_fin
         )
         
-        nueva_semana = TemporadaSemanaDB(**semana.model_dump())
+        nueva_semana = temporada_semana_repository.create(semana)
         
-        db.add(nueva_semana)
-        db.commit()
-        db.refresh(nueva_semana)
         return _to_semana_response(nueva_semana)
     
-    def obtener_temporada_con_semanas(self, db: Session, temporada_id: UUID) -> TemporadaConSemanas:
+    def obtener_temporada_con_semanas(self, temporada_id: UUID) -> TemporadaConSemanas:
         """Obtener temporada con sus semanas"""
-        temporada = db.query(TemporadaDB).filter(TemporadaDB.id == temporada_id).first()
+        temporada = temporada_repository.get(temporada_id)
         
         if not temporada:
             raise NotFoundError("Temporada no encontrada")
         
-        semanas = db.query(TemporadaSemanaDB).filter(
-            TemporadaSemanaDB.temporada_id == temporada_id
-        ).order_by(TemporadaSemanaDB.numero).all()
+        semanas = temporada_semana_repository.get_by_temporada(temporada_id)
         
         temporada_response = _to_temporada_response(temporada)
         semanas_response = [_to_semana_response(s) for s in semanas]

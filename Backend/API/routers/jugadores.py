@@ -3,7 +3,6 @@ API Router for Jugadores (Players) endpoints
 """
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import List, Optional
-from sqlalchemy.orm import Session
 from uuid import UUID
 import os
 import json
@@ -23,16 +22,14 @@ from database import get_db
 router = APIRouter()
 
 @router.post("/", response_model=JugadorResponse, status_code=status.HTTP_201_CREATED)
-async def crear_jugador(jugador: JugadorCreate, db: Session = Depends(get_db)):
+async def crear_jugador(jugador: JugadorCreate):
     """
     Crear un nuevo jugador.
     """
-    return jugador_service.create(db, jugador)
-
+    return jugador_service.create(jugador)
 @router.post("/bulk", response_model=JugadorBulkResult, status_code=status.HTTP_201_CREATED)
 async def crear_jugadores_bulk(
-    request: JugadorBulkRequest,
-    db: Session = Depends(get_db)
+    request: JugadorBulkRequest
 ):
     """
     Crear múltiples jugadores desde datos JSON.
@@ -88,7 +85,7 @@ async def crear_jugadores_bulk(
             detail={"message": "No se pudo guardar el archivo entrante", "error": str(e)}
         )
 
-    result = jugador_service.crear_jugadores_bulk(db, request.jugadores, request.filename)
+    result = jugador_service.crear_jugadores_bulk(request.jugadores, request.filename)
 
     try:
         if uploaded_file_path and os.path.exists(uploaded_file_path):
@@ -137,11 +134,10 @@ async def crear_jugadores_bulk(
 @router.get("/", response_model=List[JugadorResponse])
 async def listar_jugadores(
     skip: int = Query(0, ge=0, description="Elementos a omitir"),
-    limit: int = Query(100, ge=1, le=100, description="Límite de elementos"),
-    db: Session = Depends(get_db)
+    limit: int = Query(100, ge=1, le=100, description="Límite de elementos")
 ):
     """Listar todos los jugadores con paginación"""
-    return jugador_service.listar_jugadores(db, skip, limit)
+    return jugador_service.listar_jugadores(skip, limit)
 
 @router.get("/buscar", response_model=List[JugadorResponse])
 async def buscar_jugadores(
@@ -151,7 +147,7 @@ async def buscar_jugadores(
     nombre: Optional[str] = Query(None, description="Buscar por nombre (parcial)"),
     skip: int = Query(0, ge=0, description="Elementos a omitir"),
     limit: int = Query(100, ge=1, le=100, description="Límite de elementos"),
-    db: Session = Depends(get_db)
+    
 ):
     """Buscar jugadores con filtros"""
     filters = JugadorFilter(
@@ -160,71 +156,65 @@ async def buscar_jugadores(
         activo=activo,
         nombre=nombre
     )
-    return jugador_service.buscar_jugadores(db, filters, skip, limit)
+    return jugador_service.buscar_jugadores(filters, skip, limit)
 
 @router.get("/posicion/{posicion}", response_model=List[JugadorResponse])
 async def listar_jugadores_por_posicion(
     posicion: PosicionJugadorEnum,
     skip: int = Query(0, ge=0, description="Elementos a omitir"),
-    limit: int = Query(100, ge=1, le=100, description="Límite de elementos"),
-    db: Session = Depends(get_db)
+    limit: int = Query(100, ge=1, le=100, description="Límite de elementos")
 ):
     """Listar jugadores por posición"""
-    return jugador_service.listar_jugadores_por_posicion(db, posicion.value, skip, limit)
+    return jugador_service.listar_jugadores_por_posicion(posicion.value, skip, limit)
 
 @router.get("/equipo/{equipo_id}", response_model=List[JugadorResponse])
 async def listar_jugadores_por_equipo(
     equipo_id: UUID,
     skip: int = Query(0, ge=0, description="Elementos a omitir"),
-    limit: int = Query(100, ge=1, le=100, description="Límite de elementos"),
-    db: Session = Depends(get_db)
+    limit: int = Query(100, ge=1, le=100, description="Límite de elementos")
 ):
     """Listar jugadores de un equipo NFL específico"""
-    return jugador_service.listar_jugadores_por_equipo(db, equipo_id, skip, limit)
+    return jugador_service.listar_jugadores_por_equipo(equipo_id, skip, limit)
 
 @router.get("/liga/{liga_id}", response_model=List[JugadorResponse])
 async def listar_jugadores_por_liga(
     liga_id: UUID,
     skip: int = Query(0, ge=0, description="Elementos a omitir"),
-    limit: int = Query(100, ge=1, le=100, description="Límite de elementos"),
-    db: Session = Depends(get_db)
+    limit: int = Query(100, ge=1, le=100, description="Límite de elementos")
 ):
     """Listar todos los jugadores de equipos en una liga específica"""
-    return jugador_service.listar_jugadores_por_liga(db, liga_id, skip, limit)
-
+    return jugador_service.listar_jugadores_por_liga(liga_id, skip, limit)
 @router.get("/usuario/{usuario_id}", response_model=List[JugadorResponse])
 async def listar_jugadores_por_usuario(
     usuario_id: UUID,
     skip: int = Query(0, ge=0, description="Elementos a omitir"),
-    limit: int = Query(100, ge=1, le=100, description="Límite de elementos"),
-    db: Session = Depends(get_db)
+    limit: int = Query(100, ge=1, le=100, description="Límite de elementos")
 ):
     """Listar todos los jugadores de equipos propiedad de un usuario específico"""
-    return jugador_service.listar_jugadores_por_usuario(db, usuario_id, skip, limit)
+    return jugador_service.listar_jugadores_por_usuario(usuario_id, skip, limit)
 
 @router.get("/{jugador_id}", response_model=JugadorResponse)
-async def obtener_jugador(jugador_id: UUID, db: Session = Depends(get_db)):
+async def obtener_jugador(jugador_id: UUID):
     """Obtener un jugador por ID"""
-    return jugador_service.obtener_jugador(db, jugador_id)
+    return jugador_service.obtener_jugador(jugador_id)
 
 @router.get("/{jugador_id}/completo", response_model=JugadorConEquipo)
-async def obtener_jugador_completo(jugador_id: UUID, db: Session = Depends(get_db)):
+async def obtener_jugador_completo(jugador_id: UUID):
     """Obtener jugador con información del equipo fantasy"""
-    return jugador_service.obtener_jugador_con_equipo(db, jugador_id)
+    return jugador_service.obtener_jugador_con_equipo(jugador_id)
 
 @router.put("/{jugador_id}", response_model=JugadorResponse)
 async def actualizar_jugador(
     jugador_id: UUID,
-    actualizacion: JugadorUpdate,
-    db: Session = Depends(get_db)
+    actualizacion: JugadorUpdate
 ):
     """Actualizar un jugador"""
-    return jugador_service.actualizar_jugador(db, jugador_id, actualizacion)
+    return jugador_service.actualizar_jugador(jugador_id, actualizacion)
 
 @router.delete("/{jugador_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def eliminar_jugador(jugador_id: UUID, db: Session = Depends(get_db)):
+async def eliminar_jugador(jugador_id: UUID):
     """Eliminar un jugador"""
-    jugador_service.eliminar_jugador(db, jugador_id)
+    jugador_service.eliminar_jugador(jugador_id)
 
 # ============================================================================
 # NOTICIAS DE JUGADORES (Player News)
@@ -234,7 +224,6 @@ async def eliminar_jugador(jugador_id: UUID, db: Session = Depends(get_db)):
 async def crear_noticia_jugador(
     jugador_id: UUID,
     noticia: NoticiaJugadorCreate,
-    db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
     """
@@ -263,7 +252,7 @@ async def crear_noticia_jugador(
         # Get authenticated user ID
         author_id = UUID(current_user["user_id"])
         
-        return noticia_jugador_service.crear_noticia(db, jugador_id, noticia, author_id)
+        return noticia_jugador_service.crear_noticia(jugador_id, noticia, author_id)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -278,29 +267,26 @@ async def obtener_noticias_jugador(
     jugador_id: UUID,
     skip: int = Query(0, ge=0, description="Elementos a omitir"),
     limit: int = Query(10, ge=1, le=50, description="Límite de elementos"),
-    incluir_autor: bool = Query(False, description="Incluir información del autor"),
-    db: Session = Depends(get_db)
+    incluir_autor: bool = Query(False, description="Incluir información del autor")
 ):
     """Obtener todas las noticias de un jugador"""
     return noticia_jugador_service.obtener_noticias_jugador(
-        db, jugador_id, skip, limit, incluir_autor
+        jugador_id, skip, limit, incluir_autor
     )
 
 @router.get("/noticias/lesiones-recientes", response_model=List[NoticiaJugadorConAutor])
 async def obtener_noticias_lesiones_recientes(
     days: int = Query(7, ge=1, le=30, description="Días hacia atrás para buscar"),
     skip: int = Query(0, ge=0, description="Elementos a omitir"),
-    limit: int = Query(10, ge=1, le=50, description="Límite de elementos"),
-    db: Session = Depends(get_db)
+    limit: int = Query(10, ge=1, le=50, description="Límite de elementos")
 ):
     """Obtener noticias de lesiones recientes de los últimos N días"""
-    return noticia_jugador_service.obtener_noticias_lesiones_recientes(db, days, skip, limit)
+    return noticia_jugador_service.obtener_noticias_lesiones_recientes(days, skip, limit)
 
 @router.get("/noticias/{noticia_id}", response_model=NoticiaJugadorResponse)
 async def obtener_noticia_por_id(
     noticia_id: UUID,
     incluir_autor: bool = Query(False, description="Incluir información del autor"),
-    db: Session = Depends(get_db)
 ):
     """Obtener una noticia específica por ID"""
-    return noticia_jugador_service.obtener_noticia_por_id(db, noticia_id, incluir_autor)
+    return noticia_jugador_service.obtener_noticia_por_id(noticia_id, incluir_autor)

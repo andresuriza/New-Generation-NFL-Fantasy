@@ -4,8 +4,7 @@ Usuario validation service
 import re
 from typing import Optional
 from uuid import UUID
-from sqlalchemy.orm import Session
-
+from repositories.usuario_repository import UsuarioRepository
 from models.database_models import UsuarioDB
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
 
@@ -14,9 +13,9 @@ class UsuarioValidator:
     """Validation service for Usuario model"""
     
     @staticmethod
-    def validate_exists(db: Session, usuario_id: UUID) -> UsuarioDB:
+    def validate_exists(usuario_id: UUID) -> UsuarioDB:
         """Validate that a user exists"""
-        usuario = db.query(UsuarioDB).filter(UsuarioDB.id == usuario_id).first()
+        usuario = UsuarioRepository().get(usuario_id)
         if not usuario:
             raise NotFoundError("Usuario no encontrado")
         return usuario
@@ -29,13 +28,10 @@ class UsuarioValidator:
             raise ValidationError("Formato de email inválido")
     
     @staticmethod
-    def validate_email_unique(db: Session, email: str, exclude_id: Optional[UUID] = None) -> None:
+    def validate_email_unique(email: str, exclude_id: Optional[UUID] = None) -> None:
         """Validate that email is unique"""
-        query = db.query(UsuarioDB).filter(UsuarioDB.correo == email)
-        if exclude_id:
-            query = query.filter(UsuarioDB.id != exclude_id)
-        
-        if query.first():
+        existing_usuario = UsuarioRepository().get_by_correo(email, exclude_id)
+        if existing_usuario:
             raise ConflictError("Email ya está registrado")
     
     @staticmethod
@@ -110,23 +106,20 @@ class UsuarioValidator:
             raise ValidationError("No se puede modificar un usuario eliminado")
     
     @staticmethod
-    def validate_alias_unique(db: Session, alias: str, exclude_id: Optional[UUID] = None) -> None:
+    def validate_alias_unique(alias: str, exclude_id: Optional[UUID] = None) -> None:
         """Validate that alias is unique"""
         if not alias:  # Empty alias is allowed
             return
             
-        query = db.query(UsuarioDB).filter(UsuarioDB.alias == alias)
-        if exclude_id:
-            query = query.filter(UsuarioDB.id != exclude_id)
-        
-        if query.first():
+        existing_usuario = UsuarioRepository().get_by_alias(alias, exclude_id)
+        if existing_usuario:
             raise ConflictError("El alias ya está en uso")
 
     @staticmethod
-    def validate_user_permission_for_update(requester_id: UUID, target_user_id: UUID, db: Session) -> None:
+    def validate_user_permission_for_update(requester_id: UUID, target_user_id: UUID) -> None:
         """Validate that a user has permission to update another user"""
         if requester_id != target_user_id:
-            requester = db.query(UsuarioDB).filter(UsuarioDB.id == requester_id).first()
+            requester = UsuarioRepository().get(requester_id)
             if not requester:
                 raise ValidationError("Usuario no autorizado")
             

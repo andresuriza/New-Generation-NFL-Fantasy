@@ -4,8 +4,7 @@ Temporada validation service
 from typing import Optional
 from uuid import UUID
 from datetime import datetime, date
-from sqlalchemy.orm import Session
-
+from repositories.temporada_repository import TemporadaRepository
 from models.database_models import TemporadaDB
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
 
@@ -14,9 +13,9 @@ class TemporadaValidator:
     """Validation service for Temporada model"""
     
     @staticmethod
-    def validate_exists(db: Session, temporada_id: UUID) -> TemporadaDB:
+    def validate_exists(temporada_id: UUID) -> TemporadaDB:
         """Validate that a season exists"""
-        temporada = db.query(TemporadaDB).filter(TemporadaDB.id == temporada_id).first()
+        temporada = TemporadaRepository().get(temporada_id)
         if not temporada:
             raise NotFoundError("Temporada no encontrada")
         return temporada
@@ -34,13 +33,10 @@ class TemporadaValidator:
             raise ValidationError("El nombre de la temporada no puede tener más de 100 caracteres")
     
     @staticmethod
-    def validate_nombre_unique(db: Session, nombre: str, exclude_id: Optional[UUID] = None) -> None:
+    def validate_nombre_unique(nombre: str, exclude_id: Optional[UUID] = None) -> None:
         """Validate that season name is unique"""
-        query = db.query(TemporadaDB).filter(TemporadaDB.nombre == nombre)
-        if exclude_id:
-            query = query.filter(TemporadaDB.id != exclude_id)
-        
-        if query.first():
+        existing_temporada = TemporadaRepository().get_by_nombre(nombre, exclude_id)
+        if existing_temporada:
             raise ConflictError("Ya existe una temporada con ese nombre")
     
     @staticmethod
@@ -86,12 +82,11 @@ class TemporadaValidator:
             raise ValidationError("La fecha de fin debe ser posterior a la fecha de inicio")
     
     @staticmethod
-    def validate_weeks_within_season(db: Session, temporada_id: UUID, semanas_data: list) -> None:
+    def validate_weeks_within_season(temporada_id: UUID, semanas_data: list) -> None:
         """Validate that week dates are within season range and don't overlap"""
-        from models.database_models import TemporadaSemanaDB
         
         # Get season to check date range
-        temporada = db.query(TemporadaDB).filter(TemporadaDB.id == temporada_id).first()
+        temporada = TemporadaValidator.validate_exists(temporada_id)
         if not temporada:
             raise NotFoundError("Temporada no encontrada")
         
@@ -126,14 +121,12 @@ class TemporadaValidator:
                 raise ValidationError(f"Las fechas de las semanas {current_week.get('numero')} y {next_week.get('numero')} se traslapan")
     
     @staticmethod
-    def validate_only_one_current_season(db: Session, exclude_id: Optional[UUID] = None) -> None:
+    def validate_only_one_current_season(exclude_id: Optional[UUID] = None) -> None:
         """Validate that only one season can be marked as current"""
-        query = db.query(TemporadaDB).filter(TemporadaDB.es_actual == True)
-        if exclude_id:
-            query = query.filter(TemporadaDB.id != exclude_id)
+        from repositories.temporada_repository import temporada_repository
         
-        existing_current = query.first()
-        if existing_current:
+        existing_current = temporada_repository.get_actual()
+        if existing_current and (not exclude_id or existing_current.id != exclude_id):
             raise ConflictError(f"Ya existe una temporada marcada como actual: '{existing_current.nombre}'")
     
     @staticmethod
@@ -153,18 +146,10 @@ class TemporadaValidator:
             raise ValidationError(f"El rango de fechas ({duration_days} días) es muy largo para {semanas_count} semanas")
     
     @staticmethod
-    def validate_season_dates_not_overlap(db: Session, fecha_inicio: date, fecha_fin: date, exclude_id: Optional[UUID] = None) -> None:
+    def validate_season_dates_not_overlap(fecha_inicio: date, fecha_fin: date, exclude_id: Optional[UUID] = None) -> None:
         """Validate that season dates don't overlap with existing seasons"""
-        query = db.query(TemporadaDB).filter(
-            # Check for overlapping dates
-            TemporadaDB.fecha_inicio <= fecha_fin,
-            TemporadaDB.fecha_fin >= fecha_inicio
-        )
         
-        if exclude_id:
-            query = query.filter(TemporadaDB.id != exclude_id)
-        
-        overlapping_season = query.first()
+        overlapping_season = TemporadaRepository().get_overlapping_season(fecha_inicio, fecha_fin, exclude_id)
         if overlapping_season:
             raise ConflictError(f"Las fechas se superponen con la temporada '{overlapping_season.nombre}'")
     
@@ -176,13 +161,13 @@ class TemporadaValidator:
             raise ValidationError("La fecha de inicio no puede ser en el pasado")
     
     @staticmethod
-    def validate_complete_season_creation(db: Session, nombre: str, semanas: int, 
+    def validate_complete_season_creation(nombre: str, semanas: int, 
                                         fecha_inicio: date, fecha_fin: date, 
                                         es_actual: bool = False) -> None:
         """Comprehensive validation for season creation"""
         # Validate name
         TemporadaValidator.validate_nombre_format(nombre)
-        TemporadaValidator.validate_nombre_unique(db, nombre)
+        TemporadaValidator.validate_nombre_unique(nombre)
         
         # Validate weeks count
         TemporadaValidator.validate_weeks_count(semanas)
@@ -190,33 +175,29 @@ class TemporadaValidator:
         # Validate dates
         TemporadaValidator.validate_date_range(fecha_inicio, fecha_fin)
         TemporadaValidator.validate_season_in_future_or_current(fecha_inicio)
-        TemporadaValidator.validate_season_dates_not_overlap(db, fecha_inicio, fecha_fin)
+        TemporadaValidator.validate_season_dates_not_overlap(fecha_inicio, fecha_fin)
         
         # Validate weeks consistency with date range
         TemporadaValidator.validate_season_weeks_consistency(semanas, fecha_inicio, fecha_fin)
         
         # Validate current season uniqueness
         if es_actual:
-            TemporadaValidator.validate_only_one_current_season(db)
+            TemporadaValidator.validate_only_one_current_season()
     
     @staticmethod
-    def validate_week_creation(db: Session, temporada_id: UUID, numero: int, 
-                              fecha_inicio: date, fecha_fin: date) -> None:
+    def validate_week_creation(temporada_id: UUID, numero: int, 
+                          fecha_inicio: date, fecha_fin: date) -> None:
         """Validate individual week creation"""
-        from models.database_models import TemporadaSemanaDB
         
         # Get season
-        temporada = TemporadaValidator.validate_exists(db, temporada_id)
+        temporada = TemporadaValidator.validate_exists(temporada_id)
         
         # Validate week number
         if numero < 1 or numero > temporada.semanas:
             raise ValidationError(f"El número de semana debe estar entre 1 y {temporada.semanas}")
         
         # Check if week already exists
-        existing_week = db.query(TemporadaSemanaDB).filter(
-            TemporadaSemanaDB.temporada_id == temporada_id,
-            TemporadaSemanaDB.numero == numero
-        ).first()
+        existing_week = TemporadaRepository().get_week_by_numero(temporada_id, numero)
         
         if existing_week:
             raise ConflictError(f"La semana {numero} ya existe para esta temporada")
@@ -230,21 +211,16 @@ class TemporadaValidator:
             raise ValidationError("Las fechas de la semana deben estar dentro del rango de la temporada")
         
         # Check for overlaps with existing weeks
-        overlapping_week = db.query(TemporadaSemanaDB).filter(
-            TemporadaSemanaDB.temporada_id == temporada_id,
-            # Check for any overlap
-            TemporadaSemanaDB.fecha_inicio < fecha_fin,
-            TemporadaSemanaDB.fecha_fin > fecha_inicio
-        ).first()
+        overlapping_week = TemporadaRepository().get_overlapping_week(temporada_id, fecha_inicio, fecha_fin)
         
         if overlapping_week:
             raise ConflictError(f"Las fechas se traslapan con la semana {overlapping_week.numero}")
     
     @staticmethod
-    def validate_season_update(db: Session, temporada_id: UUID, nombre: Optional[str] = None,
-                              es_actual: Optional[bool] = None) -> None:
+    def validate_season_update(temporada_id: UUID, nombre: Optional[str] = None,
+                          es_actual: Optional[bool] = None) -> None:
         """Validate season update operations"""
-        temporada = TemporadaValidator.validate_exists(db, temporada_id)
+        temporada = TemporadaValidator.validate_exists(temporada_id)
         
         # Check if season can be modified
         TemporadaValidator.validate_season_can_be_modified(temporada)
@@ -252,11 +228,11 @@ class TemporadaValidator:
         # Validate name if being updated
         if nombre is not None:
             TemporadaValidator.validate_nombre_format(nombre)
-            TemporadaValidator.validate_nombre_unique(db, nombre, temporada_id)
+            TemporadaValidator.validate_nombre_unique(nombre, temporada_id)
         
         # Validate current season status if being updated
         if es_actual is True:
-            TemporadaValidator.validate_only_one_current_season(db, temporada_id)
+            TemporadaValidator.validate_only_one_current_season(temporada_id)
     
     @staticmethod
     def validate_season_can_be_modified(temporada: TemporadaDB) -> None:
@@ -268,14 +244,15 @@ class TemporadaValidator:
             raise ValidationError("No se puede modificar una temporada que ya ha comenzado")
     
     @staticmethod
-    def validate_season_can_be_deleted(db: Session, temporada_id: UUID) -> None:
+    def validate_season_can_be_deleted(temporada_id: UUID) -> None:
         """Validate that season can be deleted"""
-        from models.database_models import LigaDB
+        temporada = TemporadaValidator.validate_exists(temporada_id)
         
         # Check if any leagues are using this season
-        liga_count = db.query(LigaDB).filter(LigaDB.temporada_id == temporada_id).count()
+        liga_count = TemporadaRepository().count_ligas_by_temporada(temporada_id)
+        
         if liga_count > 0:
-            raise ValidationError("No se puede eliminar la temporada porque está siendo utilizada por ligas")
+            raise ValidationError(f"No se puede eliminar la temporada porque está siendo utilizada por {liga_count} liga(s)")
     
     @staticmethod
     def validate_current_week(semana_actual: int, total_semanas: int) -> None:
