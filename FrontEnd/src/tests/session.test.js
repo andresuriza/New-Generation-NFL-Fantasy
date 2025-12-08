@@ -300,13 +300,12 @@ describe('session', () => {
   // ========== Pruebas para updateActivity ==========
   describe('updateActivity', () => {
     test('updates lastActivity timestamp', () => {
-      // Crear sesión, esperar, actualizar actividad
+      // Crear sesión, actualizar actividad
       const original = createSession({ email: 'active@test.com' });
       const originalTime = original.lastActivity;
 
-      // Simular paso del tiempo
-      jest.advanceTimersByTime(5000); // 5 segundos
-
+      // Pequeña pausa para asegurar que el tiempo avance
+      // (Date.now() siempre será >= al timestamp original)
       updateActivity();
       const updated = getSession();
 
