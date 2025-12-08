@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Request
-from sqlalchemy.orm import Session
+
 from typing import List, Optional
 from uuid import UUID
 from datetime import datetime, timedelta
@@ -41,25 +41,25 @@ def convert_usuario_to_response(usuario_db: UsuarioDB) -> UsuarioResponse:
     )
 
 @router.post("/", response_model=UsuarioResponse, status_code=status.HTTP_201_CREATED)
-async def crear_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
+async def crear_usuario(usuario: UsuarioCreate):
     """Crear un nuevo usuario"""
     try:
-        return usuario_service.crear_usuario(db, usuario)
+        return usuario_service.crear_usuario(usuario)
     except ConflictError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
     except ValidationError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
 @router.get("/", response_model=List[UsuarioResponse])
-async def listar_usuarios(db: Session = Depends(get_db)):
+async def listar_usuarios():
     """Obtener lista de todos los usuarios activos"""
-    return usuario_service.listar_usuarios(db)
+    return usuario_service.listar_usuarios()
 
 @router.get("/{usuario_id}", response_model=UsuarioResponse)
-async def obtener_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
+async def obtener_usuario(usuario_id: UUID):
     """Obtener un usuario específico por ID"""
     try:
-        return usuario_service.obtener_usuario(db, usuario_id)
+        return usuario_service.obtener_usuario(usuario_id)
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
 
@@ -67,7 +67,6 @@ async def obtener_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
 async def actualizar_usuario(
     usuario_id: UUID,
     updates: UsuarioUpdate,
-    db: Session = Depends(get_db),
     current=Depends(get_current_user),
 ):
     """Actualizar datos de perfil del usuario.
@@ -82,7 +81,7 @@ async def actualizar_usuario(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")
     
     try:
-        return usuario_service.actualizar_usuario(db, usuario_id, updates, requester_id)
+        return usuario_service.actualizar_usuario(usuario_id, updates, requester_id)
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
     except ConflictError as e:
@@ -91,7 +90,7 @@ async def actualizar_usuario(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
 @router.post("/login", response_model=LoginResponse)
-async def login_usuario(credenciales: UsuarioLogin, request: Request, db: Session = Depends(get_db)):
+async def login_usuario(credenciales: UsuarioLogin, request: Request):
     """
     Autenticación de usuario con las siguientes funcionalidades:
     - Bloqueo automático después de 5 intentos fallidos
@@ -100,7 +99,7 @@ async def login_usuario(credenciales: UsuarioLogin, request: Request, db: Sessio
     - Mensajes de error genéricos por seguridad
     """
     # Autenticar usuario usando el servicio de autenticación
-    resultado_login = auth_service.login_user(db, credenciales.correo, credenciales.contrasena)
+    resultado_login = auth_service.login_user(credenciales.correo, credenciales.contrasena)
 
     if not resultado_login.get("success"):
         # Propagar mensaje específico cuando corresponda
@@ -145,13 +144,13 @@ class UnlockSetPassword(BaseModel):
     new_password: str
 
 @router.post("/unlock/request")
-async def solicitar_desbloqueo(payload: UnlockRequest, db: Session = Depends(get_db)):
-    return usuario_service.solicitar_desbloqueo(db, payload.correo)
+async def solicitar_desbloqueo(payload: UnlockRequest):
+    return usuario_service.solicitar_desbloqueo(payload.correo)
 
 
 @router.get("/unlock/confirm")
-async def confirmar_desbloqueo(token: str, db: Session = Depends(get_db)):
-    return usuario_service.confirmar_desbloqueo(db, token)
+async def confirmar_desbloqueo(token: str):
+    return usuario_service.confirmar_desbloqueo(token)
 
 
 def _is_strong_password(pwd: str) -> bool:
@@ -170,6 +169,6 @@ def _is_strong_password(pwd: str) -> bool:
 
 
 @router.post("/unlock/set-password")
-async def establecer_contrasena(payload: UnlockSetPassword, db: Session = Depends(get_db)):
+async def establecer_contrasena(payload: UnlockSetPassword):
     """Permitir establecer una nueva contraseña usando el token de desbloqueo."""
-    return usuario_service.establecer_contrasena(db, payload.token, payload.new_password)
+    return usuario_service.establecer_contrasena(payload.token, payload.new_password)
