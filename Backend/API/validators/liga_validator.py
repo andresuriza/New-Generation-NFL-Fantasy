@@ -161,6 +161,46 @@ class LigaValidator:
         """Get the total number of members in a league (including commissioner)"""
         miembros = liga_miembro_repository.get_miembros_by_liga(liga_id)
         return len(miembros)
+    
+    @staticmethod
+    def validate_for_create(nombre: str, temporada_id: UUID, comisionado_id: UUID) -> None:
+        """Validate all requirements for creating a league"""
+        LigaValidator.validate_nombre_unique(nombre)
+        LigaValidator.validate_temporada_exists(temporada_id)
+        LigaValidator.validate_comisionado_exists(comisionado_id)
+    
+    @staticmethod
+    def validate_for_update(liga_id: UUID, nuevo_nombre: Optional[str] = None) -> LigaDB:
+        """Validate all requirements for updating a league"""
+        liga = LigaValidator.validate_exists(liga_id)
+        LigaValidator.validate_liga_editable(liga)
+        
+        # Validate unique name if changing
+        if nuevo_nombre and nuevo_nombre != liga.nombre:
+            LigaValidator.validate_nombre_unique(nuevo_nombre, liga_id)
+        
+        return liga
+    
+    @staticmethod
+    def validate_for_delete(liga_id: UUID) -> LigaDB:
+        """Validate all requirements for deleting a league"""
+        liga = LigaValidator.validate_exists(liga_id)
+        LigaValidator.validate_liga_editable(liga)
+        return liga
+    
+    @staticmethod
+    def validate_for_join_liga(liga_id: UUID, usuario_id: UUID, alias: str, nombre_equipo: str) -> LigaDB:
+        """Validate all requirements for joining a league"""
+        liga = LigaValidator.validate_exists(liga_id)
+        LigaValidator.validate_usuario_not_in_liga(liga_id, usuario_id)
+        LigaValidator.validate_liga_has_cupos(liga_id)
+        LigaValidator.validate_alias_unique_in_liga(liga_id, alias)
+        
+        # Validate team name uniqueness
+        from validators.equipo_fantasy_validator import EquipoFantasyValidator
+        EquipoFantasyValidator.validate_nombre_unique_in_liga(nombre_equipo, liga_id)
+        
+        return liga
 
 
 # Create validator instance

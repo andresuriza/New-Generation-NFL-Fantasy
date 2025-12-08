@@ -54,16 +54,9 @@ class EquipoFantasyService:
     def crear_equipo_fantasy(self,  equipo: EquipoFantasyCreate, usuario_id: UUID) -> EquipoFantasyResponse:
         """Create a new fantasy team"""
         
-        # Use validator for all validations
+        # Validate all requirements for creating a fantasy team
         validator = EquipoFantasyValidator()
-        validator.validate_liga_exists(equipo.liga_id)
-        validator.validate_usuario_exists(usuario_id)
-        validator.validate_usuario_not_has_team_in_liga(usuario_id, equipo.liga_id)
-        validator.validate_nombre_unique_in_liga(equipo.nombre, equipo.liga_id)
-        
-        # Validate image if provided
-        if equipo.imagen_url:
-            validator.validate_imagen_url_format(equipo.imagen_url)
+        validator.validate_for_create(equipo.nombre, equipo.liga_id, usuario_id, equipo.imagen_url)
         
         # Generate thumbnail
         thumbnail_url = _generate_thumbnail_url(equipo.imagen_url)
@@ -90,22 +83,17 @@ class EquipoFantasyService:
     def actualizar_equipo_fantasy(self, equipo_id: UUID, equipo_update: EquipoFantasyUpdate, usuario_id: UUID) -> EquipoFantasyResponse:
         """Update fantasy team"""
         validator = EquipoFantasyValidator()
-        equipo = validator.validate_exists(equipo_id)
-        
-        # Check ownership using validator
-        validator.validate_usuario_owns_team(equipo, usuario_id)
+        equipo = validator.validate_for_update(equipo_id, usuario_id, equipo_update.nombre, equipo_update.imagen_url)
         
         update_data = {}
         
-        # Validate and update name
+        # Update name if provided
         if equipo_update.nombre is not None:
-            validator.validate_nombre_unique_in_liga(equipo_update.nombre, equipo.liga_id, equipo_id)
             update_data['nombre'] = equipo_update.nombre
         
-        # Validate and update image
+        # Update image if provided
         if equipo_update.imagen_url is not None:
             if equipo_update.imagen_url.strip():
-                validator.validate_imagen_url_format(equipo_update.imagen_url)
                 update_data['imagen_url'] = equipo_update.imagen_url
                 update_data['thumbnail_url'] = _generate_thumbnail_url(equipo_update.imagen_url)
             else:

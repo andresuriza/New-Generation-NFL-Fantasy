@@ -37,30 +37,18 @@ class JugadorService:
         Core player creation logic without transaction management.
         Used by both create() and crear_jugadores_bulk() methods.
         """
-        # Validate required fields
-        if not jugador_data.nombre or not jugador_data.nombre.strip():
-            raise ValidationError("El nombre del jugador es requerido")
-        
-        if not jugador_data.posicion:
-            raise ValidationError("La posición del jugador es requerida")
-        
-        if not jugador_data.equipo_id:
-            raise ValidationError("El equipo NFL es requerido")
-        
-        if not jugador_data.imagen_url or not jugador_data.imagen_url.strip():
-            raise ValidationError("La URL de imagen es requerida")
+        # Validate all requirements for creating a player
+        jugador_validator.validate_for_create(
+            jugador_data.nombre,
+            jugador_data.posicion,
+            jugador_data.equipo_id,
+            jugador_data.imagen_url
+        )
         
         # Check if team exists
         equipo = equipo_repository.get(jugador_data.equipo_id)
         if not equipo:
             raise NotFoundError(f"El equipo NFL con ID {jugador_data.equipo_id} no existe")
-        
-        # Check for duplicate player name in the same team
-        existing_jugador = jugador_repository.get_by_nombre_equipo(
-            jugador_data.nombre, jugador_data.equipo_id
-        )
-        if existing_jugador:
-            raise ConflictError(f"El jugador '{jugador_data.nombre}' ya existe en el equipo '{equipo.nombre}'")
         
         # Save image (auto-detect URL or base64) and generate thumbnail
         try:
@@ -122,24 +110,18 @@ class JugadorService:
     @handle_db_errors
     def actualizar_jugador(self, jugador_id: UUID, actualizacion: JugadorUpdate) -> JugadorResponse:
         """Update a player"""
-        jugador = jugador_repository.get(jugador_id)
-        if not jugador:
-            raise NotFoundError("Jugador no encontrado")
+        # Validate all requirements for updating
+        jugador = jugador_validator.validate_for_update(
+            jugador_id,
+            actualizacion.nombre,
+            actualizacion.equipo_id
+        )
         
         # Validate NFL team exists if changing
         if actualizacion.equipo_id:
             equipo = equipo_repository.get(actualizacion.equipo_id)
             if not equipo:
                 raise NotFoundError("Equipo NFL no encontrado")
-        
-        # Validate unique name per NFL team if changing name or team
-        if actualizacion.nombre or actualizacion.equipo_id:
-            nuevo_nombre = actualizacion.nombre or jugador.nombre
-            nuevo_equipo_id = actualizacion.equipo_id or jugador.equipo_id
-            
-            existing_jugador = jugador_repository.get_by_nombre_equipo(nuevo_nombre, nuevo_equipo_id)
-            if existing_jugador and existing_jugador.id != jugador_id:
-                raise ValidationError("Ya existe un jugador con ese nombre en el equipo")
         
         updated_jugador = jugador_repository.update(jugador, actualizacion)
         return _to_jugador_response(updated_jugador)

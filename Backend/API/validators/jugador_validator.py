@@ -202,6 +202,60 @@ class JugadorValidator:
                 return
         
         raise ValidationError("Imagen debe ser una URL (http:// o https://), datos base64 con prefijo data:, o base64 sin prefijo")
+    
+    @staticmethod
+    def validate_for_create(nombre: str, posicion: str, equipo_id: UUID, imagen_url: str) -> None:
+        """Validate all requirements for creating a player"""
+        # Validate required fields
+        if not nombre or not nombre.strip():
+            raise ValidationError("El nombre del jugador es requerido")
+        
+        if not posicion:
+            raise ValidationError("La posición del jugador es requerida")
+        
+        if not equipo_id:
+            raise ValidationError("El equipo NFL es requerido")
+        
+        if not imagen_url or not imagen_url.strip():
+            raise ValidationError("La URL de imagen es requerida")
+        
+        # Validate unique name in team
+        JugadorValidator.validate_nombre_unique_in_team(nombre, equipo_id)
+    
+    @staticmethod
+    def validate_for_update(jugador_id: UUID, nuevo_nombre: Optional[str] = None,
+                          nuevo_equipo_id: Optional[UUID] = None) -> JugadoresDB:
+        """Validate all requirements for updating a player"""
+        jugador = JugadorValidator.validate_exists(jugador_id)
+        
+        # Validate unique name per NFL team if changing name or team
+        if nuevo_nombre or nuevo_equipo_id:
+            nombre_a_validar = nuevo_nombre or jugador.nombre
+            equipo_a_validar = nuevo_equipo_id or jugador.equipo_id
+            
+            JugadorValidator.validate_nombre_unique_in_team(nombre_a_validar, equipo_a_validar, jugador_id)
+        
+        return jugador
+    
+    @staticmethod
+    def validate_for_create_noticia(jugador_id: UUID, es_lesion: bool, resumen: Optional[str] = None,
+                                   designacion: Optional[str] = None) -> JugadoresDB:
+        """Validate all requirements for creating player news"""
+        jugador = JugadorValidator.validate_exists(jugador_id)
+        
+        if not jugador.activo:
+            raise ValidationError(f"El jugador con ID {jugador_id} no está activo")
+        
+        # Validate injury news requirements
+        if es_lesion:
+            if not resumen:
+                raise ValidationError("El resumen es requerido para noticias de lesión")
+            if not designacion:
+                raise ValidationError("La designación es requerida para noticias de lesión")
+            if len(resumen) > 30:
+                raise ValidationError("El resumen no puede exceder 30 caracteres")
+        
+        return jugador
 
 
 # Create validator instance
