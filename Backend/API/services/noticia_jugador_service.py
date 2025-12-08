@@ -3,7 +3,6 @@ Business logic service for NoticiaJugador (Player News) operations
 """
 from typing import List
 from uuid import UUID
-from sqlalchemy.orm import Session
 
 from models.jugador import (
     NoticiaJugadorCreate, 
@@ -44,7 +43,6 @@ class NoticiaJugadorService:
     
     def crear_noticia(
         self, 
-        db: Session, 
         jugador_id: UUID, 
         noticia_data: NoticiaJugadorCreate, 
         author_id: UUID
@@ -62,12 +60,12 @@ class NoticiaJugadorService:
         """
         
         # Validate player exists and is active
-        jugador = JugadorValidator.validate_exists(db, jugador_id)
+        jugador = JugadorValidator.validate_exists(jugador_id)
         if not jugador.activo:
             raise ValidationError(f"El jugador con ID {jugador_id} no está activo")
         
         # Validate author exists and is administrator
-        author = usuario_repository.get(db, author_id)
+        author = usuario_repository.get(author_id)
         if not author:
             raise ValidationError(f"El usuario autor con ID {author_id} no existe")
         if author.rol.value != "administrador":
@@ -90,14 +88,13 @@ class NoticiaJugadorService:
         
         # Create the news item
         nueva_noticia = noticia_jugador_repository.create_with_author(
-            db, jugador_id, noticia_data, author_id
+            jugador_id, noticia_data, author_id
         )
         
         return _to_noticia_response(nueva_noticia)
     
     def obtener_noticias_jugador(
         self, 
-        db: Session, 
         jugador_id: UUID, 
         skip: int = 0, 
         limit: int = 100,
@@ -106,48 +103,46 @@ class NoticiaJugadorService:
         """Get all news for a specific player"""
         
         # Validate player exists
-        JugadorValidator.validate_exists(db, jugador_id)
+        JugadorValidator.validate_exists(jugador_id)
         
         if incluir_autor:
             noticias = noticia_jugador_repository.get_by_jugador_with_author(
-                db, jugador_id, skip, limit
+                jugador_id, skip, limit
             )
             return [_to_noticia_con_autor_response(noticia) for noticia in noticias]
         else:
             noticias = noticia_jugador_repository.get_by_jugador_id(
-                db, jugador_id, skip, limit
+                jugador_id, skip, limit
             )
             return [_to_noticia_response(noticia) for noticia in noticias]
     
     def obtener_noticia_por_id(
         self, 
-        db: Session, 
         noticia_id: UUID,
         incluir_autor: bool = False
     ) -> NoticiaJugadorResponse | NoticiaJugadorConAutor:
         """Get a specific news item by ID"""
         
         if incluir_autor:
-            noticia = noticia_jugador_repository.get_with_author(db, noticia_id)
+            noticia = noticia_jugador_repository.get_with_author(noticia_id)
             if not noticia:
                 raise ValidationError(f"No se encontró la noticia con ID {noticia_id}")
             return _to_noticia_con_autor_response(noticia)
         else:
-            noticia = noticia_jugador_repository.get(db, noticia_id)
+            noticia = noticia_jugador_repository.get(noticia_id)
             if not noticia:
                 raise ValidationError(f"No se encontró la noticia con ID {noticia_id}")
             return _to_noticia_response(noticia)
     
     def obtener_noticias_lesiones_recientes(
         self, 
-        db: Session, 
         days: int = 7, 
         skip: int = 0, 
         limit: int = 100
     ) -> List[NoticiaJugadorConAutor]:
         """Get recent injury news from the last N days"""
         
-        noticias = noticia_jugador_repository.get_recent_injury_news(db, days, skip, limit)
+        noticias = noticia_jugador_repository.get_recent_injury_news(days, skip, limit)
         return [_to_noticia_con_autor_response(noticia) for noticia in noticias]
 
 
