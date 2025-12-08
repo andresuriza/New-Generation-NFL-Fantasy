@@ -10,9 +10,9 @@ from models.jugador import (
     NoticiaJugadorConAutor
 )
 from models.database_models import NoticiaJugadorDB
-from repositories.noticia_jugador_repository import noticia_jugador_repository
-from repositories.jugador_repository import jugador_repository
-from repositories.usuario_repository import usuario_repository
+from DAL.repositories.noticia_jugador_repository import noticia_jugador_repository
+from DAL.repositories.jugador_repository import jugador_repository
+from DAL.repositories.usuario_repository import usuario_repository
 from validators.jugador_validator import JugadorValidator
 from exceptions.business_exceptions import ValidationError
 

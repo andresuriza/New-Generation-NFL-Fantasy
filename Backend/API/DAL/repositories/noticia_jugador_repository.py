@@ -5,8 +5,8 @@ from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session, joinedload
 
-from repositories.base import BaseRepository
-from repositories.db_context import db_context
+from DAL.repositories.base import BaseRepository
+from DAL.repositories.db_context import db_context
 from models.database_models import NoticiaJugadorDB, UsuarioDB
 from models.jugador import NoticiaJugadorCreate
 

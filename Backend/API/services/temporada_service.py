@@ -14,8 +14,8 @@ from models.temporada import (
     TemporadaSemanaCreate,
     TemporadaConSemanas
 )
-from repositories.temporada_repository import temporada_repository, temporada_semana_repository
-from repositories.liga_repository import liga_repository
+from DAL.repositories.temporada_repository import temporada_repository, temporada_semana_repository
+from DAL.repositories.liga_repository import liga_repository
 from services.error_handling import handle_db_errors
 from validators.temporada_validator import TemporadaValidator
 from exceptions.business_exceptions import ValidationError, ConflictError, NotFoundError

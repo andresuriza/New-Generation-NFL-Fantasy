@@ -155,7 +155,7 @@ class AuthService:
         """
         from models.database_models import UsuarioDB, EstadoUsuarioEnum
         from models.usuario import UsuarioResponse, RolUsuario, EstadoUsuario
-        from repositories.db_context import db_context
+        from DAL.repositories.db_context import db_context
         
         try:
             with db_context.get_session() as db_session:

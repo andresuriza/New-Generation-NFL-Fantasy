@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_
 from datetime import date
 
-from repositories.base import BaseRepository
+from DAL.repositories.base import BaseRepository
 from models.database_models import TemporadaDB, TemporadaSemanaDB
 from models.temporada import TemporadaCreate, TemporadaUpdate
 

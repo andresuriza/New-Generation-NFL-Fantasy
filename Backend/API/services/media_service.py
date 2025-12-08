@@ -7,7 +7,7 @@ from datetime import datetime
 
 from models.media import MediaCreate, MediaUpdate, MediaResponse
 from models.database_models import MediaDB
-from repositories.media_repository import media_repository
+from DAL.repositories.media_repository import media_repository
 def _to_media_response(media: MediaDB) -> MediaResponse:
     return MediaResponse.model_validate(media, from_attributes=True)
 
@@ -21,7 +21,7 @@ class MediaService:
             ValueError: If team doesn't exist or media already exists
         """
         # Validate team exists
-        from ..repositories.equipo_repository import equipo_repository
+        from DAL.repositories.equipo_repository import equipo_repository
         equipo = equipo_repository.get(media.equipo_id)
         if not equipo:
             raise ValueError("Equipo no encontrado")

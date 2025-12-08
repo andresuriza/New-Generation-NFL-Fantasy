@@ -7,7 +7,7 @@ from uuid import UUID
 
 from models.database_models import EquipoDB
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
-from repositories.equipo_repository import EquipoNFLRepository
+from DAL.repositories.equipo_repository import EquipoNFLRepository
 
 class EquipoNFLValidator:
     """Validation service for Equipo NFL model"""

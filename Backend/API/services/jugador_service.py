@@ -12,11 +12,11 @@ from models.jugador import (
     JugadorCreate, JugadorUpdate, JugadorResponse, JugadorConEquipo, 
     JugadorFilter, EquipoNFLResponseBasic, JugadorBulkCreate, JugadorBulkResult
 )
-from repositories.jugador_repository import jugador_repository
-from repositories.equipo_repository import equipo_repository
+from DAL.repositories.jugador_repository import jugador_repository
+from DAL.repositories.equipo_repository import equipo_repository
 from services.validation_service import validation_service
 from services.error_handling import handle_db_errors
-from services.cdn_service import cdn_service
+from DAL.file_storage.cdn_service import cdn_service
 from validators.jugador_validator import jugador_validator
 from exceptions.business_exceptions import ValidationError, ConflictError, NotFoundError
 
@@ -168,7 +168,7 @@ class JugadorService:
             validation_service.validate_liga_exists(liga_id)
         except:
             # Fallback validation
-            from repositories.liga_repository import liga_repository
+            from DAL.repositories.liga_repository import liga_repository
             liga = liga_repository.get(liga_id)
             if not liga:
                 raise NotFoundError("Liga no encontrada")
@@ -183,7 +183,7 @@ class JugadorService:
             validation_service.validate_usuario_exists(usuario_id)
         except:
             # Fallback validation
-            from repositories.usuario_repository import usuario_repository
+            from DAL.repositories.usuario_repository import usuario_repository
             usuario = usuario_repository.get(usuario_id)
             if not usuario:
                 raise NotFoundError("Usuario no encontrado")
@@ -254,7 +254,7 @@ class JugadorService:
                 created_count=0,
                 error_count=len(errors),
                 errors=errors,
-                processed_file=self._move_processed_file(filename, success=False) if filename else None
+                processed_file=cdn_service.move_processed_file(filename, success=False) if filename else None
             )
         
         # Step 3: Process images and prepare data for all players
@@ -278,12 +278,12 @@ class JugadorService:
                 created_count=0,
                 error_count=1,
                 errors=[f"Error al procesar imágenes: {str(e)}"],
-                processed_file=self._move_processed_file(filename, success=False) if filename else None
+                processed_file=cdn_service.move_processed_file(filename, success=False) if filename else None
             )
         
         # Step 4: Create all players in a single transaction
         try:
-            from repositories.db_context import db_context
+            from DAL.repositories.db_context import db_context
             
             with db_context.get_session() as db:
                 created_players = []
@@ -296,7 +296,7 @@ class JugadorService:
                 # Transaction will be committed automatically when context exits
             
             # Move file to processed folder on success
-            processed_file = self._move_processed_file(filename, success=True) if filename else None
+            processed_file = cdn_service.move_processed_file(filename, success=True) if filename else None
             
             return JugadorBulkResult(
                 success=True,
@@ -312,7 +312,7 @@ class JugadorService:
                 created_count=0,
                 error_count=1,
                 errors=[f"Error al crear jugadores en base de datos: {str(e)}"],
-                processed_file=self._move_processed_file(filename, success=False) if filename else None
+                processed_file=cdn_service.move_processed_file(filename, success=False) if filename else None
             )
     
     def _generate_thumbnail_url(self, imagen_url: str) -> Optional[str]:
@@ -325,28 +325,7 @@ class JugadorService:
             return None
         except:
             return None
-    
-    def _move_processed_file(self, filename: Optional[str], success: bool) -> Optional[str]:
-        """Move processed file to appropriate folder"""
-        if not filename:
-            return None
-            
-        try:
-            # Create processed folder if it doesn't exist
-            processed_dir = "/app/processed_files"
-            os.makedirs(processed_dir, exist_ok=True)
-            
-            # Generate new filename with timestamp and status
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            status_suffix = "success" if success else "error"
-            base_name = filename.replace('.json', '')
-            new_filename = f"{timestamp}_{status_suffix}_{base_name}.json"
-            
-            return new_filename
-            
-        except Exception as e:
-            # If file moving fails, don't fail the whole operation
-            return f"error_moving_file_{filename}"
+
 
 # Service instance
 jugador_service = JugadorService()

@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 from contextlib import contextmanager
 
-from repositories.db_context import db_context
+from DAL.repositories.db_context import db_context
 
 # Generic types
 ModelType = TypeVar('ModelType')

@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 
-from repositories.base import BaseRepository
+from DAL.repositories.base import BaseRepository
 from models.database_models import EquipoDB, MediaDB
 from models.equipo import EquipoNFLCreate, EquipoNFLUpdate
 

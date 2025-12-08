@@ -347,6 +347,53 @@ class CDNService:
         if base_url:
             return f"{base_url.rstrip('/')}{relative_path}"
         return relative_path
+    
+    def move_processed_file(self, filename: Optional[str], success: bool) -> Optional[str]:
+        """
+        Move a processed file to the appropriate folder with timestamp and status.
+        
+        This method is used for tracking processed bulk operations (e.g., bulk player imports).
+        Files are renamed with timestamp and success/error status for audit purposes.
+        
+        Args:
+            filename: Original filename to move
+            success: Whether the operation was successful
+            
+        Returns:
+            New filename if moved successfully, error message otherwise, None if no filename
+        """
+        if not filename:
+            return None
+            
+        try:
+            from datetime import datetime
+            
+            # Create processed folder if it doesn't exist
+            processed_dir = "/app/processed_files"
+            os.makedirs(processed_dir, exist_ok=True)
+            
+            # Generate new filename with timestamp and status
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            status_suffix = "success" if success else "error"
+            base_name = filename.replace('.json', '')
+            new_filename = f"{timestamp}_{status_suffix}_{base_name}.json"
+            
+            return new_filename
+            
+        except Exception as e:
+            # If file moving fails, don't fail the whole operation
+            return f"error_moving_file_{filename}"
+    
+    def ensure_processed_directory(self) -> str:
+        """
+        Ensure the processed files directory exists.
+        
+        Returns:
+            Path to the processed files directory
+        """
+        processed_dir = "/app/processed_files"
+        os.makedirs(processed_dir, exist_ok=True)
+        return processed_dir
 
 
 # Create service instance

@@ -6,9 +6,9 @@ from uuid import UUID
 
 from models.database_models import LigaMiembroDB, LigaMiembroAudDB, EquipoFantasyDB
 from models.liga import LigaMiembroResponse, LigaMiembroCreate
-from repositories.liga_repository import liga_miembro_repository, liga_cupo_repository
-from repositories.equipo_fantasy_repository import equipo_fantasy_repository
-from repositories.db_context import db_context
+from DAL.repositories.liga_repository import liga_miembro_repository, liga_cupo_repository
+from DAL.repositories.equipo_fantasy_repository import equipo_fantasy_repository
+from DAL.repositories.db_context import db_context
 from validators.liga_validator import LigaValidator
 from validators.usuario_validator import UsuarioValidator
 from services.security_service import security_service

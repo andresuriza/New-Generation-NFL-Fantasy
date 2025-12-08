@@ -6,7 +6,7 @@ from models.liga import (
     LigaCreate, LigaUpdate, LigaResponse, 
     LigaMiembroResponse, LigaConMiembros, LigaFilter
 )
-from repositories.liga_repository import liga_repository, liga_miembro_repository
+from DAL.repositories.liga_repository import liga_repository, liga_miembro_repository
 from services.security_service import security_service
 from services.liga_membresia_service import liga_membresia_service
 from services.error_handling import handle_db_errors

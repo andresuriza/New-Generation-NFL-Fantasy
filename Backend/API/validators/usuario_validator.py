@@ -4,7 +4,7 @@ Usuario validation service
 import re
 from typing import Optional
 from uuid import UUID
-from repositories.usuario_repository import UsuarioRepository
+from DAL.repositories.usuario_repository import UsuarioRepository
 from models.database_models import UsuarioDB
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
 

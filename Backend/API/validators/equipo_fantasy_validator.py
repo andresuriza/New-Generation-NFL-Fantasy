@@ -5,8 +5,8 @@ import re
 from typing import Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
-from repositories.equipo_fantasy_repository import EquipoFantasyRepository
-from repositories.liga_repository import LigaRepository
+from DAL.repositories.equipo_fantasy_repository import EquipoFantasyRepository
+from DAL.repositories.liga_repository import LigaRepository
 from models.database_models import EquipoFantasyDB, UsuarioDB, LigaDB
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
 
