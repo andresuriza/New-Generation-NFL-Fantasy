@@ -7,7 +7,6 @@ from uuid import UUID
 import os
 import re
 
-from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 
 from models.usuario import (
@@ -47,17 +46,17 @@ class UsuarioService:
     """Service for Usuario CRUD operations"""
     
     @handle_db_errors
-    def crear_usuario(self, db: Session, usuario: UsuarioCreate) -> UsuarioResponse:
+    def crear_usuario(self,  usuario: UsuarioCreate) -> UsuarioResponse:
         """Create a new user"""
         # Use validator for all validations
         validator = UsuarioValidator()
         
         # Validate unique email
-        validator.validate_email_unique(db, usuario.correo)
+        validator.validate_email_unique(usuario.correo)
         
         # Validate unique alias if provided
         if usuario.alias:
-            validator.validate_alias_unique(db, usuario.alias)
+            validator.validate_alias_unique(usuario.alias)
 
         # Hash password
         password_hash = auth_service.hash_password(usuario.contrasena)
@@ -72,57 +71,53 @@ class UsuarioService:
             'failed_attempts': 0
         })
         
-        nuevo_usuario = usuario_repository.create(db, user_data)
+        nuevo_usuario = usuario_repository.create(user_data)
         return _convert_usuario_to_response(nuevo_usuario)
 
     @handle_db_errors
-    def listar_usuarios(self, db: Session, skip: int = 0, limit: int = 100) -> List[UsuarioResponse]:
+    def listar_usuarios(self, skip: int = 0, limit: int = 100) -> List[UsuarioResponse]:
         """List active users with pagination"""
-        usuarios = usuario_repository.get_activos(db, skip, limit)
+        usuarios = usuario_repository.get_activos(skip, limit)
         return [_convert_usuario_to_response(u) for u in usuarios]
 
     @handle_db_errors
-    def obtener_usuario(self, db: Session, usuario_id: UUID) -> UsuarioResponse:
+    def obtener_usuario(self, usuario_id: UUID) -> UsuarioResponse:
         """Get user by ID"""
-        usuario = usuario_repository.get(db, usuario_id)
+        usuario = usuario_repository.get(usuario_id)
         if not usuario or usuario.estado == EstadoUsuarioEnum.eliminada:
             raise NotFoundError(f"Usuario con ID {usuario_id} no encontrado")
         return _convert_usuario_to_response(usuario)
 
     @handle_db_errors
-    def actualizar_usuario(self, db: Session, usuario_id: UUID, updates: UsuarioUpdate, requester_id: UUID) -> UsuarioResponse:
-        usuario_db = db.query(UsuarioDB).filter(
-            UsuarioDB.id == usuario_id,
-            UsuarioDB.estado != EstadoUsuarioEnum.eliminada,
-        ).first()
-        if not usuario_db:
+    def actualizar_usuario(self, usuario_id: UUID, updates: UsuarioUpdate, requester_id: UUID) -> UsuarioResponse:
+        """Update user information"""
+        usuario_db = usuario_repository.get(usuario_id)
+        
+        if not usuario_db or usuario_db.estado == EstadoUsuarioEnum.eliminada:
             raise NotFoundError("Usuario no encontrado")
 
         # Use validator for permission validation
         validator = UsuarioValidator()
-        validator.validate_user_permission_for_update(requester_id, usuario_id, db)
+        validator.validate_user_permission_for_update(requester_id, usuario_id)
 
         data = updates.model_dump(exclude_unset=True)
+        
+        # Validate email uniqueness if being updated
         if "correo" in data and data["correo"] and data["correo"] != usuario_db.correo:
-            validator.validate_email_unique(db, data["correo"], usuario_id)
-            usuario_db.correo = data["correo"]
-
-        if "nombre" in data and data["nombre"] is not None:
-            usuario_db.nombre = data["nombre"]
-        if "alias" in data:
-            usuario_db.alias = data["alias"] or ""
-        if "idioma" in data and data["idioma"] is not None:
-            usuario_db.idioma = data["idioma"]
-        if "imagen_perfil_url" in data and data["imagen_perfil_url"] is not None:
-            usuario_db.imagen_perfil_url = data["imagen_perfil_url"]
-
-        db.commit()
-        db.refresh(usuario_db)
-        return _convert_usuario_to_response(usuario_db)
+            validator.validate_email_unique(data["correo"], usuario_id)
+        
+        # Validate alias uniqueness if being updated
+        if "alias" in data and data["alias"] and data["alias"] != usuario_db.alias:
+            validator.validate_alias_unique(data["alias"], usuario_id)
+        
+        # Update user through repository
+        usuario_actualizado = usuario_repository.update(usuario_id, data)
+        
+        return _convert_usuario_to_response(usuario_actualizado)
 
     # ----- Unlock flow -----
-    def solicitar_desbloqueo(self, db: Session, correo: str) -> Dict[str, Any]:
-        usuario = db.query(UsuarioDB).filter(UsuarioDB.correo == correo).first()
+    def solicitar_desbloqueo(self,  correo: str) -> Dict[str, Any]:
+        usuario = usuario_repository.get_by_correo(correo)
         if not usuario:
             return {"ok": True, "message": "Si la cuenta existe, se enviará un correo con instrucciones."}
 
@@ -146,7 +141,7 @@ class UsuarioService:
             pass
         return {"ok": True, "message": "Si la cuenta existe y está bloqueada, enviaremos instrucciones a tu correo."}
 
-    def confirmar_desbloqueo(self, db: Session, token: str) -> Dict[str, Any]:
+    def confirmar_desbloqueo(self, token: str) -> Dict[str, Any]:
         try:
             payload = jwt.decode(
                 token,
@@ -167,17 +162,16 @@ class UsuarioService:
         except Exception:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido: ID de usuario no es UUID")
 
-        usuario = db.query(UsuarioDB).filter(UsuarioDB.id == user_uuid).first()
+        usuario = usuario_repository.get(user_uuid)
         if not usuario:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
 
         usuario.estado = EstadoUsuarioEnum.activa
         usuario.failed_attempts = 0
-        db.commit()
-        db.refresh(usuario)
+        usuario_repository.update(usuario.id, {"estado": usuario.estado, "failed_attempts": usuario.failed_attempts})
         return {"ok": True, "message": "Tu cuenta ha sido desbloqueada. Ya puedes iniciar sesión."}
 
-    def establecer_contrasena(self, db: Session, token: str, new_password: str) -> Dict[str, Any]:
+    def establecer_contrasena(self, token: str, new_password: str) -> Dict[str, Any]:
         # Use validator for password validation  
         validator = UsuarioValidator()
         validator.validate_password_strength_for_unlock(new_password)
@@ -202,7 +196,7 @@ class UsuarioService:
         except Exception:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido: ID de usuario no es UUID")
 
-        usuario = db.query(UsuarioDB).filter(UsuarioDB.id == user_uuid).first()
+        usuario = usuario_repository.get(user_uuid)
         if not usuario:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
 
@@ -210,9 +204,5 @@ class UsuarioService:
         usuario.contrasena_hash = hashed
         usuario.estado = EstadoUsuarioEnum.activa
         usuario.failed_attempts = 0
-        db.commit()
-        db.refresh(usuario)
+        usuario_repository.update(usuario.id, {"contrasena_hash": usuario.contrasena_hash, "estado": usuario.estado, "failed_attempts": usuario.failed_attempts})
         return {"ok": True, "message": "Contraseña actualizada correctamente. Ya puedes iniciar sesión."}
-
-
-usuario_service = UsuarioService()

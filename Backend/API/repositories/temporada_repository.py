@@ -5,6 +5,7 @@ from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_
+from datetime import date
 
 from repositories.base import BaseRepository
 from models.database_models import TemporadaDB, TemporadaSemanaDB
@@ -71,6 +72,16 @@ class TemporadaRepository(BaseRepository[TemporadaDB, TemporadaCreate, Temporada
         def query(db: Session):
             return db.query(LigaDB).filter(LigaDB.temporada_id == temporada_id).count()
         return self._execute_query(query)
+    
+    def has_associated_ligas(self, temporada_id: UUID) -> bool:
+        """Check if season has associated leagues"""
+        from models.database_models import LigaDB
+        
+        def query(db: Session):
+            count = db.query(LigaDB).filter(LigaDB.temporada_id == temporada_id).count()
+            return count > 0
+        return self._execute_query(query)
+
 class TemporadaSemanaRepository(BaseRepository[TemporadaSemanaDB, dict, dict]):
     """Repository for Season Week operations"""
     
@@ -124,6 +135,16 @@ class TemporadaSemanaRepository(BaseRepository[TemporadaSemanaDB, dict, dict]):
             if exclude_numero:
                 q = q.filter(TemporadaSemanaDB.numero != exclude_numero)
             return q.first()
+        return self._execute_query(query)
+
+    def create_from_pydantic(self, semana_create) -> TemporadaSemanaDB:
+        """Create a week from a Pydantic model"""
+        def query(db: Session):
+            nueva_semana = TemporadaSemanaDB(**semana_create.model_dump())
+            db.add(nueva_semana)
+            db.flush()
+            db.refresh(nueva_semana)
+            return nueva_semana
         return self._execute_query(query)
 
 # Repository instances
