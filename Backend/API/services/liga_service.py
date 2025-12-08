@@ -28,11 +28,9 @@ class LigaService:
         Crear una nueva liga con todas las validaciones y configuraciones por defecto.
         
         """
-        # Use validator for business rules
+        # Validate all requirements for creating a league
         validator = LigaValidator()
-        validator.validate_nombre_unique(liga.nombre)
-        validator.validate_temporada_exists(liga.temporada_id)
-        validator.validate_comisionado_exists(liga.comisionado_id)
+        validator.validate_for_create(liga.nombre, liga.temporada_id, liga.comisionado_id)
         
         # Validate and hash password
         security_service.validate_password_strength(liga.contrasena)
@@ -84,12 +82,7 @@ class LigaService:
     def actualizar_liga(self, liga_id: UUID, actualizacion: LigaUpdate) -> LigaResponse:
         """Update a league"""
         validator = LigaValidator()
-        liga = validator.validate_exists(liga_id)
-        validator.validate_liga_editable(liga)
-        
-        # Validate unique name if changing
-        if actualizacion.nombre and actualizacion.nombre != liga.nombre:
-            validator.validate_nombre_unique(actualizacion.nombre, liga_id)
+        liga = validator.validate_for_update(liga_id, actualizacion.nombre)
         
         updated_liga = liga_repository.update(liga, actualizacion)
         return _to_liga_response(updated_liga)
@@ -97,8 +90,7 @@ class LigaService:
     def eliminar_liga(self, liga_id: UUID) -> bool:
         """Delete a league"""
         validator = LigaValidator()
-        liga = validator.validate_exists(liga_id)
-        validator.validate_liga_editable(liga)
+        validator.validate_for_delete(liga_id)
         
         return liga_repository.delete(liga_id)
     

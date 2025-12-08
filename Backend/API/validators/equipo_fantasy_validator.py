@@ -138,6 +138,32 @@ class EquipoFantasyValidator:
         liga = LigaRepository().get(equipo.liga_id)
         if liga and liga.estado.value != "Pre_draft":
             raise ValidationError("No se puede eliminar el equipo después del draft")
+    
+    @staticmethod
+    def validate_for_create(nombre: str, liga_id: UUID, usuario_id: UUID, imagen_url: Optional[str] = None) -> None:
+        """Validate all requirements for creating a fantasy team"""
+        EquipoFantasyValidator.validate_liga_exists(liga_id)
+        EquipoFantasyValidator.validate_usuario_exists(usuario_id)
+        EquipoFantasyValidator.validate_usuario_not_has_team_in_liga(usuario_id, liga_id)
+        EquipoFantasyValidator.validate_nombre_unique_in_liga(nombre, liga_id)
+        
+        if imagen_url:
+            EquipoFantasyValidator.validate_imagen_url_format(imagen_url)
+    
+    @staticmethod
+    def validate_for_update(equipo_id: UUID, usuario_id: UUID, nuevo_nombre: Optional[str] = None,
+                          nueva_imagen: Optional[str] = None) -> EquipoFantasyDB:
+        """Validate all requirements for updating a fantasy team"""
+        equipo = EquipoFantasyValidator.validate_exists(equipo_id)
+        EquipoFantasyValidator.validate_usuario_owns_team(equipo, usuario_id)
+        
+        if nuevo_nombre is not None:
+            EquipoFantasyValidator.validate_nombre_unique_in_liga(nuevo_nombre, equipo.liga_id, equipo_id)
+        
+        if nueva_imagen is not None and nueva_imagen.strip():
+            EquipoFantasyValidator.validate_imagen_url_format(nueva_imagen)
+        
+        return equipo
 
 
 # Create validator instance

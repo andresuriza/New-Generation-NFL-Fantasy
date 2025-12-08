@@ -48,15 +48,9 @@ class UsuarioService:
     @handle_db_errors
     def crear_usuario(self,  usuario: UsuarioCreate) -> UsuarioResponse:
         """Create a new user"""
-        # Use validator for all validations
+        # Validate all requirements for creating a user
         validator = UsuarioValidator()
-        
-        # Validate unique email
-        validator.validate_email_unique(usuario.correo)
-        
-        # Validate unique alias if provided
-        if usuario.alias:
-            validator.validate_alias_unique(usuario.alias)
+        validator.validate_for_create(usuario.correo, usuario.alias)
 
         # Hash password
         password_hash = auth_service.hash_password(usuario.contrasena)
@@ -96,19 +90,17 @@ class UsuarioService:
         if not usuario_db or usuario_db.estado == EstadoUsuarioEnum.eliminada:
             raise NotFoundError("Usuario no encontrado")
 
-        # Use validator for permission validation
-        validator = UsuarioValidator()
-        validator.validate_user_permission_for_update(requester_id, usuario_id)
-
         data = updates.model_dump(exclude_unset=True)
         
-        # Validate email uniqueness if being updated
-        if "correo" in data and data["correo"] and data["correo"] != usuario_db.correo:
-            validator.validate_email_unique(data["correo"], usuario_id)
-        
-        # Validate alias uniqueness if being updated
-        if "alias" in data and data["alias"] and data["alias"] != usuario_db.alias:
-            validator.validate_alias_unique(data["alias"], usuario_id)
+        # Validate all requirements for updating a user
+        validator = UsuarioValidator()
+        validator.validate_for_update(
+            requester_id, 
+            usuario_id, 
+            usuario_db,
+            new_email=data.get("correo"),
+            new_alias=data.get("alias")
+        )
         
         # Update user through repository
         usuario_actualizado = usuario_repository.update(usuario_db, data)
@@ -172,7 +164,7 @@ class UsuarioService:
         return {"ok": True, "message": "Tu cuenta ha sido desbloqueada. Ya puedes iniciar sesión."}
 
     def establecer_contrasena(self, token: str, new_password: str) -> Dict[str, Any]:
-        # Use validator for password validation  
+        # Validate password strength
         validator = UsuarioValidator()
         validator.validate_password_strength_for_unlock(new_password)
 

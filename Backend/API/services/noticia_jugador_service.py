@@ -59,10 +59,13 @@ class NoticiaJugadorService:
         - Audit information is automatically recorded
         """
         
-        # Validate player exists and is active
-        jugador = JugadorValidator.validate_exists(jugador_id)
-        if not jugador.activo:
-            raise ValidationError(f"El jugador con ID {jugador_id} no está activo")
+        # Validate all requirements for creating player news
+        jugador = JugadorValidator.validate_for_create_noticia(
+            jugador_id,
+            noticia_data.es_lesion,
+            noticia_data.resumen,
+            noticia_data.designacion
+        )
         
         # Validate author exists and is administrator
         author = usuario_repository.get(author_id)
@@ -73,16 +76,8 @@ class NoticiaJugadorService:
         if author.estado.value != "activa":
             raise ValidationError("El usuario autor debe estar activo")
         
-        # Validate injury news requirements
-        if noticia_data.es_lesion:
-            if not noticia_data.resumen:
-                raise ValidationError("El resumen es requerido para noticias de lesión")
-            if not noticia_data.designacion:
-                raise ValidationError("La designación es requerida para noticias de lesión")
-            if len(noticia_data.resumen) > 30:
-                raise ValidationError("El resumen no puede exceder 30 caracteres")
-        else:
-            # For non-injury news, clear injury-specific fields
+        # For non-injury news, clear injury-specific fields
+        if not noticia_data.es_lesion:
             noticia_data.resumen = None
             noticia_data.designacion = None
         

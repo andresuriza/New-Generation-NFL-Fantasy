@@ -78,15 +78,15 @@ class TemporadaService:
         if not temporada:
             raise NotFoundError("Temporada no encontrada")
         
-        # Validate updates if date range or weeks are being updated
+        # Validate all requirements for updating
         datos_actualizados = actualizacion.model_dump(exclude_unset=True)
-        if "fecha_inicio" in datos_actualizados or "fecha_fin" in datos_actualizados:
-            fecha_inicio = datos_actualizados.get("fecha_inicio", temporada.fecha_inicio)
-            fecha_fin = datos_actualizados.get("fecha_fin", temporada.fecha_fin)
-            TemporadaValidator.validate_date_range(fecha_inicio, fecha_fin)
-
-        if "semanas" in datos_actualizados:
-            TemporadaValidator.validate_weeks_count_range(datos_actualizados["semanas"])
+        TemporadaValidator.validate_for_update(
+            temporada_id,
+            fecha_inicio=datos_actualizados.get("fecha_inicio"),
+            fecha_fin=datos_actualizados.get("fecha_fin"),
+            semanas=datos_actualizados.get("semanas")
+        )
+        
         # Si se marca como actual, desmarcar otras temporadas actuales
         if actualizacion.es_actual:
             temporada_repository.unset_all_actual()

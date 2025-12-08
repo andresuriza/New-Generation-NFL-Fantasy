@@ -262,6 +262,22 @@ class TemporadaValidator:
         
         if semana_actual > total_semanas:
             raise ValidationError("La semana actual no puede ser mayor al total de semanas")
+    
+    @staticmethod
+    def validate_for_update(temporada_id: UUID, fecha_inicio: Optional[date] = None,
+                          fecha_fin: Optional[date] = None, semanas: Optional[int] = None) -> None:
+        """Validate all requirements for updating a season"""
+        temporada = TemporadaValidator.validate_exists(temporada_id)
+        
+        # Validate date range if dates are being updated
+        if fecha_inicio is not None or fecha_fin is not None:
+            inicio = fecha_inicio if fecha_inicio is not None else temporada.fecha_inicio
+            fin = fecha_fin if fecha_fin is not None else temporada.fecha_fin
+            TemporadaValidator.validate_date_range(inicio, fin)
+        
+        # Validate weeks count if being updated
+        if semanas is not None:
+            TemporadaValidator.validate_weeks_count_range(semanas)
 
 
 # Create validator instance
