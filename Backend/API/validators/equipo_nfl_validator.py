@@ -8,15 +8,15 @@ from sqlalchemy.orm import Session
 
 from models.database_models import EquipoDB
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
-
+from repositories.equipo_nfl_repository import EquipoNFLRepository
 
 class EquipoNFLValidator:
     """Validation service for Equipo NFL model"""
     
     @staticmethod
-    def validate_exists(db: Session, equipo_id: UUID) -> EquipoDB:
+    def validate_exists(equipo_id: UUID) -> EquipoDB:
         """Validate that an NFL team exists"""
-        equipo = db.query(EquipoDB).filter(EquipoDB.id == equipo_id).first()
+        equipo = EquipoNFLRepository().get(equipo_id)
         if not equipo:
             raise NotFoundError("Equipo NFL no encontrado")
         return equipo
@@ -38,13 +38,11 @@ class EquipoNFLValidator:
             raise ValidationError("El nombre del equipo contiene caracteres inválidos")
     
     @staticmethod
-    def validate_nombre_unique(db: Session, nombre: str, exclude_id: Optional[UUID] = None) -> None:
+    def validate_nombre_unique( nombre: str, exclude_id: Optional[UUID] = None) -> None:
         """Validate that team name is unique"""
-        query = db.query(EquipoDB).filter(EquipoDB.nombre == nombre)
-        if exclude_id:
-            query = query.filter(EquipoDB.id != exclude_id)
-        
-        if query.first():
+        name_exists = EquipoNFLRepository().get_by_nombre(nombre, exclude_id)
+       
+        if name_exists.first():
             raise ConflictError(f"El equipo NFL '{nombre}' ya existe")
     
     @staticmethod
@@ -85,26 +83,25 @@ class EquipoNFLValidator:
                 raise ValidationError("La abreviación debe contener solo letras mayúsculas")
     
     @staticmethod
-    def validate_abreviacion_unique(db: Session, abreviacion: str, exclude_id: Optional[UUID] = None) -> None:
+    def validate_abreviacion_unique(abreviacion: str, exclude_id: Optional[UUID] = None) -> None:
         """Validate that team abbreviation is unique"""
         if abreviacion and abreviacion.strip():
-            query = db.query(EquipoDB).filter(EquipoDB.abreviacion == abreviacion.strip())
-            if exclude_id:
-                query = query.filter(EquiposDB.id != exclude_id)
             
-            if query.first():
+            name_exists = EquipoNFLRepository().get_by_abreviacion(abreviacion, exclude_id)
+            
+            if name_exists:
                 raise ConflictError(f"La abreviación '{abreviacion}' ya existe")
     
+
     @staticmethod
-    def validate_equipo_can_be_deleted(db: Session, equipo_id: UUID) -> None:
+    def validate_equipo_can_be_deleted(equipo_id: UUID) -> None:
         """Validate that NFL team can be deleted"""
-        from models.database_models import JugadoresDB
-        
-        # Check if team has players
-        players_count = db.query(JugadoresDB).filter(JugadoresDB.equipo_nfl_id == equipo_id).count()
-        if players_count > 0:
-            raise ValidationError("No se puede eliminar el equipo NFL porque tiene jugadores asociados")
+        equipo = EquipoNFLValidator.validate_exists(equipo_id)
     
+        # Check if team has players
+        if equipo.jugadores:
+            raise ValidationError("No se puede eliminar el equipo NFL porque tiene jugadores asociados")
+
     @staticmethod
     def validate_division_format(division: Optional[str]) -> None:
         """Validate NFL division format"""
@@ -126,12 +123,7 @@ class EquipoNFLValidator:
             if conference.strip() not in valid_conferences:
                 raise ValidationError(f"Conferencia inválida. Conferencias válidas: {', '.join(valid_conferences)}")
     
-    @staticmethod
-    def validate_equipo_can_be_deleted(equipo: EquipoDB) -> None:
-        """Validate that an NFL team can be deleted (no associated players)"""
-        if equipo.jugadores:
-            raise ValidationError("No se puede eliminar el equipo NFL porque tiene jugadores asociados")
-
+    
 
 # Create validator instance
 equipo_nfl_validator = EquipoNFLValidator()

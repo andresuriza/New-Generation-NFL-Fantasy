@@ -16,14 +16,26 @@ class EquipoNFLRepository(BaseRepository[EquipoDB, EquipoNFLCreate, EquipoNFLUpd
     def __init__(self):
         super().__init__(EquipoDB)
     
-    def get_by_nombre(self, nombre: str) -> Optional[EquipoDB]:
+    def get_by_nombre(self, nombre: str, exclude_id: Optional[UUID] = None) -> Optional[EquipoDB]:
         """Get NFL team by name (case-insensitive)"""
         def query(db: Session):
-            return db.query(EquipoDB).filter(
+            q = db.query(EquipoDB).filter(
                 func.lower(EquipoDB.nombre) == func.lower(nombre)
-            ).first()
+            )
+            if exclude_id:
+                q = q.filter(EquipoDB.id != exclude_id)
+            return q.first()
         return self._execute_query(query)
-    
+    def get_by_abreviacion(self, abreviacion: str, exclude_id: Optional[UUID] = None) -> Optional[EquipoDB]:
+        """Get NFL team by abbreviation"""
+        def query(db: Session):
+            q = db.query(EquipoDB).filter(
+                EquipoDB.abreviacion == abreviacion
+            )
+            if exclude_id:
+                q = q.filter(EquipoDB.id != exclude_id)
+            return q.first()
+        return self._execute_query(query)
     def get_with_media(self, equipo_id: UUID) -> Optional[EquipoDB]:
         """Get NFL team with media loaded"""
         def query(db: Session):
