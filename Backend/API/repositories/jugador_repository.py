@@ -16,7 +16,7 @@ class JugadorRepository(BaseRepository[JugadoresDB, JugadorCreate, JugadorUpdate
     def __init__(self):
         super().__init__(JugadoresDB)
     
-    def get_by_nombre_equipo(self,  nombre: str, equipo_id: UUID) -> Optional[JugadoresDB]:
+    def get_by_nombre_equipo(self,  nombre: str, equipo_id: UUID, exclude_id: Optional[UUID] = None) -> Optional[JugadoresDB]:
         """Get player by name and NFL team"""
         def query(db: Session):
 
@@ -25,7 +25,12 @@ class JugadorRepository(BaseRepository[JugadoresDB, JugadorCreate, JugadorUpdate
                     self.model.nombre == nombre,
                     self.model.equipo_id == equipo_id
                 )
-            ).first()
+            )
+        
+            if exclude_id:
+                query = query.filter(self.model.id != exclude_id)
+            
+            return query.first()
         return self._execute_query(query)
     
     def get_with_equipo(self, jugador_id: UUID) -> Optional[JugadoresDB]:
@@ -116,6 +121,29 @@ class JugadorRepository(BaseRepository[JugadoresDB, JugadorCreate, JugadorUpdate
         ).filter(
             EquipoDB.usuario_id == usuario_id
         ).offset(skip).limit(limit).all()
+    def get_by_email(self, email: str, exclude_id: Optional[UUID] = None) -> Optional[JugadoresDB]:
+        """Get player by email"""
+        def query(db: Session):
+            q = db.query(self.model).filter(
+                self.model.email == email
+            )
+            if exclude_id:
+                q = q.filter(self.model.id != exclude_id)
+            return q.first()
+        return self._execute_query(query)
+    def get_by_dorsal_and_equipo(self, dorsal: int, equipo_id: UUID, exclude_id: Optional[UUID] = None) -> Optional[JugadoresDB]:
+        """Get player by jersey number and team"""
+        def query(db: Session):
+            q = db.query(self.model).filter(
+                and_(
+                    self.model.dorsal == dorsal,
+                    self.model.equipo_id == equipo_id
+                )
+            )
+            if exclude_id:
+                q = q.filter(self.model.id != exclude_id)
+            return q.first()
+        return self._execute_query(query)
 
 # Repository instance
 jugador_repository = JugadorRepository()

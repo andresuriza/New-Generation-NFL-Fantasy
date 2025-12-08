@@ -4,7 +4,7 @@ Jugador validation service
 import re
 from typing import Optional
 from uuid import UUID
-from sqlalchemy.orm import Session
+from repositories.jugador_repository import JugadorRepository
 
 from models.database_models import JugadoresDB, EquipoDB, PosicionJugadorEnum
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
@@ -14,9 +14,9 @@ class JugadorValidator:
     """Validation service for Jugador model"""
     
     @staticmethod
-    def validate_exists(db: Session, jugador_id: UUID) -> JugadoresDB:
+    def validate_exists( jugador_id: UUID) -> JugadoresDB:
         """Validate that a player exists"""
-        jugador = db.query(JugadoresDB).filter(JugadoresDB.id == jugador_id).first()
+        jugador = JugadorRepository().get(jugador_id)
         if not jugador:
             raise NotFoundError("Jugador no encontrado")
         return jugador
@@ -45,13 +45,10 @@ class JugadorValidator:
             raise ValidationError("Formato de email inválido")
     
     @staticmethod
-    def validate_email_unique(db: Session, email: str, exclude_id: Optional[UUID] = None) -> None:
+    def validate_email_unique(email: str, exclude_id: Optional[UUID] = None) -> None:
         """Validate that email is unique"""
-        query = db.query(JugadoresDB).filter(JugadoresDB.email == email)
-        if exclude_id:
-            query = query.filter(JugadoresDB.id != exclude_id)
-        
-        if query.first():
+        existing_player = JugadorRepository().get_by_email(email, exclude_id)
+        if existing_player:
             raise ConflictError("Email ya registrado")
     
     @staticmethod
@@ -65,27 +62,12 @@ class JugadorValidator:
                 raise ValidationError("El dorsal no puede ser mayor a 99")
     
     @staticmethod
-    def validate_dorsal_unique_in_team(db: Session, equipo_id: UUID, dorsal: int, exclude_id: Optional[UUID] = None) -> None:
+    def validate_dorsal_unique_in_team(equipo_id: UUID, dorsal: int, exclude_id: Optional[UUID] = None) -> None:
         """Validate that jersey number is unique within the team"""
-        query = db.query(JugadoresDB).filter(
-            JugadoresDB.equipo_id == equipo_id,
-            JugadoresDB.dorsal == dorsal
-        )
-        
-        if exclude_id:
-            query = query.filter(JugadoresDB.id != exclude_id)
-        
-        existing_player = query.first()
+        existing_player = JugadorRepository().get_by_dorsal_and_equipo(dorsal, equipo_id, exclude_id)
         if existing_player:
-            raise ConflictError(f"El dorsal {dorsal} ya existe en este equipo")
+            raise ConflictError("Ya existe un jugador con ese dorsal en el equipo")
     
-    @staticmethod
-    def validate_equipo_nfl_exists(db: Session, equipo_id: UUID) -> EquipoDB:
-        """Validate that NFL team exists"""
-        equipo = db.query(EquipoDB).filter(EquipoDB.id == equipo_id).first()
-        if not equipo:
-            raise NotFoundError("Equipo NFL no encontrado")
-        return equipo
     
     @staticmethod
     def validate_posicion(posicion: str) -> None:
@@ -118,17 +100,10 @@ class JugadorValidator:
                 raise ValidationError("La edad debe estar entre 18 y 50 años")
     
     @staticmethod
-    def validate_nombre_unique_in_team(db: Session, nombre: str, equipo_id: UUID, exclude_id: Optional[UUID] = None) -> None:
+    def validate_nombre_unique_in_team(nombre: str, equipo_id: UUID, exclude_id: Optional[UUID] = None) -> None:
         """Validate that player name is unique within the team"""
-        query = db.query(JugadoresDB).filter(
-            JugadoresDB.nombre == nombre,
-            JugadoresDB.equipo_id == equipo_id
-        )
         
-        if exclude_id:
-            query = query.filter(JugadoresDB.id != exclude_id)
-        
-        existing_player = query.first()
+        existing_player = JugadorRepository().get_by_nombre_equipo(nombre, equipo_id, exclude_id)
         if existing_player:
             raise ConflictError("Ya existe un jugador con ese nombre en el equipo")
     
@@ -151,12 +126,7 @@ class JugadorValidator:
     def validate_jugador_can_be_deleted(db: Session, jugador_id: UUID) -> None:
         """Validate that player can be deleted"""
         # Check if player is in any fantasy teams
-        from models.database_models import EquipoFantasyDB
-        
-        # This would need to be implemented based on your fantasy team-player relationship
-        # For now, we'll just check if player exists
-        jugador = JugadorValidator.validate_exists(db, jugador_id)
-        # Add more business rules as needed
+        jugador = JugadorValidator.validate_exists(jugador_id)
     
     @staticmethod
     def validate_required_fields_bulk(jugador_data) -> None:
@@ -183,14 +153,14 @@ class JugadorValidator:
             raise ValidationError(f"Posición inválida. Posiciones válidas: {', '.join(valid_positions)}")
     
     @staticmethod
-    def validate_equipo_exists_by_nombre(db: Session, equipo_nombre: str, equipo_cache: dict) -> EquipoDB:
+    def validate_equipo_exists_by_nombre(equipo_nombre: str, equipo_cache: dict) -> EquipoDB:
         """Validate NFL team exists by name with caching support"""
         # Check cache first
         if equipo_nombre in equipo_cache:
             return equipo_cache[equipo_nombre]
         
         # Query database
-        equipo = db.query(EquipoDB).filter(EquipoDB.nombre.ilike(equipo_nombre)).first()
+        equipo = EquipoDB.query.filter(EquipoDB.nombre == equipo_nombre).first()
         if not equipo:
             raise NotFoundError(f"Equipo NFL '{equipo_nombre}' no encontrado")
         
@@ -199,13 +169,9 @@ class JugadorValidator:
         return equipo
     
     @staticmethod
-    def validate_jugador_unique_by_nombre_equipo(db: Session, nombre: str, equipo_id: UUID) -> None:
+    def validate_jugador_unique_by_nombre_equipo(nombre: str, equipo_id: UUID) -> None:
         """Validate player doesn't already exist in team"""
-        existing_player = db.query(JugadoresDB).filter(
-            JugadoresDB.nombre == nombre,
-            JugadoresDB.equipo_id == equipo_id
-        ).first()
-        
+        existing_player = JugadorRepository().get_by_nombre_equipo(nombre, equipo_id)
         if existing_player:
             raise ConflictError(f"Ya existe un jugador con ese nombre en el equipo")
     
