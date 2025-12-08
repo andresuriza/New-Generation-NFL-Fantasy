@@ -11,9 +11,9 @@ from models.equipo_fantasy import (
     EquipoFantasyConRelaciones, EquipoFantasyFilter, EquipoFantasyAuditResponse,
     LigaResponseBasic, UsuarioResponseBasic
 )
-from repositories.equipo_fantasy_repository import equipo_fantasy_repository, equipo_fantasy_audit_repository
-from repositories.liga_repository import liga_repository
-from repositories.usuario_repository import usuario_repository
+from DAL.repositories.equipo_fantasy_repository import equipo_fantasy_repository, equipo_fantasy_audit_repository
+from DAL.repositories.liga_repository import liga_repository
+from DAL.repositories.usuario_repository import usuario_repository
 from services.error_handling import handle_db_errors
 from validators.equipo_fantasy_validator import EquipoFantasyValidator
 from exceptions.business_exceptions import ValidationError, ConflictError, NotFoundError

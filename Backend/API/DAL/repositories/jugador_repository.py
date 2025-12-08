@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, func
 
-from repositories.base import BaseRepository
+from DAL.repositories.base import BaseRepository
 from models.database_models import JugadoresDB, PosicionJugadorEnum
 from models.jugador import JugadorCreate, JugadorUpdate, JugadorFilter
 

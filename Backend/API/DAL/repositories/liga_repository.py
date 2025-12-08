@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_
 
-from repositories.base import BaseRepository
+from DAL.repositories.base import BaseRepository
 from models.database_models import LigaDB, LigaMiembroDB, LigaCupoDB
 from models.liga import LigaCreate, LigaUpdate, LigaMiembroCreate
 

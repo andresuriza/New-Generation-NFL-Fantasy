@@ -4,7 +4,7 @@ Jugador validation service
 import re
 from typing import Optional
 from uuid import UUID
-from repositories.jugador_repository import JugadorRepository
+from DAL.repositories.jugador_repository import JugadorRepository
 
 from models.database_models import JugadoresDB, EquipoDB, PosicionJugadorEnum
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError

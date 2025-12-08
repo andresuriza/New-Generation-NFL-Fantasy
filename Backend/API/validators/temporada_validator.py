@@ -4,7 +4,7 @@ Temporada validation service
 from typing import Optional
 from uuid import UUID
 from datetime import datetime, date
-from repositories.temporada_repository import TemporadaRepository
+from DAL.repositories.temporada_repository import TemporadaRepository
 from models.database_models import TemporadaDB
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
 
@@ -123,7 +123,7 @@ class TemporadaValidator:
     @staticmethod
     def validate_only_one_current_season(exclude_id: Optional[UUID] = None) -> None:
         """Validate that only one season can be marked as current"""
-        from repositories.temporada_repository import temporada_repository
+        from DAL.repositories.temporada_repository import temporada_repository
         
         existing_current = temporada_repository.get_actual()
         if existing_current and (not exclude_id or existing_current.id != exclude_id):

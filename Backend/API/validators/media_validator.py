@@ -7,7 +7,7 @@ from uuid import UUID
 
 from models.database_models import MediaDB
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
-from repositories.media_repository import MediaRepository
+from DAL.repositories.media_repository import MediaRepository
 
 class MediaValidator:
     """Validation service for Media model"""

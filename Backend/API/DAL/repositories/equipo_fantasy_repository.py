@@ -8,8 +8,8 @@ from sqlalchemy import and_, or_, func
 
 from models.database_models import EquipoFantasyDB, EquipoFantasyAuditDB
 from models.equipo_fantasy import EquipoFantasyCreate, EquipoFantasyUpdate, EquipoFantasyFilter
-from repositories.base import BaseRepository
-from repositories.db_context import db_context
+from DAL.repositories.base import BaseRepository
+from DAL.repositories.db_context import db_context
 
 class EquipoFantasyRepository(BaseRepository[EquipoFantasyDB, EquipoFantasyCreate, EquipoFantasyUpdate]):
     

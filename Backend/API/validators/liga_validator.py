@@ -7,9 +7,9 @@ from uuid import UUID
 
 from models.database_models import LigaDB, UsuarioDB, TemporadaDB, RolMembresiaEnum
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
-from repositories.liga_repository import liga_repository, liga_miembro_repository
-from repositories.usuario_repository import usuario_repository
-from repositories.temporada_repository import temporada_repository
+from DAL.repositories.liga_repository import liga_repository, liga_miembro_repository
+from DAL.repositories.usuario_repository import usuario_repository
+from DAL.repositories.temporada_repository import temporada_repository
 
 
 class LigaValidator:

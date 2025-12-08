@@ -5,7 +5,7 @@ from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session, joinedload
 
-from repositories.base import BaseRepository
+from DAL.repositories.base import BaseRepository
 from models.database_models import MediaDB
 from models.media import MediaCreate, MediaUpdate
 

@@ -6,7 +6,7 @@ from uuid import UUID
 
 from models.database_models import EquipoDB
 from models.equipo import EquipoNFLCreate, EquipoNFLUpdate, EquipoNFLResponse, EquipoNFLConMedia
-from repositories.equipo_repository import equipo_repository
+from DAL.repositories.equipo_repository import equipo_repository
 from services.error_handling import handle_db_errors
 from validators.equipo_nfl_validator import EquipoNFLValidator
 from exceptions.business_exceptions import ValidationError, ConflictError, NotFoundError

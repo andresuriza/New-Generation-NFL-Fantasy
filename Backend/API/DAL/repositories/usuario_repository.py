@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 
-from repositories.base import BaseRepository
+from DAL.repositories.base import BaseRepository
 from models.database_models import UsuarioDB
 from models.usuario import UsuarioCreate, UsuarioUpdate
 

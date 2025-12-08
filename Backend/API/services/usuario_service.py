@@ -17,7 +17,7 @@ from models.usuario import (
     EstadoUsuario,
 )
 from models.database_models import UsuarioDB, RolUsuarioEnum, EstadoUsuarioEnum
-from repositories.usuario_repository import usuario_repository
+from DAL.repositories.usuario_repository import usuario_repository
 from services.auth_service import auth_service, SECRET_KEY, ALGORITHM
 from services.email_service import send_unlock_email
 from services.security_service import security_service
