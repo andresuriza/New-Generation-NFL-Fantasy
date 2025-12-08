@@ -4,7 +4,7 @@ import {
   validateEmail,
   validatePassword,
   validateConfirm,
-} from './validators';
+} from '../utils/validators';
 
 describe('validators', () => {
   // Pruebas para validateName

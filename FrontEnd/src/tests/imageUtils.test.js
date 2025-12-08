@@ -1,7 +1,7 @@
-import { getImageUrl, formatPlayerData } from './imageUtils';
+import { getImageUrl, formatPlayerData } from '../utils/imageUtils';
 
 // Mock del BASE_URL usado por getImageUrl
-jest.mock('./communicationModule/httpClient.js', () => ({
+jest.mock('../utils/communicationModule/httpClient.js', () => ({
   BASE_URL: 'http://localhost:8000',
 }));
 

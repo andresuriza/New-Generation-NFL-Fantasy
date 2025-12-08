@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Componente a probar
-import EmptyState from './EmptyState';
+import EmptyState from '../components/EmptyState.js';
 
 describe('EmptyState', () => {
   test('renders the provided message', () => {
