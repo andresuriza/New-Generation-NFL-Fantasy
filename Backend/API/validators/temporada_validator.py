@@ -4,7 +4,6 @@ Temporada validation service
 from typing import Optional
 from uuid import UUID
 from datetime import datetime, date
-from sqlalchemy.orm import Session
 from repositories.temporada_repository import TemporadaRepository
 from models.database_models import TemporadaDB
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError

@@ -16,16 +16,22 @@ class UsuarioRepository(BaseRepository[UsuarioDB, UsuarioCreate, UsuarioUpdate])
     def __init__(self):
         super().__init__(UsuarioDB)
     
-    def get_by_correo(self, correo: str) -> Optional[UsuarioDB]:
+    def get_by_correo(self, correo: str, exclude_id: Optional[UUID] = None) -> Optional[UsuarioDB]:
         """Get user by email"""
         def query(db: Session):
-            return db.query(self.model).filter(self.model.correo == correo).first()
+            q = db.query(self.model).filter(self.model.correo == correo)
+            if exclude_id:
+                q = q.filter(self.model.id != exclude_id)
+            return q.first()
         return self._execute_query(query)
     
-    def get_by_alias(self, alias: str) -> Optional[UsuarioDB]:
+    def get_by_alias(self, alias: str, exclude_id: Optional[UUID] = None) -> Optional[UsuarioDB]:
         """Get user by alias"""
         def query(db: Session):
-            return db.query(self.model).filter(self.model.alias == alias).first()
+            q = db.query(self.model).filter(self.model.alias == alias)
+            if exclude_id:
+                q = q.filter(self.model.id != exclude_id)
+            return q.first()
         return self._execute_query(query)
     
     def get_by_correo_or_alias(self, identifier: str) -> Optional[UsuarioDB]:
