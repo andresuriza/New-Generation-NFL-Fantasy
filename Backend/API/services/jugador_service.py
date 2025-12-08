@@ -3,7 +3,6 @@ Business logic service for Jugadores (Players) operations
 """
 from typing import List, Optional
 from uuid import UUID
-from sqlalchemy.orm import Session
 import os
 import shutil
 from datetime import datetime
@@ -33,7 +32,7 @@ def _to_jugador_con_equipo_response(jugador: JugadoresDB) -> JugadorConEquipo:
 class JugadorService:
     """Service for Player CRUD operations"""
     
-    def _create_player_core(self, db: Session, jugador_data: JugadorCreate, commit: bool = True) -> JugadoresDB:
+    def _create_player_core(self,  jugador_data: JugadorCreate) -> JugadoresDB:
         """
         Core player creation logic without transaction management.
         Used by both create() and crear_jugadores_bulk() methods.
@@ -52,13 +51,13 @@ class JugadorService:
             raise ValidationError("La URL de imagen es requerida")
         
         # Check if team exists
-        equipo = equipo_repository.get(db, jugador_data.equipo_id)
+        equipo = equipo_repository.get(jugador_data.equipo_id)
         if not equipo:
             raise NotFoundError(f"El equipo NFL con ID {jugador_data.equipo_id} no existe")
         
         # Check for duplicate player name in the same team
         existing_jugador = jugador_repository.get_by_nombre_equipo(
-            db, jugador_data.nombre, jugador_data.equipo_id
+            jugador_data.nombre, jugador_data.equipo_id
         )
         if existing_jugador:
             raise ConflictError(f"El jugador '{jugador_data.nombre}' ya existe en el equipo '{equipo.nombre}'")
@@ -76,16 +75,13 @@ class JugadorService:
         except ValueError as e:
             raise ValidationError(f"Error al procesar la imagen: {str(e)}")
         
-        # Create jugador using repository
-        db_jugador = jugador_repository.create(db, jugador_data)
+        # Create jugador using repository (commit is handled automatically)
+        db_jugador = jugador_repository.create(jugador_data)
         
-        if commit:
-            db.commit()
-            
         return db_jugador
 
     @handle_db_errors
-    def create(self, db: Session, jugador_data: JugadorCreate) -> JugadorResponse:
+    def create(self,  jugador_data: JugadorCreate) -> JugadorResponse:
         """
         Crear un nuevo jugador con validaciones.
         
@@ -101,38 +97,38 @@ class JugadorService:
         • Si el nombre del jugador ya existe para el mismo equipo NFL, no se crea y se notifica
         • Si no se presentan todos los campos requeridos, no se crea y se notifica
         """
-        db_jugador = self._create_player_core(db, jugador_data, commit=True)
+        db_jugador = self._create_player_core(jugador_data)
         return _to_jugador_response(db_jugador)
     
-    def listar_jugadores(self, db: Session, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
+    def listar_jugadores(self, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
         """List all players with pagination"""
-        jugadores = jugador_repository.get_multi(db, skip, limit)
+        jugadores = jugador_repository.get_multi(skip, limit)
         return [_to_jugador_response(jugador) for jugador in jugadores]
     
-    def obtener_jugador(self, db: Session, jugador_id: UUID) -> JugadorResponse:
+    def obtener_jugador(self,jugador_id: UUID) -> JugadorResponse:
         """Get a player by ID"""
-        jugador = jugador_repository.get(db, jugador_id)
+        jugador = jugador_repository.get(jugador_id)
         if not jugador:
             raise NotFoundError("Jugador no encontrado")
         return _to_jugador_response(jugador)
     
-    def obtener_jugador_con_equipo(self, db: Session, jugador_id: UUID) -> JugadorConEquipo:
+    def obtener_jugador_con_equipo(self, jugador_id: UUID) -> JugadorConEquipo:
         """Get player with NFL team information"""
-        jugador = jugador_repository.get_with_equipo(db, jugador_id)
+        jugador = jugador_repository.get_with_equipo(jugador_id)
         if not jugador:
             raise NotFoundError("Jugador no encontrado")
         return _to_jugador_con_equipo_response(jugador)
     
     @handle_db_errors
-    def actualizar_jugador(self, db: Session, jugador_id: UUID, actualizacion: JugadorUpdate) -> JugadorResponse:
+    def actualizar_jugador(self, jugador_id: UUID, actualizacion: JugadorUpdate) -> JugadorResponse:
         """Update a player"""
-        jugador = jugador_repository.get(db, jugador_id)
+        jugador = jugador_repository.get(jugador_id)
         if not jugador:
             raise NotFoundError("Jugador no encontrado")
         
         # Validate NFL team exists if changing
         if actualizacion.equipo_id:
-            equipo = equipo_repository.get(db, actualizacion.equipo_id)
+            equipo = equipo_repository.get(actualizacion.equipo_id)
             if not equipo:
                 raise NotFoundError("Equipo NFL no encontrado")
         
@@ -141,37 +137,37 @@ class JugadorService:
             nuevo_nombre = actualizacion.nombre or jugador.nombre
             nuevo_equipo_id = actualizacion.equipo_id or jugador.equipo_id
             
-            existing_jugador = jugador_repository.get_by_nombre_equipo(db, nuevo_nombre, nuevo_equipo_id)
+            existing_jugador = jugador_repository.get_by_nombre_equipo(nuevo_nombre, nuevo_equipo_id)
             if existing_jugador and existing_jugador.id != jugador_id:
                 raise ValidationError("Ya existe un jugador con ese nombre en el equipo")
         
-        updated_jugador = jugador_repository.update(db, jugador, actualizacion)
+        updated_jugador = jugador_repository.update(jugador, actualizacion)
         return _to_jugador_response(updated_jugador)
     
-    def eliminar_jugador(self, db: Session, jugador_id: UUID) -> bool:
+    def eliminar_jugador(self, jugador_id: UUID) -> bool:
         """Delete a player"""
-        jugador = jugador_repository.get(db, jugador_id)
+        jugador = jugador_repository.get(jugador_id)
         if not jugador:
             raise NotFoundError("Jugador no encontrado")
         
-        return jugador_repository.delete(db, jugador_id)
+        return jugador_repository.delete(jugador_id)
     
-    def buscar_jugadores(self, db: Session, filters: JugadorFilter, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
+    def buscar_jugadores(self, filters: JugadorFilter, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
         """Search players with filters"""
-        jugadores = jugador_repository.get_with_filters(db, filters, skip, limit)
+        jugadores = jugador_repository.get_with_filters(filters, skip, limit)
         return [_to_jugador_response(jugador) for jugador in jugadores]
     
-    def listar_jugadores_por_equipo(self, db: Session, equipo_id: UUID, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
+    def listar_jugadores_por_equipo(self, equipo_id: UUID, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
         """List all players from a specific NFL team"""
         # Validate NFL team exists
-        equipo = equipo_repository.get(db, equipo_id)
+        equipo = equipo_repository.get(equipo_id)
         if not equipo:
             raise NotFoundError("Equipo NFL no encontrado")
         
-        jugadores = jugador_repository.get_by_equipo(db, equipo_id, skip, limit)
+        jugadores = jugador_repository.get_by_equipo(equipo_id, skip, limit)
         return [_to_jugador_response(jugador) for jugador in jugadores]
     
-    def listar_jugadores_por_posicion(self, db: Session, posicion: str, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
+    def listar_jugadores_por_posicion(self, posicion: str, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
         """List all players by position"""
         from models.database_models import PosicionJugadorEnum
         
@@ -180,44 +176,44 @@ class JugadorService:
         except ValueError:
             raise ValidationError("Posición inválida")
         
-        jugadores = jugador_repository.get_by_posicion(db, posicion_enum, skip, limit)
+        jugadores = jugador_repository.get_by_posicion(posicion_enum, skip, limit)
         return [_to_jugador_response(jugador) for jugador in jugadores]
     
-    def listar_jugadores_por_liga(self, db: Session, liga_id: UUID, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
+    def listar_jugadores_por_liga(self, liga_id: UUID, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
         """List all players from teams in a specific league"""
         # Validate league exists (using validation_service if available)
         try:
-            validation_service.validate_liga_exists(db, liga_id)
+            validation_service.validate_liga_exists(liga_id)
         except:
             # Fallback validation
             from repositories.liga_repository import liga_repository
-            liga = liga_repository.get(db, liga_id)
+            liga = liga_repository.get(liga_id)
             if not liga:
                 raise NotFoundError("Liga no encontrada")
         
-        jugadores = jugador_repository.get_by_liga_id(db, liga_id, skip, limit)
+        jugadores = jugador_repository.get_by_liga_id(liga_id, skip, limit)
         return [_to_jugador_response(jugador) for jugador in jugadores]
     
-    def listar_jugadores_por_usuario(self, db: Session, usuario_id: UUID, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
+    def listar_jugadores_por_usuario(self, usuario_id: UUID, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
         """List all players from teams owned by a specific user"""
         # Validate user exists (using validation_service if available)
         try:
-            validation_service.validate_usuario_exists(db, usuario_id)
+            validation_service.validate_usuario_exists(usuario_id)
         except:
             # Fallback validation
             from repositories.usuario_repository import usuario_repository
-            usuario = usuario_repository.get(db, usuario_id)
+            usuario = usuario_repository.get(usuario_id)
             if not usuario:
                 raise NotFoundError("Usuario no encontrado")
         
-        jugadores = jugador_repository.get_by_usuario_id(db, usuario_id, skip, limit)
+        jugadores = jugador_repository.get_by_usuario_id(usuario_id, skip, limit)
         return [_to_jugador_response(jugador) for jugador in jugadores]
     
-    def _convert_bulk_to_create(self, db: Session, jugador_bulk: JugadorBulkCreate, equipo_cache: dict) -> JugadorCreate:
+    def _convert_bulk_to_create(self, jugador_bulk: JugadorBulkCreate, equipo_cache: dict) -> JugadorCreate:
         """Convert JugadorBulkCreate to JugadorCreate with team lookup"""
         # Get or cache the NFL team by name
         if jugador_bulk.equipo_nfl not in equipo_cache:
-            equipo = equipo_repository.get_by_nombre(db, jugador_bulk.equipo_nfl)
+            equipo = equipo_repository.get_by_nombre(jugador_bulk.equipo_nfl)
             if not equipo:
                 raise NotFoundError(f"El equipo NFL '{jugador_bulk.equipo_nfl}' no existe")
             equipo_cache[jugador_bulk.equipo_nfl] = equipo
@@ -232,7 +228,7 @@ class JugadorService:
             activo=True
         )
 
-    def crear_jugadores_bulk(self, db: Session, jugadores_data: List[JugadorBulkCreate], filename: Optional[str] = None) -> JugadorBulkResult:
+    def crear_jugadores_bulk(self, jugadores_data: List[JugadorBulkCreate], filename: Optional[str] = None) -> JugadorBulkResult:
         """
         Create multiple players from bulk data with all-or-nothing transaction.
         
@@ -257,7 +253,7 @@ class JugadorService:
         for i, jugador_bulk in enumerate(jugadores_data):
             try:
                 # Convert bulk data to create format and validate
-                jugador_create = self._convert_bulk_to_create(db, jugador_bulk, equipo_cache)
+                jugador_create = self._convert_bulk_to_create(jugador_bulk, equipo_cache)
                 validated_players.append(jugador_create)
                 
             except ValidationError as e:
@@ -279,17 +275,43 @@ class JugadorService:
                 processed_file=self._move_processed_file(filename, success=False) if filename else None
             )
         
-        # Step 3: Create all players in a single transaction using core creation logic
+        # Step 3: Process images and prepare data for all players
+        players_to_create = []
         try:
-            created_players = []
-            
             for jugador_create in validated_players:
-                # Use the core creation logic without committing each player individually
-                db_jugador = self._create_player_core(db, jugador_create, commit=False)
-                created_players.append(db_jugador)
+                # Save image and generate thumbnail
+                saved_image_path, saved_thumbnail_path = cdn_service.save_image_auto(
+                    jugador_create.imagen_url,
+                    entity_type="jugador"
+                )
+                
+                # Update paths to local storage
+                jugador_create.imagen_url = saved_image_path
+                jugador_create.thumbnail_url = saved_thumbnail_path
+                players_to_create.append(jugador_create)
+                
+        except ValueError as e:
+            return JugadorBulkResult(
+                success=False,
+                created_count=0,
+                error_count=1,
+                errors=[f"Error al procesar imágenes: {str(e)}"],
+                processed_file=self._move_processed_file(filename, success=False) if filename else None
+            )
+        
+        # Step 4: Create all players in a single transaction
+        try:
+            from repositories.db_context import db_context
             
-            # Commit all players at once
-            db.commit()
+            with db_context.get_session() as db:
+                created_players = []
+                
+                for jugador_create in players_to_create:
+                    # Create player directly in the transaction
+                    db_jugador = jugador_repository.create(jugador_create)
+                    created_players.append(db_jugador)
+                
+                # Transaction will be committed automatically when context exits
             
             # Move file to processed folder on success
             processed_file = self._move_processed_file(filename, success=True) if filename else None
@@ -303,7 +325,6 @@ class JugadorService:
             )
             
         except Exception as e:
-            db.rollback()
             return JugadorBulkResult(
                 success=False,
                 created_count=0,
