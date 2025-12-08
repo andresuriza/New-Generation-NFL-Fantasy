@@ -67,8 +67,8 @@ class LigaRepository(BaseRepository[LigaDB, LigaCreate, LigaUpdate]):
             ).count() > 0
         return self._execute_query(query)
 
-class LigaMiembroRepository(BaseRepository[LigaMiembroDB, dict, dict]):
-    """Repository for League Member operations"""
+class LigaMiembroRepository(BaseRepository[LigaMiembroDB, LigaMiembroCreate, None]):
+    """Repository for Liga Miembro operations"""
     
     def __init__(self):
         super().__init__(LigaMiembroDB)
@@ -111,6 +111,17 @@ class LigaMiembroRepository(BaseRepository[LigaMiembroDB, dict, dict]):
                     self.model.rol == RolMembresiaEnum.Manager
                 )
             ).count()
+        return self._execute_query(query)
+    
+    def update_alias(self, miembro_id: UUID, nuevo_alias: str) -> LigaMiembroDB:
+        """Update member alias"""
+        def query(db: Session):
+            miembro = db.query(LigaMiembroDB).filter(LigaMiembroDB.id == miembro_id).first()
+            if miembro:
+                miembro.alias = nuevo_alias
+                db.commit()
+                db.refresh(miembro)
+            return miembro
         return self._execute_query(query)
 
 class LigaCupoRepository(BaseRepository[LigaCupoDB, dict, dict]):

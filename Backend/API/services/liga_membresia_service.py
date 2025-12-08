@@ -136,15 +136,11 @@ class LigaMembresiaService:
         # Validate new alias is unique
         liga_validator.validate_alias_unique_in_liga(liga_id, nuevo_alias, usuario_id)
         
-        # Update alias
-        membresia.alias = nuevo_alias
-        
+        # Update alias using repository
         try:
-            db.commit()
-            db.refresh(membresia)
-            return _to_miembro_response(membresia)
+            updated_membresia = liga_miembro_repository.update_alias(membresia.id, nuevo_alias)
+            return _to_miembro_response(updated_membresia)
         except Exception as e:
-            db.rollback()
             raise ValueError("Error al cambiar el alias") from e
 
 liga_membresia_service = LigaMembresiaService()
