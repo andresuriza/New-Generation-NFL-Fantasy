@@ -26,6 +26,11 @@ class EquipoNFLRepository(BaseRepository[EquipoDB, EquipoNFLCreate, EquipoNFLUpd
                 q = q.filter(EquipoDB.id != exclude_id)
             return q.first()
         return self._execute_query(query)
+    def list_all(self) -> List[EquipoDB]:
+        """List all NFL teams"""
+        def query(db: Session):
+            return db.query(EquipoDB).all()
+        return self._execute_query(query)
     def get_by_abreviacion(self, abreviacion: str, exclude_id: Optional[UUID] = None) -> Optional[EquipoDB]:
         """Get NFL team by abbreviation"""
         def query(db: Session):
