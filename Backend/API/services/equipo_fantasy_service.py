@@ -3,7 +3,6 @@ Business logic service for Equipos Fantasy (Fantasy Teams) operations
 """
 from typing import List, Optional
 from uuid import UUID
-from sqlalchemy.orm import Session
 import re
 
 from models.database_models import EquipoFantasyDB, EquipoFantasyAuditDB
@@ -52,15 +51,15 @@ class EquipoFantasyService:
     """Service for Fantasy Team CRUD operations"""
     
     @handle_db_errors
-    def crear_equipo_fantasy(self, db: Session, equipo: EquipoFantasyCreate, usuario_id: UUID) -> EquipoFantasyResponse:
+    def crear_equipo_fantasy(self,  equipo: EquipoFantasyCreate, usuario_id: UUID) -> EquipoFantasyResponse:
         """Create a new fantasy team"""
         
         # Use validator for all validations
         validator = EquipoFantasyValidator()
-        validator.validate_liga_exists(db, equipo.liga_id)
-        validator.validate_usuario_exists(db, usuario_id)
-        validator.validate_usuario_not_has_team_in_liga(db, usuario_id, equipo.liga_id)
-        validator.validate_nombre_unique_in_liga(db, equipo.nombre, equipo.liga_id)
+        validator.validate_liga_exists(equipo.liga_id)
+        validator.validate_usuario_exists(usuario_id)
+        validator.validate_usuario_not_has_team_in_liga(usuario_id, equipo.liga_id)
+        validator.validate_nombre_unique_in_liga(equipo.nombre, equipo.liga_id)
         
         # Validate image if provided
         if equipo.imagen_url:
@@ -78,20 +77,20 @@ class EquipoFantasyService:
             thumbnail_url=thumbnail_url
         )
         
-        return _to_equipo_fantasy_response(equipo_fantasy_repository.create(db, db_equipo))
+        return _to_equipo_fantasy_response(equipo_fantasy_repository.create(db_equipo))
     
-    def obtener_equipo_fantasy(self, db: Session, equipo_id: UUID) -> EquipoFantasyConRelaciones:
+    def obtener_equipo_fantasy(self, equipo_id: UUID) -> EquipoFantasyConRelaciones:
         """Get fantasy team by ID with relationships"""
-        equipo = equipo_fantasy_repository.get_with_relations(db, equipo_id)
+        equipo = equipo_fantasy_repository.get_with_relations(equipo_id)
         if not equipo:
             raise NotFoundError("Equipo fantasy no encontrado")
         return _to_equipo_fantasy_con_relaciones_response(equipo)
     
     @handle_db_errors
-    def actualizar_equipo_fantasy(self, db: Session, equipo_id: UUID, equipo_update: EquipoFantasyUpdate, usuario_id: UUID) -> EquipoFantasyResponse:
+    def actualizar_equipo_fantasy(self, equipo_id: UUID, equipo_update: EquipoFantasyUpdate, usuario_id: UUID) -> EquipoFantasyResponse:
         """Update fantasy team"""
         validator = EquipoFantasyValidator()
-        equipo = validator.validate_exists(db, equipo_id)
+        equipo = validator.validate_exists(equipo_id)
         
         # Check ownership using validator
         validator.validate_usuario_owns_team(equipo, usuario_id)
@@ -100,7 +99,7 @@ class EquipoFantasyService:
         
         # Validate and update name
         if equipo_update.nombre is not None:
-            validator.validate_nombre_unique_in_liga(db, equipo_update.nombre, equipo.liga_id, equipo_id)
+            validator.validate_nombre_unique_in_liga(equipo_update.nombre, equipo.liga_id, equipo_id)
             update_data['nombre'] = equipo_update.nombre
         
         # Validate and update image
@@ -113,49 +112,49 @@ class EquipoFantasyService:
                 update_data['imagen_url'] = None
                 update_data['thumbnail_url'] = None
         
-        return _to_equipo_fantasy_response(equipo_fantasy_repository.update(db, equipo_id, update_data))
+        return _to_equipo_fantasy_response(equipo_fantasy_repository.update(equipo_id, update_data))
     
-    def eliminar_equipo_fantasy(self, db: Session, equipo_id: UUID, usuario_id: UUID) -> bool:
+    def eliminar_equipo_fantasy(self, equipo_id: UUID, usuario_id: UUID) -> bool:
         """Delete fantasy team"""
         validator = EquipoFantasyValidator()
-        equipo = validator.validate_exists(db, equipo_id)
+        equipo = validator.validate_exists(equipo_id)
         
         # Check ownership using validator
         validator.validate_usuario_owns_team(equipo, usuario_id)
         
-        return equipo_fantasy_repository.delete(db, equipo_id)
+        return equipo_fantasy_repository.delete(equipo_id)
     
-    def listar_equipos_fantasy(self, db: Session, filtros: EquipoFantasyFilter, skip: int = 0, limit: int = 100) -> List[EquipoFantasyResponse]:
+    def listar_equipos_fantasy(self,  filtros: EquipoFantasyFilter, skip: int = 0, limit: int = 100) -> List[EquipoFantasyResponse]:
         """List fantasy teams with filters"""
-        equipos = equipo_fantasy_repository.search_with_filter(db, filtros, skip, limit)
+        equipos = equipo_fantasy_repository.search_with_filter(filtros, skip, limit)
         return [_to_equipo_fantasy_response(equipo) for equipo in equipos]
     
-    def listar_equipos_por_liga(self, db: Session, liga_id: UUID, skip: int = 0, limit: int = 100) -> List[EquipoFantasyResponse]:
+    def listar_equipos_por_liga(self, liga_id: UUID, skip: int = 0, limit: int = 100) -> List[EquipoFantasyResponse]:
         """List fantasy teams by league"""
-        equipos = equipo_fantasy_repository.get_by_liga(db, liga_id, skip, limit)
+        equipos = equipo_fantasy_repository.get_by_liga(liga_id, skip, limit)
         return [_to_equipo_fantasy_response(equipo) for equipo in equipos]
     
-    def listar_equipos_por_usuario(self, db: Session, usuario_id: UUID, skip: int = 0, limit: int = 100) -> List[EquipoFantasyResponse]:
+    def listar_equipos_por_usuario(self, usuario_id: UUID, skip: int = 0, limit: int = 100) -> List[EquipoFantasyResponse]:
         """List fantasy teams by user"""
-        equipos = equipo_fantasy_repository.get_by_usuario(db, usuario_id, skip, limit)
+        equipos = equipo_fantasy_repository.get_by_usuario(usuario_id, skip, limit)
         return [_to_equipo_fantasy_response(equipo) for equipo in equipos]
     
-    def obtener_historial_cambios(self, db: Session, equipo_id: UUID, skip: int = 0, limit: int = 100) -> List[EquipoFantasyAuditResponse]:
+    def obtener_historial_cambios(self, equipo_id: UUID, skip: int = 0, limit: int = 100) -> List[EquipoFantasyAuditResponse]:
         """Get audit history for a fantasy team"""
         # Check if team exists
-        if not equipo_fantasy_repository.get(db, equipo_id):
+        if not equipo_fantasy_repository.get(equipo_id):
             raise NotFoundError("Equipo fantasy no encontrado")
         
-        audits = equipo_fantasy_audit_repository.get_by_equipo_fantasy(db, equipo_id, skip, limit)
+        audits = equipo_fantasy_audit_repository.get_by_equipo_fantasy(equipo_id, skip, limit)
         return [_to_audit_response(audit) for audit in audits]
     
-    def obtener_cambios_recientes_liga(self, db: Session, liga_id: UUID, limit: int = 50) -> List[EquipoFantasyAuditResponse]:
+    def obtener_cambios_recientes_liga(self,  liga_id: UUID, limit: int = 50) -> List[EquipoFantasyAuditResponse]:
         """Get recent changes for all fantasy teams in a league"""
         # Check if league exists
-        if not liga_repository.get(db, liga_id):
+        if not liga_repository.get(liga_id):
             raise NotFoundError("Liga no encontrada")
         
-        audits = equipo_fantasy_audit_repository.get_recent_changes(db, liga_id, limit)
+        audits = equipo_fantasy_audit_repository.get_recent_changes(liga_id, limit)
         return [_to_audit_response(audit) for audit in audits]
 
 # Service instance
