@@ -149,6 +149,31 @@ class UsuarioValidator:
         supported_languages = ["Ingles", "Español"]
         if idioma not in supported_languages:
             raise ValidationError(f"Idioma no soportado. Idiomas disponibles: {', '.join(supported_languages)}")
+    
+    @staticmethod
+    def validate_for_create(email: str, alias: Optional[str] = None) -> None:
+        """Validate all requirements for creating a new user"""
+        # Validate unique email
+        UsuarioValidator.validate_email_unique(email)
+        
+        # Validate unique alias if provided
+        if alias:
+            UsuarioValidator.validate_alias_unique(alias)
+    
+    @staticmethod
+    def validate_for_update(requester_id: UUID, target_user_id: UUID, usuario_db: UsuarioDB, 
+                           new_email: Optional[str] = None, new_alias: Optional[str] = None) -> None:
+        """Validate all requirements for updating a user"""
+        # Validate user permission
+        UsuarioValidator.validate_user_permission_for_update(requester_id, target_user_id)
+        
+        # Validate email uniqueness if being updated
+        if new_email and new_email != usuario_db.correo:
+            UsuarioValidator.validate_email_unique(new_email, target_user_id)
+        
+        # Validate alias uniqueness if being updated
+        if new_alias and new_alias != usuario_db.alias:
+            UsuarioValidator.validate_alias_unique(new_alias, target_user_id)
 
 
 # Create validator instance

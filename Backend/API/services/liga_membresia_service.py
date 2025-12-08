@@ -23,35 +23,15 @@ class LigaMembresiaService:
         """
         Unirse a una liga.
         """
-        # Use validators
+        # Validate all requirements for joining
         liga_validator = LigaValidator()
-        usuario_validator = UsuarioValidator()
-        
-        # Validate league exists and get it
-        liga = liga_validator.validate_exists(liga_id)
+        liga = liga_validator.validate_for_join_liga(liga_id, usuario_id, alias, nombre_equipo)
         
         # Verify password
         try:
             password_valid = security_service.verify_password(contrasena, liga.contrasena_hash)
         except Exception as e:
             raise ValueError(f"Error al verificar contraseña: {str(e)}")
-        
-        if not password_valid:
-            raise ValueError("Contraseña de liga incorrecta")
-        
-        # Validate user is not already in league
-        liga_validator.validate_usuario_not_in_liga(liga_id, usuario_id)
-        
-        # Validate league has available spots
-        liga_validator.validate_liga_has_cupos(liga_id)
-        
-        # Validate alias is unique in league
-        liga_validator.validate_alias_unique_in_liga(liga_id, alias)
-        
-        # Validate team name is unique in league
-        from validators.equipo_fantasy_validator import EquipoFantasyValidator
-        equipo_validator = EquipoFantasyValidator()
-        equipo_validator.validate_nombre_unique_in_liga(nombre_equipo, liga_id)
         
         # Create membership, fantasy team, and audit record in a single transaction
         with db_context.get_session() as db:
