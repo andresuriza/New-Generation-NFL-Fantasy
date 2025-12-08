@@ -123,7 +123,7 @@ class JugadorValidator:
             raise ValidationError("El jugador no está activo")
     
     @staticmethod
-    def validate_jugador_can_be_deleted(db: Session, jugador_id: UUID) -> None:
+    def validate_jugador_can_be_deleted(jugador_id: UUID) -> None:
         """Validate that player can be deleted"""
         # Check if player is in any fantasy teams
         jugador = JugadorValidator.validate_exists(jugador_id)

@@ -51,7 +51,26 @@ class TemporadaRepository(BaseRepository[TemporadaDB, TemporadaCreate, Temporada
             q.update({"es_actual": False})
             db.flush()
         self._execute_query(query)
-
+    def get_overlapping_season(self, fecha_inicio: date, fecha_fin: date, exclude_id: Optional[UUID] = None) -> Optional[TemporadaDB]:
+        """Get season that overlaps with given date range"""
+        def query(db: Session):
+            q = db.query(self.model).filter(
+                and_(
+                    self.model.fecha_inicio <= fecha_fin,
+                    self.model.fecha_fin >= fecha_inicio
+                )
+            )
+            if exclude_id:
+                q = q.filter(self.model.id != exclude_id)
+            return q.first()
+        return self._execute_query(query)
+    def count_ligas_by_temporada(self, temporada_id: UUID) -> int:
+        """Count leagues using this season"""
+        from models.database_models import LigaDB
+    
+        def query(db: Session):
+            return db.query(LigaDB).filter(LigaDB.temporada_id == temporada_id).count()
+        return self._execute_query(query)
 class TemporadaSemanaRepository(BaseRepository[TemporadaSemanaDB, dict, dict]):
     """Repository for Season Week operations"""
     
@@ -75,6 +94,36 @@ class TemporadaSemanaRepository(BaseRepository[TemporadaSemanaDB, dict, dict]):
             return db.query(self.model).filter(
                 self.model.temporada_id == temporada_id
             ).order_by(self.model.numero).all()
+        return self._execute_query(query)
+
+    def get_week_by_numero(self, temporada_id: UUID, numero: int) -> Optional[TemporadaSemanaDB]:
+        """Get week by number in a season"""
+        from models.database_models import TemporadaSemanaDB
+
+        def query(db: Session):
+            return db.query(TemporadaSemanaDB).filter(
+                and_(
+                    TemporadaSemanaDB.temporada_id == temporada_id,
+                    TemporadaSemanaDB.numero == numero
+                )
+            ).first()
+        return self._execute_query(query)
+
+    def get_overlapping_week(self, temporada_id: UUID, fecha_inicio: date, fecha_fin: date, exclude_numero: Optional[int] = None) -> Optional[TemporadaSemanaDB]:
+        """Get week that overlaps with the given date range in a season"""
+        from models.database_models import TemporadaSemanaDB
+
+        def query(db: Session):
+            q = db.query(TemporadaSemanaDB).filter(
+                and_(
+                    TemporadaSemanaDB.temporada_id == temporada_id,
+                    TemporadaSemanaDB.fecha_inicio < fecha_fin,
+                    TemporadaSemanaDB.fecha_fin > fecha_inicio
+                )
+            )
+            if exclude_numero:
+                q = q.filter(TemporadaSemanaDB.numero != exclude_numero)
+            return q.first()
         return self._execute_query(query)
 
 # Repository instances

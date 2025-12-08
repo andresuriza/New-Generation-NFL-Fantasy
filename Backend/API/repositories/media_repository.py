@@ -88,5 +88,13 @@ class MediaRepository(BaseRepository[MediaDB, MediaCreate, MediaUpdate]):
                 self.model.url.like(f"%{url_pattern}%")
             ).all()
         return self._execute_query(query)
+    def get_by_url(self, url: str, exclude_id: Optional[UUID] = None) -> Optional[MediaDB]:
+        """Get media by URL, optionally excluding a specific ID"""
+        def query(db: Session):
+            q = db.query(self.model).filter(self.model.url == url)
+            if exclude_id:
+                q = q.filter(self.model.id != exclude_id)
+            return q.first()
+        return self._execute_query(query)
 # Repository instance
 media_repository = MediaRepository()
