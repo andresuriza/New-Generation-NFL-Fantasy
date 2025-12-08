@@ -123,12 +123,10 @@ class TemporadaValidator:
     @staticmethod
     def validate_only_one_current_season(exclude_id: Optional[UUID] = None) -> None:
         """Validate that only one season can be marked as current"""
-        query = db.query(TemporadaDB).filter(TemporadaDB.es_actual == True)
-        if exclude_id:
-            query = query.filter(TemporadaDB.id != exclude_id)
+        from repositories.temporada_repository import temporada_repository
         
-        existing_current = query.first()
-        if existing_current:
+        existing_current = temporada_repository.get_actual()
+        if existing_current and (not exclude_id or existing_current.id != exclude_id):
             raise ConflictError(f"Ya existe una temporada marcada como actual: '{existing_current.nombre}'")
     
     @staticmethod

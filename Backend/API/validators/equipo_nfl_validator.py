@@ -7,7 +7,7 @@ from uuid import UUID
 
 from models.database_models import EquipoDB
 from exceptions.business_exceptions import NotFoundError, ValidationError, ConflictError
-from repositories.equipo_nfl_repository import EquipoNFLRepository
+from repositories.equipo_repository import EquipoNFLRepository
 
 class EquipoNFLValidator:
     """Validation service for Equipo NFL model"""
@@ -41,7 +41,7 @@ class EquipoNFLValidator:
         """Validate that team name is unique"""
         name_exists = EquipoNFLRepository().get_by_nombre(nombre, exclude_id)
        
-        if name_exists.first():
+        if name_exists:
             raise ConflictError(f"El equipo NFL '{nombre}' ya existe")
     
     @staticmethod

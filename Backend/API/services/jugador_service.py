@@ -32,7 +32,7 @@ def _to_jugador_con_equipo_response(jugador: JugadoresDB) -> JugadorConEquipo:
 class JugadorService:
     """Service for Player CRUD operations"""
     
-    def _create_player_core(self,  jugador_data: JugadorCreate, commit: bool = True) -> JugadoresDB:
+    def _create_player_core(self,  jugador_data: JugadorCreate) -> JugadoresDB:
         """
         Core player creation logic without transaction management.
         Used by both create() and crear_jugadores_bulk() methods.
@@ -75,12 +75,9 @@ class JugadorService:
         except ValueError as e:
             raise ValidationError(f"Error al procesar la imagen: {str(e)}")
         
-        # Create jugador using repository
+        # Create jugador using repository (commit is handled automatically)
         db_jugador = jugador_repository.create(jugador_data)
         
-        if commit:
-            db.commit()
-            
         return db_jugador
 
     @handle_db_errors
@@ -100,7 +97,7 @@ class JugadorService:
         • Si el nombre del jugador ya existe para el mismo equipo NFL, no se crea y se notifica
         • Si no se presentan todos los campos requeridos, no se crea y se notifica
         """
-        db_jugador = self._create_player_core(jugador_data, commit=True)
+        db_jugador = self._create_player_core(jugador_data)
         return _to_jugador_response(db_jugador)
     
     def listar_jugadores(self, skip: int = 0, limit: int = 100) -> List[JugadorResponse]:
@@ -278,17 +275,43 @@ class JugadorService:
                 processed_file=self._move_processed_file(filename, success=False) if filename else None
             )
         
-        # Step 3: Create all players in a single transaction using core creation logic
+        # Step 3: Process images and prepare data for all players
+        players_to_create = []
         try:
-            created_players = []
-            
             for jugador_create in validated_players:
-                # Use the core creation logic without committing each player individually
-                db_jugador = self._create_player_core(jugador_create, commit=False)
-                created_players.append(db_jugador)
+                # Save image and generate thumbnail
+                saved_image_path, saved_thumbnail_path = cdn_service.save_image_auto(
+                    jugador_create.imagen_url,
+                    entity_type="jugador"
+                )
+                
+                # Update paths to local storage
+                jugador_create.imagen_url = saved_image_path
+                jugador_create.thumbnail_url = saved_thumbnail_path
+                players_to_create.append(jugador_create)
+                
+        except ValueError as e:
+            return JugadorBulkResult(
+                success=False,
+                created_count=0,
+                error_count=1,
+                errors=[f"Error al procesar imágenes: {str(e)}"],
+                processed_file=self._move_processed_file(filename, success=False) if filename else None
+            )
+        
+        # Step 4: Create all players in a single transaction
+        try:
+            from repositories.db_context import db_context
             
-            # Commit all players at once
-            db.commit()
+            with db_context.get_session() as db:
+                created_players = []
+                
+                for jugador_create in players_to_create:
+                    # Create player directly in the transaction
+                    db_jugador = jugador_repository.create(jugador_create)
+                    created_players.append(db_jugador)
+                
+                # Transaction will be committed automatically when context exits
             
             # Move file to processed folder on success
             processed_file = self._move_processed_file(filename, success=True) if filename else None
@@ -302,7 +325,6 @@ class JugadorService:
             )
             
         except Exception as e:
-            db.rollback()
             return JugadorBulkResult(
                 success=False,
                 created_count=0,

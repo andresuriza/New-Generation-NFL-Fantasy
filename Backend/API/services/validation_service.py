@@ -21,12 +21,12 @@ class ValidationService:
     
     # Usuario validations
     @staticmethod
-    def validate_usuario_exists(db: Session, usuario_id: UUID):
+    def validate_usuario_exists(usuario_id: UUID):
         """Validate that a user exists"""
         return usuario_validator.validate_exists(usuario_id)
     
     @staticmethod
-    def validate_usuario_email(email: str, db: Session, exclude_id: Optional[UUID] = None):
+    def validate_usuario_email(email: str, exclude_id: Optional[UUID] = None):
         """Validate user email format and uniqueness"""
         usuario_validator.validate_email_format(email)
         usuario_validator.validate_email_unique(email, exclude_id)

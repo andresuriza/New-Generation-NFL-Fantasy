@@ -52,41 +52,33 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABC
             else:
                 obj_data = obj_in.model_dump() if hasattr(obj_in, 'model_dump') else obj_in.dict()
             db_obj = self.model(**obj_data)
-            try:
-                db.add(db_obj)
-                db.flush()
-                db.refresh(db_obj)
-                return db_obj
-            except IntegrityError as e:
-                db.rollback()
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Error creating record"
-                ) from e
+            db.add(db_obj)
+            db.flush()
+            db.refresh(db_obj)
+            return db_obj
         return self._execute_query(query)
     
     def update(self, db_obj: ModelType, obj_in: UpdateSchemaType) -> ModelType:
         """Update an existing record"""
         def query(db: Session):
-            obj_data = obj_in.model_dump(exclude_unset=True) if hasattr(obj_in, 'model_dump') else obj_in.dict(exclude_unset=True)
+            if isinstance(obj_in, dict):
+                obj_data = obj_in
+            elif hasattr(obj_in, 'model_dump'):
+                obj_data = obj_in.model_dump(exclude_unset=True)
+            else:
+                obj_data = obj_in.dict(exclude_unset=True)
             
             # Re-attach object to session if needed
-            if db_obj not in db:
-                db_obj = db.merge(db_obj)
+            merged_obj = db_obj
+            if merged_obj not in db:
+                merged_obj = db.merge(db_obj)
             
             for field, value in obj_data.items():
-                setattr(db_obj, field, value)
+                setattr(merged_obj, field, value)
             
-            try:
-                db.flush()
-                db.refresh(db_obj)
-                return db_obj
-            except IntegrityError as e:
-                db.rollback()
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Error updating record"
-                ) from e
+            db.flush()
+            db.refresh(merged_obj)
+            return merged_obj
         return self._execute_query(query)
     
     def delete(self, id: UUID) -> bool:
@@ -94,15 +86,8 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABC
         def query(db: Session):
             obj = db.query(self.model).filter(self.model.id == id).first()
             if obj:
-                try:
-                    db.delete(obj)
-                    db.flush()
-                    return True
-                except IntegrityError as e:
-                    db.rollback()
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Error deleting record"
-                    ) from e
+                db.delete(obj)
+                db.flush()
+                return True
             return False
         return self._execute_query(query)

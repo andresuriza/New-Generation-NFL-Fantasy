@@ -149,90 +149,92 @@ class AuthService:
                 count += 1
         return count
 
-    def login_user(self, db_session: Session, correo: str, contrasena: str) -> Dict[str, Any]:
+    def login_user(self, correo: str, contrasena: str) -> Dict[str, Any]:
         """
         Autenticar usuario con validación de intentos fallidos y bloqueo
         """
         from models.database_models import UsuarioDB, EstadoUsuarioEnum
         from models.usuario import UsuarioResponse, RolUsuario, EstadoUsuario
+        from repositories.db_context import db_context
         
         try:
-            # Buscar usuario por correo
-            usuario = db_session.query(UsuarioDB).filter(UsuarioDB.correo == correo).first()
-            
-            if not usuario:
-                return {
-                    "success": False,
-                    "message": "Credenciales inválidas"
-                }
-            
-            # Verificar si la cuenta está activa
-            if usuario.estado != EstadoUsuarioEnum.activa:
-                return {
-                    "success": False,
-                    "message": "Cuenta bloqueada"
-                }
-            
-            # Verificar si la cuenta está bloqueada (o debe bloquearse)
-            if usuario.failed_attempts >= 5:
-                # Asegurar que el estado refleje el bloqueo
-                try:
-                    from models.database_models import EstadoUsuarioEnum as _EstadoEnum
-                    if usuario.estado != _EstadoEnum.bloqueado:
-                        usuario.estado = _EstadoEnum.bloqueado
-                        db_session.commit()
-                except Exception:
-                    # Si no se puede actualizar el estado por cualquier razón, continuar devolviendo error
-                    pass
-                return {
-                    "success": False,
-                    "message": "Cuenta inactiva por múltiples intentos fallidos"
-                }
-            
-            # Verificar contraseña
-            if not self.verify_password(contrasena, usuario.contrasena_hash):
-                # Incrementar intentos fallidos
-                new_attempts = self.increment_failed_attempts(usuario, db_session)
+            with db_context.get_session() as db_session:
+                # Buscar usuario por correo
+                usuario = db_session.query(UsuarioDB).filter(UsuarioDB.correo == correo).first()
                 
-                message = "Credenciales inválidas"
-                if new_attempts >= 5:
-                    message = "Cuenta inactiva por múltiples intentos fallidos"
+                if not usuario:
+                    return {
+                        "success": False,
+                        "message": "Credenciales inválidas"
+                    }
                 
-                return {
-                    "success": False,
-                    "message": message
-                }
-            
-            # Login exitoso - resetear intentos fallidos
-            self.reset_failed_attempts(usuario, db_session)
-            
-            # Crear tokens
-            access_token = self.create_access_token(data={"sub": str(usuario.id)})
-            refresh_token = self.create_refresh_token(str(usuario.id))
-            
-            # Crear modelo de respuesta del usuario (robusto ante enums o strings)
-            rol_val = getattr(usuario.rol, "value", usuario.rol)
-            estado_val = getattr(usuario.estado, "value", usuario.estado)
+                # Verificar si la cuenta está activa
+                if usuario.estado != EstadoUsuarioEnum.activa:
+                    return {
+                        "success": False,
+                        "message": "Cuenta bloqueada"
+                    }
+                
+                # Verificar si la cuenta está bloqueada (o debe bloquearse)
+                if usuario.failed_attempts >= 5:
+                    # Asegurar que el estado refleje el bloqueo
+                    try:
+                        from models.database_models import EstadoUsuarioEnum as _EstadoEnum
+                        if usuario.estado != _EstadoEnum.bloqueado:
+                            usuario.estado = _EstadoEnum.bloqueado
+                            db_session.commit()
+                    except Exception:
+                        # Si no se puede actualizar el estado por cualquier razón, continuar devolviendo error
+                        pass
+                    return {
+                        "success": False,
+                        "message": "Cuenta inactiva por múltiples intentos fallidos"
+                    }
+                
+                # Verificar contraseña
+                if not self.verify_password(contrasena, usuario.contrasena_hash):
+                    # Incrementar intentos fallidos
+                    new_attempts = self.increment_failed_attempts(usuario, db_session)
+                    
+                    message = "Credenciales inválidas"
+                    if new_attempts >= 5:
+                        message = "Cuenta inactiva por múltiples intentos fallidos"
+                    
+                    return {
+                        "success": False,
+                        "message": message
+                    }
+                
+                # Login exitoso - resetear intentos fallidos
+                self.reset_failed_attempts(usuario, db_session)
+                
+                # Crear tokens
+                access_token = self.create_access_token(data={"sub": str(usuario.id)})
+                refresh_token = self.create_refresh_token(str(usuario.id))
+                
+                # Crear modelo de respuesta del usuario (robusto ante enums o strings)
+                rol_val = getattr(usuario.rol, "value", usuario.rol)
+                estado_val = getattr(usuario.estado, "value", usuario.estado)
 
-            usuario_response = UsuarioResponse(
-                id=usuario.id,
-                nombre=usuario.nombre,
-                alias=usuario.alias,
-                correo=usuario.correo,
-                rol=RolUsuario(rol_val),
-                estado=EstadoUsuario(estado_val),
-                idioma=usuario.idioma,
-                imagen_perfil_url=usuario.imagen_perfil_url,
-                creado_en=usuario.creado_en
-            )
-            
-            return {
-                "success": True,
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-                "usuario": usuario_response,
-                "message": "Login exitoso"
-            }
+                usuario_response = UsuarioResponse(
+                    id=usuario.id,
+                    nombre=usuario.nombre,
+                    alias=usuario.alias,
+                    correo=usuario.correo,
+                    rol=RolUsuario(rol_val),
+                    estado=EstadoUsuario(estado_val),
+                    idioma=usuario.idioma,
+                    imagen_perfil_url=usuario.imagen_perfil_url,
+                    creado_en=usuario.creado_en
+                )
+                
+                return {
+                    "success": True,
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                    "usuario": usuario_response,
+                    "message": "Login exitoso"
+                }
             
         except Exception as e:
             # En producción, usar logging apropiado

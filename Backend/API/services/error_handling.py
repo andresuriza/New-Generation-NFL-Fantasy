@@ -37,7 +37,9 @@ def handle_db_errors(func: Callable) -> Callable:
             raise
         except Exception as e:
             # Handle unexpected errors
+            import traceback
             print(f"Unexpected error in {func.__name__}: {e}")  # Log for debugging
+            print(f"Traceback: {traceback.format_exc()}")  # Log full traceback
             raise ValidationError("Error interno del servidor. Por favor, inténtelo más tarde.")
     
     return wrapper

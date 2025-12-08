@@ -8,7 +8,7 @@ from sqlalchemy import and_
 
 from repositories.base import BaseRepository
 from models.database_models import LigaDB, LigaMiembroDB, LigaCupoDB
-from models.liga import LigaCreate, LigaUpdate
+from models.liga import LigaCreate, LigaUpdate, LigaMiembroCreate
 
 if TYPE_CHECKING:
     from models.liga import LigaFilter

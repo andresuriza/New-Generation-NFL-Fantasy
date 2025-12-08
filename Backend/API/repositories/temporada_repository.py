@@ -17,10 +17,13 @@ class TemporadaRepository(BaseRepository[TemporadaDB, TemporadaCreate, Temporada
     def __init__(self):
         super().__init__(TemporadaDB)
     
-    def get_by_nombre(self, nombre: str) -> Optional[TemporadaDB]:
+    def get_by_nombre(self, nombre: str, exclude_id: Optional[UUID] = None) -> Optional[TemporadaDB]:
         """Get season by name"""
         def query(db: Session):
-            return db.query(self.model).filter(self.model.nombre == nombre).first()
+            q = db.query(self.model).filter(self.model.nombre == nombre)
+            if exclude_id:
+                q = q.filter(self.model.id != exclude_id)
+            return q.first()
         return self._execute_query(query)
     
     def get_actual(self) -> Optional[TemporadaDB]:

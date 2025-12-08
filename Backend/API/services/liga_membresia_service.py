@@ -7,6 +7,8 @@ from uuid import UUID
 from models.database_models import LigaMiembroDB, LigaMiembroAudDB, EquipoFantasyDB
 from models.liga import LigaMiembroResponse, LigaMiembroCreate
 from repositories.liga_repository import liga_miembro_repository, liga_cupo_repository
+from repositories.equipo_fantasy_repository import equipo_fantasy_repository
+from repositories.db_context import db_context
 from validators.liga_validator import LigaValidator
 from validators.usuario_validator import UsuarioValidator
 from services.security_service import security_service
@@ -51,24 +53,22 @@ class LigaMembresiaService:
         equipo_validator = EquipoFantasyValidator()
         equipo_validator.validate_nombre_unique_in_liga(nombre_equipo, liga_id)
         
-        # Create membership
-        nueva_membresia = LigaMiembroDB(
-            liga_id=liga_id,
-            usuario_id=usuario_id,
-            alias=alias,
-            rol="Manager"
-        )
-        
-        # Create corresponding fantasy team with the specified team name
-        nuevo_equipo_fantasy = EquipoFantasyDB(
-            liga_id=liga_id,
-            usuario_id=usuario_id,
-            nombre=nombre_equipo
-        )
-        
-        try:
-            db.add(nueva_membresia)
-            db.add(nuevo_equipo_fantasy)
+        # Create membership, fantasy team, and audit record in a single transaction
+        with db_context.get_session() as db:
+            # Create membership
+            nueva_membresia = LigaMiembroDB(
+                liga_id=liga_id,
+                usuario_id=usuario_id,
+                alias=alias,
+                rol="Manager"
+            )
+            
+            # Create corresponding fantasy team with the specified team name
+            nuevo_equipo_fantasy = EquipoFantasyDB(
+                liga_id=liga_id,
+                usuario_id=usuario_id,
+                nombre=nombre_equipo
+            )
             
             # Add audit record
             audit_record = LigaMiembroAudDB(
@@ -76,15 +76,14 @@ class LigaMembresiaService:
                 usuario_id=usuario_id,
                 accion="unirse"
             )
+            
+            db.add(nueva_membresia)
+            db.add(nuevo_equipo_fantasy)
             db.add(audit_record)
-            
-            db.commit()
+            db.flush()
             db.refresh(nueva_membresia)
-            return _to_miembro_response(nueva_membresia)
             
-        except Exception as e:
-            db.rollback()
-            raise ValueError("Error al unirse a la liga") from e
+            return _to_miembro_response(nueva_membresia)
     
     def salir_liga(self,liga_id: UUID, usuario_id: UUID) -> bool:
         """Leave a league"""

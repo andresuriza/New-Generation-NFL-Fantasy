@@ -19,8 +19,7 @@ class JugadorRepository(BaseRepository[JugadoresDB, JugadorCreate, JugadorUpdate
     def get_by_nombre_equipo(self,  nombre: str, equipo_id: UUID, exclude_id: Optional[UUID] = None) -> Optional[JugadoresDB]:
         """Get player by name and NFL team"""
         def query(db: Session):
-
-            return db.query(self.model).filter(
+            q = db.query(self.model).filter(
                 and_(
                     self.model.nombre == nombre,
                     self.model.equipo_id == equipo_id
@@ -28,9 +27,9 @@ class JugadorRepository(BaseRepository[JugadoresDB, JugadorCreate, JugadorUpdate
             )
         
             if exclude_id:
-                query = query.filter(self.model.id != exclude_id)
+                q = q.filter(self.model.id != exclude_id)
             
-            return query.first()
+            return q.first()
         return self._execute_query(query)
     
     def get_with_equipo(self, jugador_id: UUID) -> Optional[JugadoresDB]:
@@ -67,9 +66,11 @@ class JugadorRepository(BaseRepository[JugadoresDB, JugadorCreate, JugadorUpdate
     
     def search_by_nombre(self, nombre: str, skip: int = 0, limit: int = 100) -> List[JugadoresDB]:
         """Search players by name (case insensitive partial match)"""
-        return db.query(self.model).filter(
-            func.lower(self.model.nombre).contains(func.lower(nombre))
-        ).offset(skip).limit(limit).all()
+        def query(db: Session):
+            return db.query(self.model).filter(
+                func.lower(self.model.nombre).contains(func.lower(nombre))
+            ).offset(skip).limit(limit).all()
+        return self._execute_query(query)
     
     def get_with_filters(self, filters: JugadorFilter, skip: int = 0, limit: int = 100) -> List[JugadoresDB]:
         """Get players with multiple filters"""
@@ -96,31 +97,37 @@ class JugadorRepository(BaseRepository[JugadoresDB, JugadorCreate, JugadorUpdate
     
     def count_by_equipo(self, equipo_id: UUID) -> int:
         """Count players in a specific NFL team"""
-        
-        return db_context.get_session().query(self.model).filter(self.model.equipo_id == equipo_id).count()
+        def query(db: Session):
+            return db.query(self.model).filter(self.model.equipo_id == equipo_id).count()
+        return self._execute_query(query)
     
     def count_by_posicion(self, posicion: PosicionJugadorEnum) -> int:
-        
         """Count players by position"""
-        return db_context.get_session().query(self.model).filter(self.model.posicion == posicion).count()
+        def query(db: Session):
+            return db.query(self.model).filter(self.model.posicion == posicion).count()
+        return self._execute_query(query)
     
     def get_by_liga_id(self,  liga_id: UUID, skip: int = 0, limit: int = 100) -> List[JugadoresDB]:
         """Get all players from teams in a specific league"""
-        from models.database_models import EquipoDB
-        return db_context.get_session().query(self.model).join(
-            EquipoDB, self.model.equipo_id == EquipoDB.id
-        ).filter(
-            EquipoDB.liga_id == liga_id
-        ).offset(skip).limit(limit).all()
+        def query(db: Session):
+            from models.database_models import EquipoDB
+            return db.query(self.model).join(
+                EquipoDB, self.model.equipo_id == EquipoDB.id
+            ).filter(
+                EquipoDB.liga_id == liga_id
+            ).offset(skip).limit(limit).all()
+        return self._execute_query(query)
     
     def get_by_usuario_id(self,  usuario_id: UUID, skip: int = 0, limit: int = 100) -> List[JugadoresDB]:
         """Get all players from teams owned by a specific user"""
-        from models.database_models import EquipoDB
-        return db_context.get_session().query(self.model).join(
-            EquipoDB, self.model.equipo_id == EquipoDB.id
-        ).filter(
-            EquipoDB.usuario_id == usuario_id
-        ).offset(skip).limit(limit).all()
+        def query(db: Session):
+            from models.database_models import EquipoDB
+            return db.query(self.model).join(
+                EquipoDB, self.model.equipo_id == EquipoDB.id
+            ).filter(
+                EquipoDB.usuario_id == usuario_id
+            ).offset(skip).limit(limit).all()
+        return self._execute_query(query)
     def get_by_email(self, email: str, exclude_id: Optional[UUID] = None) -> Optional[JugadoresDB]:
         """Get player by email"""
         def query(db: Session):

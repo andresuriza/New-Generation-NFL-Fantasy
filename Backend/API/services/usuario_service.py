@@ -111,7 +111,7 @@ class UsuarioService:
             validator.validate_alias_unique(data["alias"], usuario_id)
         
         # Update user through repository
-        usuario_actualizado = usuario_repository.update(usuario_id, data)
+        usuario_actualizado = usuario_repository.update(usuario_db, data)
         
         return _convert_usuario_to_response(usuario_actualizado)
 
@@ -206,3 +206,7 @@ class UsuarioService:
         usuario.failed_attempts = 0
         usuario_repository.update(usuario.id, {"contrasena_hash": usuario.contrasena_hash, "estado": usuario.estado, "failed_attempts": usuario.failed_attempts})
         return {"ok": True, "message": "Contraseña actualizada correctamente. Ya puedes iniciar sesión."}
+
+
+# Create a singleton instance
+usuario_service = UsuarioService()
